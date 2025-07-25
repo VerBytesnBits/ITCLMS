@@ -16,16 +16,16 @@ class UserForm extends Component
     public $password = '';
     public $password_confirmation = '';
     public $role = 'lab_technician'; // default role
-    public $roles = [
-    'chairman' => 'Chairman',
-    'lab_incharge' => 'Lab-Incharge',
-    'lab_technician' => 'Lab-Technician',
-];
+    public $roles = [];
 
 
 
     public function mount($userId = null)
     {
+        $this->roles = Role::where('guard_name', 'web')->pluck('name')->mapWithKeys(function ($name) {
+            return [$name => ucwords(str_replace('_', ' ', $name))];
+        })->toArray();
+
         if ($userId) {
             $this->user = User::findOrFail($userId);
             $this->name = $this->user->name;
@@ -33,6 +33,7 @@ class UserForm extends Component
             $this->role = $this->user->roles()->pluck('name')->first() ?? 'user';
         }
     }
+
 
 
     protected function rules()
