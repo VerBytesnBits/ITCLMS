@@ -17,12 +17,17 @@ Route::view('dashboard', 'dashboard')
     ->name('dashboard');
 
 Route::middleware(['auth'])->group(function () {
-    Route::get('users', UserIndex::class)->name('users.index');
-
-    Route::get('roles', RoleIndex::class)->name('roles.index');
 
 
-    
+    // Allow only users with "manage.users" permission
+    Route::get('users', UserIndex::class)
+        ->middleware('can:manage.users')
+        ->name('users.index');
+
+    // Allow only users with "manage.roles" permission
+    Route::get('roles', RoleIndex::class)
+        ->middleware('can:manage.roles')
+        ->name('roles.index');
 
 
     Route::redirect('settings', 'settings/profile');
