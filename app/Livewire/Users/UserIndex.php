@@ -5,21 +5,17 @@ namespace App\Livewire\Users;
 use App\Models\User;
 use Livewire\Component;
 use Livewire\Attributes\Url;
+use Livewire\Attributes\On;
 
 class UserIndex extends Component
 {
     #[Url(as: 'modal')]
     public ?string $modal = null;
+
     #[Url(as: 'id')]
     public ?int $id = null;
-    public $users;
 
-    protected $listeners = [
-        'closeModal' => 'closeModal',
-        'userCreated' => 'refreshUsers',
-        'userUpdated' => 'refreshUsers',
-        'userDeleted' => 'refreshUsers'
-    ];
+    public $users;
 
     public function mount()
     {
@@ -38,12 +34,16 @@ class UserIndex extends Component
         $this->modal = 'edit';
     }
 
+    #[On('closeModal')]
     public function closeModal()
     {
         $this->modal = null;
         $this->id = null;
     }
 
+    #[On('userCreated')]
+    #[On('userUpdated')]
+    #[On('userDeleted')]
     public function refreshUsers()
     {
         $this->users = User::latest()->get();

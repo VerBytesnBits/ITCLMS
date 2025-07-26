@@ -5,22 +5,17 @@ namespace App\Livewire\Roles;
 use Livewire\Component;
 use Spatie\Permission\Models\Role;
 use Livewire\Attributes\Url;
+use Livewire\Attributes\On;
 
 class RoleIndex extends Component
 {
-
     #[Url(as: 'modal')]
     public ?string $modal = null;
+
     #[Url(as: 'id')]
     public ?int $id = null;
-    public $roles;
 
-    protected $listeners = [
-        'closeModal' => 'closeModal',
-        'roleCreated' => 'refreshRoles',
-        'roleUpdated' => 'refreshRoles',
-        'roleDeleted' => 'refreshRoles'
-    ];
+    public $roles;
 
     public function mount()
     {
@@ -39,12 +34,16 @@ class RoleIndex extends Component
         $this->modal = 'edit';
     }
 
+    #[On('closeModal')]
     public function closeModal()
     {
         $this->modal = null;
         $this->id = null;
     }
 
+    #[On('roleCreated')]
+    #[On('roleUpdated')]
+    #[On('roleDeleted')]
     public function refreshRoles()
     {
         $this->roles = Role::get();
@@ -55,6 +54,7 @@ class RoleIndex extends Component
         Role::findOrFail($id)->delete();
         $this->dispatch('roleDeleted');
     }
+
     public function render()
     {
         return view('livewire.roles.role-index');

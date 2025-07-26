@@ -13,7 +13,7 @@
 
     <div class="overflow-x-auto mt-6">
         <div class="p-4">
-            <button wire:click="openCreateModal" class="bg-blue-500 text-white px-4 py-2 rounded">Create
+            <button wire:click="openCreateModal" class="bg-blue-500 text-white px-4 py-2 rounded cursor-pointer">Create
                 User</button>
 
             <div class="mt-6 overflow-x-auto">
@@ -47,9 +47,9 @@
 
                                 <td class="px-6 py-2">
                                     <button wire:click="openEditModal({{ $user->id }})"
-                                        class="text-blue-500 px-2">Edit</button>
+                                        class="text-blue-500 px-2 cursor-pointer">Edit</button>
                                     <button wire:click="deleteUser({{ $user->id }})"
-                                        class="text-red-500 px-2">Delete</button>
+                                        class="text-red-500 px-2 cursor-pointer">Delete</button>
 
                                 </td>
                             </tr>
