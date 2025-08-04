@@ -37,20 +37,11 @@
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
                 </div>
-
-                <!-- Confirm Password -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-200">Confirm
-                        Password</label>
-                    <input type="password" wire:model.defer="password_confirmation" placeholder="Re-type password"
-                        class="w-full px-4 py-2 border border-gray-300 rounded-md dark:bg-zinc-700 dark:text-white dark:border-zinc-600 focus:ring-2 focus:ring-blue-500" />
-                </div>
-
                 <!-- Role -->
                 <div>
                     <label for="role"
                         class="block text-sm font-medium text-gray-700 dark:text-gray-200">Role</label>
-                    <select wire:model="role" id="role"
+                    <select wire:model.defer="role" id="role"
                         class="w-full px-4 py-2 border border-gray-300 rounded-md dark:bg-zinc-700 dark:text-white dark:border-zinc-600 focus:ring-2 focus:ring-blue-500">
                         <option value="">Select role</option>
                         @foreach ($roles as $key => $label)

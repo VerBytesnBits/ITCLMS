@@ -48,10 +48,11 @@ class UserIndex extends Component
     {
         $this->users = User::latest()->get();
     }
-
+    
     public function deleteUser($id)
     {
         User::findOrFail($id)->delete();
+        $this->dispatch('swal', toast: true, icon: 'success', title: 'Deleted successfully', timer: 3000);
         $this->dispatch('userDeleted');
     }
 

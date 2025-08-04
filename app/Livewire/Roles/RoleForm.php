@@ -5,6 +5,7 @@ namespace App\Livewire\Roles;
 use Livewire\Component;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
+use Illuminate\Validation\ValidationException;
 
 class RoleForm extends Component
 {
@@ -39,23 +40,48 @@ class RoleForm extends Component
         ];
     }
 
+
     public function save()
     {
-        $validated = $this->validate();
+        try {
+            $validated = $this->validate();
 
-        if ($this->role) {
-            $this->role->update(['name' => $this->roleName]);
-            $this->role->syncPermissions($this->permissions);
-            $this->dispatch('roleUpdated');
-        } else {
-            $role = Role::create(['name' => $this->roleName]);
-            $role->syncPermissions($this->permissions);
-            $this->dispatch('roleCreated');
+            if ($this->role) {
+                // Update existing role
+                $this->role->update(['name' => $this->roleName]);
+
+                // Sync permissions
+                $this->role->syncPermissions($this->permissions);
+
+                // Show success alert
+                $this->dispatch('swal', toast: true, icon: 'success', title: 'Role Updated successfully', timer: 3000);
+                // Emit event
+                $this->dispatch('roleUpdated');
+            } else {
+                // Create new role
+                $role = Role::create(['name' => $this->roleName]);
+
+                // Assign permissions
+                $role->syncPermissions($this->permissions);
+
+                // Show success alert
+                $this->dispatch('swal', toast: true, icon: 'success', title: 'Role Created successfully', timer: 3000);
+                // Emit event
+                $this->dispatch('roleCreated');
+            }
+
+            // Close modal or do other post-save actions
+            $this->dispatch('closeModal');
+        } catch (ValidationException $e) {
+            // Manually set errors for Blade validation display
+            $this->setErrorBag($e->validator->errors());
+
+            // Optional: Show error alert
+            $errors = $e->validator->errors()->all();
+            $this->dispatch('swal', toast: true, icon: 'error', title: implode(' ', $errors), timer: 3000);
+            return;
         }
-
-        $this->dispatch('closeModal');
     }
-
     public function closeModal()
     {
         $this->showModal = false;

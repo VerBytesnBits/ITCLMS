@@ -5,6 +5,7 @@ namespace App\Livewire\Users;
 use Livewire\Component;
 use App\Models\User;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Spatie\Permission\Models\Role;
 
 class UserForm extends Component
@@ -41,7 +42,7 @@ class UserForm extends Component
         return [
             'name' => ['required', 'min:3'],
             'email' => ['required', 'email', Rule::unique('users', 'email')->ignore($this->user?->id)],
-            'password' => $this->user ? ['nullable', 'min:6', 'confirmed'] : ['required', 'min:6', 'confirmed'],
+            'password' => ['nullable', 'min:6'],
             'role' => ['required', Rule::in(array_keys($this->roles))],
 
         ];
@@ -49,30 +50,52 @@ class UserForm extends Component
 
     public function save()
     {
-        $validated = $this->validate();
+        try {
+            $validated = $this->validate();
 
-        if ($this->user) {
-            $this->user->update([
-                'name' => $this->name,
-                'email' => $this->email,
-                'password' => $this->password ? bcrypt($this->password) : $this->user->password,
-            ]);
+            if ($this->user) {
+                $updateData = [
+                    'name' => $this->name,
+                    'email' => $this->email,
+                ];
 
-            $this->user->syncRoles([$this->role]); // update role
-            $this->dispatch('userUpdated');
-        } else {
-            $user = User::create([
-                'name' => $this->name,
-                'email' => $this->email,
-                'password' => bcrypt($this->password),
-            ]);
+                if (!empty($this->password)) {
+                    $updateData['password'] = bcrypt($this->password);
+                }
 
-            $user->assignRole($this->role); // assign role
-            $this->dispatch('userCreated');
+                $this->user->update($updateData);
+                $this->user->syncRoles([$this->role]);
+
+                $this->dispatch('swal', toast: true, icon: 'success', title: 'User Updated successfully', timer: 3000);
+                $this->dispatch('userUpdated');
+            } else {
+                $userData = [
+                    'name' => $this->name,
+                    'email' => $this->email,
+                    'password' => bcrypt($this->password),
+                ];
+
+                $user = User::create($userData);
+                $user->assignRole($this->role);
+
+                $this->dispatch('swal', toast: true, icon: 'success', title: 'User Created successfully', timer: 3000);
+                $this->dispatch('userCreated');
+            }
+
+            $this->dispatch('closeModal');
+        } catch (ValidationException $e) {
+            // Dispatch alert
+            $errors = $e->validator->errors()->all();
+            $this->dispatch('swal', toast: true, icon: 'error', title: implode(' ', $errors), timer: 3000);
+
+            // **Manually add errors to the Laravel error bag for Blade**
+            $this->setErrorBag($e->validator->errors());
+
+            // Optionally, stop execution or return
+            return;
         }
-
-        $this->dispatch('closeModal');
     }
+
 
     public function render()
     {

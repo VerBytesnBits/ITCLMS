@@ -52,6 +52,7 @@ class RoleIndex extends Component
     public function deleteUser($id)
     {
         Role::findOrFail($id)->delete();
+        $this->dispatch('swal', toast: true, icon: 'success', title: 'Deleted successfully', timer: 3000);
         $this->dispatch('roleDeleted');
     }
 
