@@ -1,9 +1,10 @@
 <div class="flex flex-col gap-6">
+
     <x-auth-header :title="__('Log in to your account')" :description="__('Enter your email and password below to log in')" />
 
     <!-- Session Status -->
     <x-auth-session-status class="text-center" :status="session('status')" />
-  
+
 
 
     <form wire:submit="login" class="flex flex-col gap-6">
@@ -37,5 +38,15 @@
             <flux:link :href="route('register')" wire:navigate>{{ __('Sign up') }}</flux:link>
         </div>
     @endif
-</div>
+    {{-- to display the alert --}}
+    <div x-data="{ show: true }" x-init="@if (session('alert')) Swal.fire({
+                toast: true,
+                position: 'bottom-end',
+                icon: '{{ session('alert')['type'] }}',
+                title: '{{ session('alert')['message'] }}',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+            }); @endif"></div>
 
+</div>

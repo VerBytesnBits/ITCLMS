@@ -1,4 +1,5 @@
-<flux:header container class="max-lg:hidden  border-b border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 ">
+<flux:header container
+    class="max-lg:hidden border-b border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 mb-4">
     <nav class="flex flex-col md:flex-row md:justify-center md:items-center space-y-2 md:space-y-0 md:space-x-4 w-full">
         <flux:navbar.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')"
             wire:navigate>
@@ -18,12 +19,12 @@
                 {{ __('Roles') }}
             </flux:navbar.item>
         @endcan
-
-        <flux:navbar.item icon="link-slash" :href="route('rooms.index')" :current="request()->routeIs('rooms.index')"
-            wire:navigate>
-            {{ __('Rooms') }}
-        </flux:navbar.item>
-
+        @can('view.laboratories')
+            <flux:navbar.item icon="link-slash" :href="route('rooms.index')" :current="request()->routeIs('rooms.index')"
+                wire:navigate>
+                {{ __('Rooms') }}
+            </flux:navbar.item>
+        @endcan
         <a href="#"
             class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-200 dark:text-gray-200 dark:hover:bg-zinc-600">
             Equipment
@@ -72,8 +73,8 @@
                 :current="request()->routeIs('rooms.index')" wire:navigate>
                 {{ __('Rooms') }}
             </flux:navlist.item>
-            <flux:navlist.item icon="computer-desktop" :href="'#'" :current="request()->routeIs('equipment')"
-                wire:navigate>
+            <flux:navlist.item icon="computer-desktop" :href="'#'"
+                :current="request()->routeIs('equipment')" wire:navigate>
                 {{ __('Equipment') }}
             </flux:navlist.item>
             <flux:navlist.item icon="circle-stack" :href="'#'" :current="request()->routeIs('inventory')"

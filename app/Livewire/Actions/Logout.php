@@ -7,9 +7,6 @@ use Illuminate\Support\Facades\Session;
 
 class Logout
 {
-    /**
-     * Log the current user out of the application.
-     */
     public function __invoke()
     {
         Auth::guard('web')->logout();
@@ -17,6 +14,12 @@ class Logout
         Session::invalidate();
         Session::regenerateToken();
 
-        return redirect('/');
+        // Set flash alert
+        session()->flash('alert', [
+            'type' => 'info',
+            'message' => 'You have been logged out.',
+        ]);
+
+        return redirect()->route('login');
     }
 }
