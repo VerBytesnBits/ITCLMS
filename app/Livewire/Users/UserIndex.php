@@ -7,6 +7,8 @@ use Livewire\Component;
 use Livewire\Attributes\Url;
 use Livewire\Attributes\On;
 
+
+
 class UserIndex extends Component
 {
     #[Url(as: 'modal')]
@@ -16,6 +18,9 @@ class UserIndex extends Component
     public ?int $id = null;
 
     public $users;
+
+
+
 
     public function mount()
     {
@@ -48,7 +53,7 @@ class UserIndex extends Component
     {
         $this->users = User::latest()->get();
     }
-    
+
     public function deleteUser($id)
     {
         User::findOrFail($id)->delete();
@@ -59,5 +64,6 @@ class UserIndex extends Component
     public function render()
     {
         return view('livewire.users.user-index');
+           
     }
 }

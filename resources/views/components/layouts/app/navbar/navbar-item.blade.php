@@ -7,14 +7,14 @@
         </flux:navbar.item>
 
         @can('manage.users')
-            <flux:navbar.item icon="users" :href="route('users.index')" :current="request()->routeIs('users.index')"
+            <flux:navbar.item icon="users" :href="route('users')" :current="request()->routeIs('users')"
                 wire:navigate>
                 {{ __('Users') }}
             </flux:navbar.item>
         @endcan
 
         @can('manage.roles')
-            <flux:navbar.item icon="link-slash" :href="route('roles.index')" :current="request()->routeIs('roles.index')"
+            <flux:navbar.item icon="link-slash" :href="route('roles')" :current="request()->routeIs('roles')"
                 wire:navigate>
                 {{ __('Roles') }}
             </flux:navbar.item>
@@ -58,19 +58,19 @@
                 {{ __('Dashboard') }}
             </flux:navlist.item>
             @can('manage.users')
-                <flux:navlist.item icon="users" :href="route('users.index')"
-                    :current="request()->routeIs('users.index')" wire:navigate>
+                <flux:navlist.item icon="users" :href="route('users')" :current="request()->routeIs('users')"
+                    wire:navigate>
                     {{ __('Users') }}
                 </flux:navlist.item>
             @endcan
             @can('manage.roles')
-                <flux:navlist.item icon="link-slash" :href="route('roles.index')"
-                    :current="request()->routeIs('roles.index')" wire:navigate>
+                <flux:navlist.item icon="link-slash" :href="route('roles')" :current="request()->routeIs('roles')"
+                    wire:navigate>
                     {{ __('Roles') }}
                 </flux:navlist.item>
             @endcan
-            <flux:navlist.item icon="home" :href="route('rooms.index')"
-                :current="request()->routeIs('rooms.index')" wire:navigate>
+            <flux:navlist.item icon="home" :href="route('rooms.index')" :current="request()->routeIs('rooms')"
+                wire:navigate>
                 {{ __('Rooms') }}
             </flux:navlist.item>
             <flux:navlist.item icon="computer-desktop" :href="'#'"

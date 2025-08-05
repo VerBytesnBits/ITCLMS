@@ -1,11 +1,9 @@
 <?php
 
-use App\Livewire\Roles\RoleIndex;
 use App\Livewire\Rooms\RoomIndex;
 use App\Livewire\Settings\Appearance;
 use App\Livewire\Settings\Password;
 use App\Livewire\Settings\Profile;
-use App\Livewire\Users\UserIndex;
 use Illuminate\Support\Facades\Route;
 
 
@@ -21,14 +19,14 @@ Route::middleware(['auth'])->group(function () {
 
 
     // Allow only users with "manage.users" permission
-    Route::get('users', UserIndex::class)
+    Route::view('users', 'users')
         ->middleware('can:manage.users')
-        ->name('users.index');
+        ->name('users');
 
     // Allow only users with "manage.roles" permission
-    Route::get('roles', RoleIndex::class)
+    Route::view('roles', 'roles')
         ->middleware('can:manage.roles')
-        ->name('roles.index');
+        ->name('roles');
 
     Route::get('rooms', RoomIndex::class)
         ->name('rooms.index');
