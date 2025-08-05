@@ -72,7 +72,7 @@
                 :current="request()->routeIs('rooms.index')" wire:navigate>
                 {{ __('Rooms') }}
             </flux:navlist.item>
-            <flux:navlist.item icon="wrench-screwdriver" :href="'#'" :current="request()->routeIs('equipment')"
+            <flux:navlist.item icon="computer-desktop" :href="'#'" :current="request()->routeIs('equipment')"
                 wire:navigate>
                 {{ __('Equipment') }}
             </flux:navlist.item>
