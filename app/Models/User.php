@@ -9,8 +9,14 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 use Spatie\Permission\Traits\HasRoles;
 
-
+/**
+ * @method bool hasRole(string|array $roles)
+ * @method bool hasAnyRole(string|array $roles)
+ * @method bool hasAllRoles(string|array $roles)
+ * @method bool can(string $permission)
+ */
 class User extends Authenticatable
+
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable, HasRoles;
@@ -24,7 +30,15 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'assigned_room_id',
     ];
+
+
+    public function assignedRoom()
+    {
+        return $this->belongsTo(Room::class, 'assigned_room_id');
+    }
+
 
     /**
      * The attributes that should be hidden for serialization.
@@ -57,7 +71,7 @@ class User extends Authenticatable
         return Str::of($this->name)
             ->explode(' ')
             ->take(2)
-            ->map(fn ($word) => Str::substr($word, 0, 1))
+            ->map(fn($word) => Str::substr($word, 0, 1))
             ->implode('');
     }
 }

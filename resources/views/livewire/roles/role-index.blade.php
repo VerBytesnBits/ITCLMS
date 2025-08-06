@@ -1,16 +1,16 @@
 <div>
     <div>
-        <div class="relative mb-6 w-full">
+        <div class="relative mb-6 w-full px-4 py-2">
             <flux:heading size="xl" level="1">{{ __('Roles') }}</flux:heading>
             <flux:subheading size="lg" class="mb-6">{{ __('Manage all roles') }}</flux:subheading>
             <flux:separator variant="subtle" />
         </div>
 
-        @if (session()->has('success'))
+        {{-- @if (session()->has('success'))
             <div class="mb-4 px-4 py-2 bg-green-100 text-green-800 rounded">
                 {{ session('success') }}
             </div>
-        @endif
+        @endif --}}
 
         <div class="overflow-x-auto mt-6">
             <div class="p-4">

@@ -25,6 +25,7 @@ class UserIndex extends Component
     public function mount()
     {
         $this->refreshUsers();
+        
     }
 
     public function openCreateModal()

@@ -1,6 +1,5 @@
 <?php
 
-use App\Livewire\Rooms\RoomIndex;
 use App\Livewire\Settings\Appearance;
 use App\Livewire\Settings\Password;
 use App\Livewire\Settings\Profile;
@@ -28,8 +27,10 @@ Route::middleware(['auth'])->group(function () {
         ->middleware('can:manage.roles')
         ->name('roles');
 
-    Route::get('rooms', RoomIndex::class)
-        ->name('rooms.index');
+    Route::view('rooms', 'rooms')
+        ->middleware('can:view.laboratories')
+        ->name('rooms');
+
 
 
     Route::redirect('settings', 'settings/profile');
