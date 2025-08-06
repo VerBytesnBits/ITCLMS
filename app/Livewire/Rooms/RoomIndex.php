@@ -49,7 +49,7 @@ class RoomIndex extends Component
     public function refreshRooms()
     {
         $user = Auth::user();
-        
+
 
         if (!$user) {
             $this->rooms = collect();
@@ -71,7 +71,7 @@ class RoomIndex extends Component
     public function render()
     {
         return view('livewire.rooms.room-index', [
-            'rooms' => $this->rooms, // ✅ use filtered $this->rooms
+            'rooms' => $this->rooms, // use filtered $this->rooms
         ]);
     }
 }
