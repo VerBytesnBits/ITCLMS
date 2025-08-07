@@ -23,12 +23,14 @@
                         <td class="px-6 py-2">{{ $room->name }}</td>
                         <td class="px-6 py-2">{{ $room->labInCharge?->name ?? '—' }}</td>
                         <td class="px-6 py-2">
-                            <span class="px-2 py-1 text-xs font-semibold rounded-full
+                            <span
+                                class="px-2 py-1 text-xs font-semibold rounded-full
                                 {{ $room->status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' }}">
                                 {{ ucfirst($room->status) }}
                             </span>
                         </td>
                         <td class="px-6 py-2">
+                            <button class="text-yellow-500 px-2 cursor-pointer">Manage</button>
                             @can('update.laboratories')
                                 <button wire:click="openEditModal({{ $room->id }})"
                                     class="text-blue-500 px-2 cursor-pointer">Edit</button>

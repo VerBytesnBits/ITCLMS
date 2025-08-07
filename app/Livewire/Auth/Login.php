@@ -50,8 +50,6 @@ class Login extends Component
         
     }
 
-
-
     /**
      * Ensure the authentication request is not rate limited.
      */
