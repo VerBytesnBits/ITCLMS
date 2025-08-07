@@ -1,49 +1,52 @@
 <div class="p-4">
     @can('create.laboratories')
-        <button wire:click="openCreateModal" class="bg-blue-500 text-white px-4 py-2 rounded cursor-pointer">
+        <button wire:click="openCreateModal" class="bg-blue-500 text-white px-4 py-2 rounded cursor-pointer dark:bg-blue-600">
             Create Room
         </button>
     @endcan
 
     <div class="mt-6 overflow-x-auto">
-        <table class="w-full text-sm text-left text-gray-500">
-            <thead class="text-xs text-gray-700 uppercase bg-gray-50">
-                <tr>
-                    <th class="px-6 py-3">ID</th>
-                    <th class="px-6 py-3">Name</th>
-                    <th class="px-6 py-3">Lab In-Charge</th>
-                    <th class="px-6 py-3">Status</th>
-                    <th class="px-6 py-3">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach ($rooms as $room)
-                    <tr class="bg-white border-b">
-                        <td class="px-6 py-2">{{ $room->id }}</td>
-                        <td class="px-6 py-2">{{ $room->name }}</td>
-                        <td class="px-6 py-2">{{ $room->labInCharge?->name ?? '—' }}</td>
-                        <td class="px-6 py-2">
-                            <span
-                                class="px-2 py-1 text-xs font-semibold rounded-full
-                                {{ $room->status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' }}">
-                                {{ ucfirst($room->status) }}
-                            </span>
-                        </td>
-                        <td class="px-6 py-2">
-                            <button class="text-yellow-500 px-2 cursor-pointer">Manage</button>
-                            @can('update.laboratories')
-                                <button wire:click="openEditModal({{ $room->id }})"
-                                    class="text-blue-500 px-2 cursor-pointer">Edit</button>
-                            @endcan
-                            @can('delete.laboratories')
-                                <button wire:click="deleteRoom({{ $room->id }})"
-                                    class="text-red-500 px-2 cursor-pointer">Delete</button>
-                            @endcan
-                        </td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+            @foreach ($rooms as $room)
+                <div class="rounded-xl shadow-lg p-6  bg-zinc-50 dark:bg-zinc-900">
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 class="text-lg font-semibold text-gray-800 dark:text-white">
+                            {{ $room->name }}
+                        </h3>
+                        <span
+                            class="text-xs px-2 py-1 rounded-full
+                    {{ $room->status === 'active'
+                        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
+                        : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300' }}">
+                            {{ ucfirst($room->status) }}
+                        </span>
+                    </div>
+
+                    <p class="text-sm text-gray-600 dark:text-gray-300 mb-1">
+                        <strong>Room ID:</strong> {{ $room->id }}
+                    </p>
+                    <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                        <strong>Lab In-Charge:</strong> {{ $room->labInCharge?->name ?? '—' }}
+                    </p>
+
+                    <div class="flex space-x-2">
+                        <button class="text-yellow-500 text-sm font-medium hover:underline cursor-pointer">Manage</button>
+
+                        @can('update.laboratories')
+                            <button wire:click="openEditModal({{ $room->id }})"
+                                class="text-blue-500 text-sm font-medium hover:underline cursor-pointer">Edit</button>
+                        @endcan
+
+                        @can('delete.laboratories')
+                            <button wire:click="deleteRoom({{ $room->id }})"
+                                class="text-red-500 text-sm font-medium hover:underline cursor-pointer">Delete</button>
+                        @endcan
+                    </div>
+                </div>
+            @endforeach
+        </div>
+
+
     </div>
 
     {{-- Room Modal --}}
