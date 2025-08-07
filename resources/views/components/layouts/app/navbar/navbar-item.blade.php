@@ -1,6 +1,6 @@
 <flux:header container
     class="max-lg:hidden border-b border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 mb-4 rounded-xl shadow-lg">
-    <nav class="flex flex-col md:flex-row md:justify-center md:items-center space-y-2 md:space-y-0 md:space-x-4 w-full">
+    <flux:navbar class="flex flex-col md:flex-row md:justify-center md:items-center md:space-y-0 md:space-x-4 w-full">
         <flux:navbar.item icon="layout-grid" :href="route('dashboard')" :current="request()->routeIs('dashboard')"
             wire:navigate>
             {{ __('Dashboard') }}
@@ -34,7 +34,7 @@
             :current="request()->routeIs('report')" wire:navigate>
             {{ __('Reports') }}
         </flux:navbar.item>
-    </nav>
+    </flux:navbar>
 
 </flux:header>
 <!-- Mobile Menu -->
