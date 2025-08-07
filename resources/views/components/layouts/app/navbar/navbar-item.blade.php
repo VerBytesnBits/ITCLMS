@@ -22,18 +22,18 @@
                 {{ __('Rooms') }}
             </flux:navbar.item>
         @endcan
-        <flux:navbar.item icon="computer-desktop" :href="'#'" :current="request()->routeIs('equipment')"
+        <flux:navbar.item icon="computer-desktop" :href="'#'" :current="request()->routeIs('SystemUnit')"
             wire:navigate>
-            {{ __('Equipment') }}
+            {{ __('System Unit') }}
         </flux:navbar.item>
-        <flux:navbar.item icon="circle-stack" :href="'#'" :current="request()->routeIs('inventory')"
+        {{-- <flux:navbar.item icon="circle-stack" :href="'#'" :current="request()->routeIs('inventory')"
             wire:navigate>
             {{ __('Inventory') }}
         </flux:navbar.item>
         <flux:navbar.item icon="presentation-chart-line" :href="'#'"
             :current="request()->routeIs('report')" wire:navigate>
             {{ __('Reports') }}
-        </flux:navbar.item>
+        </flux:navbar.item> --}}
     </flux:navbar>
 
 </flux:header>
@@ -68,18 +68,18 @@
                 wire:navigate>
                 {{ __('Rooms') }}
             </flux:navlist.item>
-            <flux:navlist.item icon="computer-desktop" :href="'#'"
-                :current="request()->routeIs('equipment')" wire:navigate>
-                {{ __('Equipment') }}
-            </flux:navlist.item>
-            <flux:navlist.item icon="circle-stack" :href="'#'" :current="request()->routeIs('inventory')"
+            <flux:navbar.item icon="computer-desktop" :href="'#'"
+                :current="request()->routeIs('SystemUnit')" wire:navigate>
+                {{ __('System Unit') }}
+            </flux:navbar.item>
+            {{-- <flux:navlist.item icon="circle-stack" :href="'#'" :current="request()->routeIs('inventory')"
                 wire:navigate>
                 {{ __('Inventory') }}
             </flux:navlist.item>
             <flux:navlist.item icon="presentation-chart-line" :href="'#'"
                 :current="request()->routeIs('report')" wire:navigate>
                 {{ __('Reports') }}
-            </flux:navlist.item>
+            </flux:navlist.item> --}}
         </flux:navlist.group>
     </flux:navlist>
 

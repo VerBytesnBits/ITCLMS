@@ -55,11 +55,11 @@
                         </td>
                         <td class="px-6 py-4 text-right space-x-3">
                             <button wire:click="openEditModal({{ $user->id }})"
-                                class="text-blue-600 dark:text-blue-400 hover:underline text-sm">
+                                class="text-blue-500 text-sm font-medium hover:underline cursor-pointer">
                                 Edit
                             </button>
                             <button wire:click="deleteUser({{ $user->id }})"
-                                class="text-red-600 dark:text-red-400 hover:underline text-sm">
+                                class="text-red-500 text-sm font-medium hover:underline cursor-pointer">
                                 Delete
                             </button>
                         </td>
