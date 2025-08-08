@@ -34,9 +34,14 @@
                     </flux:navlist.item>
                 @endcan
 
-                <flux:navlist.item icon="link-slash" :href="route('rooms.index')"
+                <flux:navlist.item icon="home" :href="route('rooms.index')"
                     :current="request()->routeIs('rooms.index')" wire:navigate>
                     {{ __('Rooms') }}
+                </flux:navlist.item>
+
+                <flux:navlist.item icon="computer-desktop" :href="route('units')"
+                    :current="request()->routeIs('units')" wire:navigate>
+                    {{ __('Units') }}
                 </flux:navlist.item>
 
             </flux:navlist.group>
@@ -74,7 +79,8 @@
                 <flux:menu.separator />
 
                 <flux:menu.radio.group>
-                    <flux:menu.item :href="route('settings.profile')" icon="cog" wire:navigate>{{ __('Settings') }}
+                    <flux:menu.item :href="route('settings.profile')" icon="cog" wire:navigate>
+                        {{ __('Settings') }}
                     </flux:menu.item>
                 </flux:menu.radio.group>
 
@@ -140,7 +146,7 @@
     {{ $slot }}
 
     @fluxScripts
-    
+
 </body>
 
 </html>

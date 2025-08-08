@@ -17,4 +17,9 @@ class Room extends Model
     {
         return $this->belongsTo(User::class, 'lab_in_charge_id');
     }
+     public function systemUnits()
+    {
+        return $this->hasMany(SystemUnit::class);
+    }
 }
+

@@ -32,6 +32,7 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Room::class, 'assigned_room_id');
     }
+    
 
 
     /**

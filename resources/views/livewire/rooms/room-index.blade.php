@@ -30,7 +30,7 @@
                     </p>
 
                     <div class="flex space-x-2">
-                        <button class="text-yellow-500 text-sm font-medium hover:underline cursor-pointer">Manage</button>
+
 
                         @can('update.laboratories')
                             <button wire:click="openEditModal({{ $room->id }})"

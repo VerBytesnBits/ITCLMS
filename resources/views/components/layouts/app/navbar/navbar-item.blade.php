@@ -22,9 +22,9 @@
                 {{ __('Rooms') }}
             </flux:navbar.item>
         @endcan
-        <flux:navbar.item icon="computer-desktop" :href="'#'" :current="request()->routeIs('SystemUnit')"
+        <flux:navbar.item icon="computer-desktop" :href="route('units')" :current="request()->routeIs('units')"
             wire:navigate>
-            {{ __('System Unit') }}
+            {{ __('Units') }}
         </flux:navbar.item>
         {{-- <flux:navbar.item icon="circle-stack" :href="'#'" :current="request()->routeIs('inventory')"
             wire:navigate>
@@ -68,18 +68,11 @@
                 wire:navigate>
                 {{ __('Rooms') }}
             </flux:navlist.item>
-            <flux:navbar.item icon="computer-desktop" :href="'#'"
-                :current="request()->routeIs('SystemUnit')" wire:navigate>
-                {{ __('System Unit') }}
-            </flux:navbar.item>
-            {{-- <flux:navlist.item icon="circle-stack" :href="'#'" :current="request()->routeIs('inventory')"
+
+            <flux:navlist.item icon="computer-desktop" :href="route('units')" :current="request()->routeIs('units')"
                 wire:navigate>
-                {{ __('Inventory') }}
+                {{ __('Units') }}
             </flux:navlist.item>
-            <flux:navlist.item icon="presentation-chart-line" :href="'#'"
-                :current="request()->routeIs('report')" wire:navigate>
-                {{ __('Reports') }}
-            </flux:navlist.item> --}}
         </flux:navlist.group>
     </flux:navlist>
 
