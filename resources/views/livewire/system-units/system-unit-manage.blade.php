@@ -69,23 +69,32 @@
 
                     @php
                         $items = collect();
+                        $type = $middleTab === 'components' ? $selectedComponentType : $selectedPeripheralType;
 
-                        if ($middleTab === 'components') {
-                            $type = $selectedComponentType;
-                            $items = $selectedUnit->$type ?? collect();
-                            if ($type === 'computerCase' && $items) {
-                                $items = collect([$items]);
+                        if ($selectedUnit && $type) {
+                            $relation = $selectedUnit->$type ?? collect();
+
+                            // If single model → wrap into collection
+                            if ($relation instanceof \Illuminate\Database\Eloquent\Model) {
+                                $items = collect([$relation]);
                             }
-                        } else {
-                            $type = $selectedPeripheralType;
-                            $items = $selectedUnit->$type ?? collect();
-                            if ($items && !$items instanceof \Illuminate\Support\Collection) {
-                                $items = collect([$items]);
+                            // If already a collection
+                            elseif ($relation instanceof \Illuminate\Support\Collection) {
+                                $items = $relation;
                             }
+                            // If it's an array
+                            elseif (is_array($relation)) {
+                                $items = collect($relation);
+                            }
+
+                            // Special handling for computer case
+                            if ($type === 'computerCase' && $items->isNotEmpty()) {
+                                                        $items = collect([$items->first()]);
+                                                    }
                         }
-
-                        $items = $items->flatten();
                     @endphp
+
+
 
                     @if ($items->isEmpty())
                         <p class="text-gray-500">No {{ ucfirst($type) }} added yet.</p>

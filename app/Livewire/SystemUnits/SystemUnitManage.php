@@ -22,15 +22,15 @@ class SystemUnitManage extends Component
 
     // Define all component and peripheral types here:
     public $componentTypes = [
-        'processors',
-        'cpuCoolers',
-        'motherboards',
-        'memories',
-        'graphicsCards',
-        'm2Ssds',
-        'sataSsds',
-        'hardDiskDrives',
-        'powerSupplies',
+        'processor',
+        'cpuCooler',
+        'motherboard',
+        'memory',
+        'graphicsCard',
+        'm2Ssd',
+        'sataSsd',
+        'hardDiskDrive',
+        'powerSupply',
         'computerCase',
     ];
 

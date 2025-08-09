@@ -66,15 +66,15 @@ class UnitIndex extends Component
     {
         // Load the unit with components and peripherals eagerly loaded
         $this->viewUnit = SystemUnit::with([
-            'processors',
-            'cpuCoolers',
-            'motherboards',
-            'memories',
-            'graphicsCards',
-            'm2Ssds',
-            'sataSsds',
-            'hardDiskDrives',
-            'powerSupplies',
+            'processor',
+            'cpuCooler',
+            'motherboard',
+            'memory',
+            'graphicsCard',
+            'm2Ssd',
+            'sataSsd',
+            'hardDiskDrive',
+            'powerSupply',
             'computerCase',
             'keyboard',
             'mouse',
@@ -94,15 +94,15 @@ class UnitIndex extends Component
     private function loadAllParts()
     {
         $types = [
-            'processors',
-            'cpuCoolers',
-            'motherboards',
-            'memories',
-            'graphicsCards',
-            'm2Ssds',
-            'sataSsds',
-            'hardDiskDrives',
-            'powerSupplies',
+            'processor',
+            'cpuCooler',
+            'motherboard',
+            'memory',
+            'graphicsCard',
+            'm2Ssd',
+            'sataSsd',
+            'hardDiskDrive',
+            'powerSupply',
             'computerCase',
             'keyboard',
             'mouse',
@@ -234,6 +234,7 @@ class UnitIndex extends Component
         $this->refreshUnits();
         $this->dispatch('unitDeleted');
     }
+    
 
     public function render()
     {
@@ -244,4 +245,6 @@ class UnitIndex extends Component
             'allParts' => $this->allParts,
         ]);
     }
+
+    
 }

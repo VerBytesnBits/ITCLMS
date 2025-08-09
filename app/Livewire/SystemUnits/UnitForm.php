@@ -5,266 +5,200 @@ namespace App\Livewire\SystemUnits;
 use Livewire\Component;
 use App\Models\SystemUnit;
 use App\Models\Room;
+use App\Models\Processor;
+use App\Models\CpuCooler;
+use App\Models\Motherboard;
+use App\Models\Memory;
+use App\Models\GraphicsCard;
+use App\Models\M2Ssd;
+use App\Models\SataSsd;
+use App\Models\HardDiskDrive;
+use App\Models\PowerSupply;
+use App\Models\ComputerCase;
 
 class UnitForm extends Component
 {
     public ?int $unitId = null;
-    public $unit;
     public $name;
     public $status = 'Working';
     public $room_id;
 
-    public $rooms;
+    public $processor_id;
+    public $cpu_cooler_id;
+    public $motherboard_id;
+    public $memory_id;
+    public $graphics_card_id;
+    public $drive_id;
+    public $drive_type;
+    public $power_supply_id;
+    public $computer_case_id;
 
-    public $modalMode = 'create'; // 'create' or 'edit'
+    public $rooms;
+    public $processors;
+    public $cpuCoolers;
+    public $motherboards;
+    public $memories;
+    public $graphicsCards;
+    public $drives;
+    public $powerSupplies;
+    public $computerCases;
+
+    public $modalMode = 'create';
 
     protected $rules = [
         'name' => 'required|string|max:255',
         'status' => 'required|in:Working,Under Maintenance,Decommissioned',
         'room_id' => 'required|exists:rooms,id',
+        'processor_id' => 'nullable|exists:processors,id',
+        'cpu_cooler_id' => 'nullable|exists:cpu_coolers,id',
+        'motherboard_id' => 'nullable|exists:motherboards,id',
+        'memory_id' => 'nullable|exists:memories,id',
+        'graphics_card_id' => 'nullable|exists:graphics_cards,id',
+        'drive_id' => 'nullable|integer',
+        'drive_type' => 'nullable|in:m2,sata,hdd',
+        'power_supply_id' => 'nullable|exists:power_supplies,id',
+        'computer_case_id' => 'nullable|exists:computer_cases,id',
     ];
 
     public function mount($unitId = null)
     {
         $this->rooms = Room::all();
+        $this->processors = Processor::all();
+        $this->cpuCoolers = CpuCooler::all();
+        $this->motherboards = Motherboard::all();
+        $this->memories = Memory::all();
+        $this->graphicsCards = GraphicsCard::all();
+        $this->powerSupplies = PowerSupply::all();
+        $this->computerCases = ComputerCase::all();
+
+        $this->drives = collect()
+            ->merge(M2Ssd::all()->map(fn($d) => (object) [
+                'id' => $d->id,
+                'capacity' => $d->capacity,
+                'type' => $d->type,
+                'label' => "{$d->type} {$d->capacity}GB",
+                'drive_type' => 'm2',
+            ]))
+            ->merge(SataSsd::all()->map(fn($d) => (object) [
+                'id' => $d->id,
+                'capacity' => $d->capacity,
+                'type' => $d->type,
+                'label' => "{$d->type} {$d->capacity}GB",
+                'drive_type' => 'sata',
+            ]))
+            ->merge(HardDiskDrive::all()->map(fn($d) => (object) [
+                'id' => $d->id,
+                'capacity' => $d->capacity,
+                'type' => $d->type,
+                'label' => "{$d->type} {$d->capacity}GB",
+                'drive_type' => 'hdd',
+            ]));
 
         if ($unitId) {
-            $this->unitId = $unitId;
             $unit = SystemUnit::findOrFail($unitId);
-
-            $this->name = $unit->name;
-            $this->status = $unit->status;
-            $this->room_id = $unit->room_id;
+            $this->fill($unit->only([
+                'name',
+                'status',
+                'room_id',
+                'processor_id',
+                'cpu_cooler_id',
+                'motherboard_id',
+                'memory_id',
+                'graphics_card_id',
+                'drive_id',
+                'drive_type',
+                'power_supply_id',
+                'computer_case_id'
+            ]));
+            $this->unitId = $unitId;
             $this->modalMode = 'edit';
         } else {
-            $this->room_id = $this->rooms->first()?->id;
+            $this->room_id = $this->rooms->isNotEmpty() ? $this->rooms->first()->id : null;
             $this->modalMode = 'create';
         }
     }
 
+    public function updatedDriveId($value)
+    {
+        // $value is just the drive id (number)
+        $drive = $this->drives->first(fn($d) => $d->id == $value);
+        $this->drive_type = $drive->drive_type ?? null;
+    }
+
     public function save()
     {
-        $this->validate();
+        $this->validate([
+            'name' => 'required|string|max:255',
+            'status' => 'required|in:Operational,Needs Repair,Non-Operational',
+            'room_id' => 'required|exists:rooms,id',
+            'drive_id' => 'required', // actually type|id from dropdown
+        ]);
 
-        if ($this->modalMode === 'create') {
-            $unit = SystemUnit::create([
-                'name' => $this->name,
-                'status' => $this->status,
-                'room_id' => $this->room_id,
-            ]);
-
-            $this->createDefaultComponents($unit);
-            $this->createDefaultPeripherals($unit);
-
-            $this->dispatch('unitCreated');
-            session()->flash('success', 'System Unit created successfully.');
-        } else {
-            $unit = SystemUnit::findOrFail($this->unitId);
-            $unit->update([
-                'name' => $this->name,
-                'status' => $this->status,
-                'room_id' => $this->room_id,
-            ]);
-
-            $this->dispatch('unitUpdated');
-            session()->flash('success', 'System Unit updated successfully.');
+        // If drive_id is coming as "type|id", split it
+        if (strpos($this->drive_id, '|') !== false) {
+            [$type, $id] = explode('|', $this->drive_id);
+            $this->drive_type = $type;
+            $this->drive_id = $id;
         }
 
+        $unit = new SystemUnit();
+        $unit->name = $this->name;
+        $unit->status = $this->status;
+        $unit->room_id = $this->room_id;
+        $unit->processor_id = $this->processor_id;
+        $unit->cpu_cooler_id = $this->cpu_cooler_id;
+        $unit->motherboard_id = $this->motherboard_id;
+        $unit->memory_id = $this->memory_id;
+        $unit->graphics_card_id = $this->graphics_card_id;
+        $unit->power_supply_id = $this->power_supply_id;
+        $unit->computer_case_id = $this->computer_case_id;
+        $unit->drive_id = $this->drive_id;     // numeric ID
+        $unit->drive_type = $this->drive_type; // m2, sata, hdd
+        $unit->save();
+
+        session()->flash('success', 'System unit created!');
         $this->resetInput();
-        $this->dispatch('closeModal');
     }
+
+
 
 
     public function resetInput()
     {
-        $this->reset(['name', 'status', 'room_id', 'unitId']);
+        $this->reset([
+            'name',
+            'status',
+            'room_id',
+            'unitId',
+            'processor_id',
+            'cpu_cooler_id',
+            'motherboard_id',
+            'memory_id',
+            'graphics_card_id',
+            'drive_id',
+            'drive_type',
+            'power_supply_id',
+            'computer_case_id'
+        ]);
+        $this->modalMode = 'create';
     }
 
     public function render()
     {
         return view('livewire.system-units.unit-form', [
             'rooms' => $this->rooms,
+            'processors' => $this->processors,
+            'cpuCoolers' => $this->cpuCoolers,
+            'motherboards' => $this->motherboards,
+            'memories' => $this->memories,
+            'graphicsCards' => $this->graphicsCards,
+            'drives' => $this->drives,
+            'powerSupplies' => $this->powerSupplies,
+            'computerCases' => $this->computerCases,
+            'm2Ssds' => M2Ssd::all(),
+            'sataSsds' => SataSsd::all(),
+            'hardDiskDrives' => HardDiskDrive::all(),
+            'units' => SystemUnit::with(['m2Ssd', 'sataSsd', 'hardDiskDrive'])->get(),
         ]);
     }
-
-
-    protected function createDefaultComponents(SystemUnit $unit)
-    {
-        // Processor
-        $unit->processors()->create([
-            'brand' => 'Intel',
-            'model' => 'Core i5-10400',
-            'type' => 'CPU',
-            'base_clock' => 2.9, // GHz
-            'boost_clock' => 4.3, // GHz (optional)
-            'status' => 'Working',
-            'serial_number' => 'DEFAULT12345',
-            'date_purchased' => now()->subYear(),
-            'notes' => 'Default processor',
-        ]);
-
-        // CPU Cooler
-        $unit->cpuCoolers()->create([
-            'brand' => 'CoolerMaster',
-            'model' => 'Hyper 212',
-            'status' => 'Working',
-            'serial_number' => 'CM123456',
-            'date_purchased' => now()->subYear(),
-            'notes' => 'Default CPU cooler',
-        ]);
-
-        // Motherboard
-        $unit->motherboards()->create([
-            'brand' => 'ASUS',
-            'model' => 'Prime B460M-A',
-            'status' => 'Working',
-            'serial_number' => 'MB987654',
-            'date_purchased' => now()->subYear(),
-            'notes' => 'Default motherboard',
-        ]);
-
-        // Memory (RAM)
-        $unit->memories()->create([
-            'brand' => 'Corsair',
-            'model' => 'Vengeance LPX',
-            'type' => 'DDR4',
-            'capacity' => 16,
-            'status' => 'Working',
-            'serial_number' => 'RAM123456',
-            'date_purchased' => now()->subYear(),
-            'notes' => 'Default RAM module',
-        ]);
-
-        // Graphics Card
-        $unit->graphicsCards()->create([
-            'brand' => 'NVIDIA',
-            'model' => 'GTX 1660 Super',
-            'base_clock' => 1530, // MHz
-            'boost_clock' => 1785, // MHz (optional)
-            'status' => 'Working',
-            'serial_number' => 'GPU123456',
-            'date_purchased' => now()->subYear(),
-            'notes' => 'Default graphics card',
-        ]);
-
-        // M.2 SSD
-        $unit->m2Ssds()->create([
-            'brand' => 'Samsung',
-            'model' => '970 EVO',
-            'type' => 'M.2 NVMe SSD',
-            'capacity' => 500,
-            'status' => 'Working',
-            'serial_number' => 'M2SSD1234',
-            'date_purchased' => now()->subYear(),
-            'notes' => 'Default M.2 SSD',
-        ]);
-
-        // SATA SSD
-        $unit->sataSsds()->create([
-            'brand' => 'Crucial',
-            'model' => 'MX500',
-            'type' => 'SATA SSD',
-            'capacity' => 500,
-            'status' => 'Working',
-            'serial_number' => 'SATASSD1234',
-            'date_purchased' => now()->subYear(),
-            'notes' => 'Default SATA SSD',
-        ]);
-
-        // Hard Disk Drive
-        $unit->hardDiskDrives()->create([
-            'brand' => 'Seagate',
-            'model' => 'Barracuda',
-            'type' => 'HDD',
-            'capacity' => 1000,
-            'status' => 'Working',
-            'serial_number' => 'HDD123456',
-            'date_purchased' => now()->subYear(),
-            'notes' => 'Default HDD',
-        ]);
-
-        // Power Supply
-        $unit->powerSupplies()->create([
-            'brand' => 'EVGA',
-            'model' => '500W Bronze',
-            'status' => 'Working',
-            'serial_number' => 'PSU123456',
-            'date_purchased' => now()->subYear(),
-            'notes' => 'Default PSU',
-        ]);
-
-        // Computer Case
-        $unit->computerCase()->create([
-            'brand' => 'NZXT',
-            'model' => 'H510',
-            'status' => 'Working',
-            'serial_number' => 'CASE0001',
-            'date_purchased' => now()->subYear(),
-            'notes' => 'Default computer case',
-        ]);
-    }
-
-    protected function createDefaultPeripherals(SystemUnit $unit)
-    {
-        // Default keyboard
-        $unit->keyboard()->create([
-            'brand' => 'Logitech',
-            'model' => 'K120',
-            'status' => 'Working',
-            'serial_number' => 'KEY1234',
-            'date_purchased' => now()->subYear(),
-            'notes' => 'Default keyboard',
-        ]);
-
-        // Default mouse
-        $unit->mouse()->create([
-            'brand' => 'Logitech',
-            'model' => 'M185',
-            'status' => 'Working',
-            'serial_number' => 'MOUSE1234',
-            'date_purchased' => now()->subYear(),
-            'notes' => 'Default mouse',
-        ]);
-
-        // Default headset
-        $unit->headset()->create([
-            'brand' => 'Sony',
-            'model' => 'WH-CH510',
-            'status' => 'Working',
-            'serial_number' => 'HEADSET001',
-            'date_purchased' => now()->subYear(),
-            'notes' => 'Default headset',
-        ]);
-
-        // Default speaker
-        $unit->speaker()->create([
-            'brand' => 'Creative',
-            'model' => 'Pebble 2.0',
-            'status' => 'Working',
-            'serial_number' => 'SPKR1234',
-            'date_purchased' => now()->subYear(),
-            'notes' => 'Default speakers',
-        ]);
-
-        // Default webcam
-        $unit->webCamera()->create([
-            'brand' => 'Logitech',
-            'model' => 'C270',
-            'status' => 'Working',
-            'serial_number' => 'WEBCAM5678',
-            'date_purchased' => now()->subYear(),
-            'notes' => 'Default webcam',
-        ]);
-
-        // Default monitor
-        $unit->monitor()->create([
-            'brand' => 'Dell',
-            'model' => 'P2419H',
-            'status' => 'Working',
-            'serial_number' => 'MON12345',
-            'date_purchased' => now()->subYear(),
-            'notes' => 'Default monitor',
-        ]);
-    }
-
 }
