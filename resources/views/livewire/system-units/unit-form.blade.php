@@ -122,19 +122,22 @@
                         <optgroup label="M.2 SSDs">
                             @foreach ($m2Ssds as $ssd)
                                 <option value="m2|{{ $ssd->id }}">{{ $ssd->brand }} {{ $ssd->model }}
-                                    ({{ $ssd->capacity }}GB)</option>
+                                    ({{ $ssd->capacity }}GB)
+                                </option>
                             @endforeach
                         </optgroup>
                         <optgroup label="SATA SSDs">
                             @foreach ($sataSsds as $ssd)
                                 <option value="sata|{{ $ssd->id }}">{{ $ssd->brand }} {{ $ssd->model }}
-                                    ({{ $ssd->capacity }}GB)</option>
+                                    ({{ $ssd->capacity }}GB)
+                                </option>
                             @endforeach
                         </optgroup>
                         <optgroup label="Hard Disk Drives">
                             @foreach ($hardDiskDrives as $hdd)
                                 <option value="hdd|{{ $hdd->id }}">{{ $hdd->brand }} {{ $hdd->model }}
-                                    ({{ $hdd->capacity }}GB)</option>
+                                    ({{ $hdd->capacity }}GB)
+                                </option>
                             @endforeach
                         </optgroup>
                     </select>
@@ -173,16 +176,17 @@
                 {{-- Status --}}
                 <div>
                     <label for="status" class="block mb-1 font-semibold dark:text-white">Status</label>
-                    <select id="status" wire:model.defer="status"
-                        class="w-full border rounded px-3 py-2 dark:bg-zinc-700 dark:text-white">
-                        <option value="Operational">Operational</option>
-                        <option value="Needs repair">Needs repair</option>
-                        <option value="Non-Operational">Non-Operational</option>
+                    <select id="status" wire:model.defer="status" class="...">
+                        @foreach ($statuses as $statusOption)
+                            <option value="{{ $statusOption }}">{{ $statusOption }}</option>
+                        @endforeach
                     </select>
+
                     @error('status')
                         <span class="text-red-500 text-sm">{{ $message }}</span>
                     @enderror
                 </div>
+
             </div>
 
             {{-- Buttons --}}
