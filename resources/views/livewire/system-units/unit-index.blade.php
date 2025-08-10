@@ -1,42 +1,37 @@
 <div class="p-4">
-    <div class="flex justify-between mb-4 gap-4">
+    <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
         {{-- Search Input --}}
-        <input type="text" wire:model.debounce.300ms="search" placeholder="Search components/peripherals..."
-            class="border border-gray-300 rounded-md px-4 py-2 w-full max-w-xs focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        <div class="order-3 md:order-1 w-full md:w-auto max-w-xs">
+            <input type="text" wire:model.debounce.300ms="search" placeholder="Search components/peripherals..."
+                class="border border-gray-300 rounded-md px-4 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        </div>
 
-        <div class="flex gap-4">
-            {{-- Create Button --}}
-            <button wire:click="openCreateModal"
-                class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md shadow">
-                Create System Unit
-            </button>
-
-            {{-- PDF Export Button --}}
+        {{-- Buttons Container --}}
+        <div class="flex flex-col md:flex-row gap-4 order-1 md:order-2 w-full md:w-auto max-w-xs">
             <button wire:click="openSelectComponentsModal"
-                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md shadow">
+                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md shadow w-full md:w-auto">
                 📄 Print / Export PDF
             </button>
 
+            <button wire:click="openCreateModal"
+                class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md shadow w-full md:w-auto">
+                Create System Unit
+            </button>
         </div>
     </div>
 
-    {{-- Legends: Operational / Non-operational counts --}}
-    <div class="flex justify-between gap-6 text-sm mb-6 px-2">
-        <div class="flex items-center gap-2">
-            <span class="w-4 h-4 bg-green-500 rounded-full inline-block"></span>
-            Operational: 5
-            <span class="w-4 h-4 bg-red-500 rounded-full inline-block"></span>
-            Non-operational: 10
-            <span class="w-4 h-4 bg-yellow-500 rounded-full inline-block"></span>
-            Needs Repair: 10
+    {{-- Legends and Filters --}}
+    <div class="flex flex-col md:flex-row justify-between gap-6 text-sm mb-6 px-2 items-center">
+        <div class="flex flex-wrap items-center gap-4">
+            <span class="w-3 h-3 bg-green-500 rounded-full inline-block"></span> Operational: 5
+            <span class="w-3 h-3 bg-red-500 rounded-full inline-block"></span> Non-operational: 10
+            <span class="w-3 h-3 bg-yellow-500 rounded-full inline-block"></span> Needs Repair: 10
         </div>
-        {{-- <div class="flex items-center gap-2">
-               
-            </div> --}}
-        <div>
+
+        <div class="flex flex-col md:flex-row gap-4 w-full md:w-auto">
             {{-- Status Filter --}}
             <select wire:model="filterStatus"
-                class="border border-gray-300 rounded-md px-3 py-2 max-w-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+                class="border border-gray-300 rounded-md px-3 py-2 max-w-xs w-full md:w-auto focus:outline-none focus:ring-2 focus:ring-blue-500">
                 <option value="">All Status</option>
                 <option value="Operational">Operational</option>
                 <option value="Non-Operational">Non-Operational</option>
@@ -45,7 +40,7 @@
 
             {{-- Type Filter --}}
             <select wire:model="filterType"
-                class="border border-gray-300 rounded-md px-3 py-2 max-w-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+                class="border border-gray-300 rounded-md px-3 py-2 max-w-xs w-full md:w-auto focus:outline-none focus:ring-2 focus:ring-blue-500">
                 <option value="">All Types</option>
                 <option value="component">Component</option>
                 <option value="peripheral">Peripheral</option>
@@ -53,7 +48,7 @@
 
             {{-- Room Filter --}}
             <select wire:model="filterRoom"
-                class="border border-gray-300 rounded-md px-3 py-2 max-w-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+                class="border border-gray-300 rounded-md px-3 py-2 max-w-xs w-full md:w-auto focus:outline-none focus:ring-2 focus:ring-blue-500">
                 <option value="">All Rooms</option>
                 @foreach ($rooms as $room)
                     <option value="{{ $room->id }}">{{ $room->name }}</option>
@@ -61,7 +56,6 @@
             </select>
         </div>
     </div>
-
 
     <!-- Component Selection Modal -->
     <x-modal name="selectComponents" maxWidth="2xl" wire:model="showSelectComponents">
@@ -116,48 +110,35 @@
         </div>
     </x-modal>
 
-
-    {{-- Table --}}
+    {{-- Table container --}}
     <div
         class="overflow-x-auto bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl shadow-sm mt-6">
         <table class="min-w-full text-sm text-left text-gray-700 dark:text-gray-200">
             <thead>
-                <tr class="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 uppercase text-sm">
-                    <th class="px-4 py-3 text-center">
-                        <div class="font-bold">ID</div>
+                <tr
+                    class="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 uppercase text-sm whitespace-nowrap">
+                    <th class="px-2 py-1 text-center">ID</th>
+                    <th class="px-4 py-3 text-center">CPU<div class="text-xs text-gray-500">(model)</div>
                     </th>
-                    <th class="px-4 py-3 text-center">
-                        <div class="font-bold">CPU</div>
-                        <div class="text-xs text-gray-500">(model)</div>
+                    <th class="px-4 py-3 text-center">MBOARD<div class="text-xs text-gray-500">(model)</div>
                     </th>
-                    <th class="px-4 py-3 text-center">
-                        <div class="font-bold">MBOARD</div>
-                        <div class="text-xs text-gray-500">(model)</div>
+                    <th class="px-4 py-3 text-center">RAM<div class="text-xs text-gray-500">(type & capacity)</div>
                     </th>
-                    <th class="px-4 py-3 text-center">
-                        <div class="font-bold">RAM</div>
-                        <div class="text-xs text-gray-500">(type & capacity)</div>
+                    <th class="px-4 py-3 text-center">DRIVE<div class="text-xs text-gray-500">(type & capacity)</div>
                     </th>
-                    <th class="px-4 py-3 text-center">
-                        <div class="font-bold">DRIVE</div>
-                        <div class="text-xs text-gray-500">(type & capacity)</div>
+                    <th class="px-4 py-3 text-center">CASING<div class="text-xs text-gray-500">(model)</div>
                     </th>
-                    <th class="px-4 py-3 text-center">
-                        <div class="font-bold">CASING</div>
-                        <div class="text-xs text-gray-500">(model)</div>
+                    <th class="px-4 py-3 text-center">STATUS<div class="text-xs text-gray-500">(Operational, Needs
+                            Repair, Non-operational)</div>
                     </th>
-                    <th class="px-4 py-3 text-center">
-                        <div class="font-bold">STATUS</div>
-                        <div class="text-xs text-gray-500">(Operational, Needs Repair, Non-operational)</div>
-                    </th>
-                    <th class="px-4 py-3 text-center">Actions</th>
+                    <th class="px-3 py-2 text-center">Actions</th>
                 </tr>
             </thead>
 
             <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                 @foreach ($units as $unit)
-                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                        <td class="px-4 py-2 text-center">{{ $unit->id }}</td>
+                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors whitespace-nowrap">
+                        <td class="px-2 py-1 text-center">{{ $unit->id }}</td>
                         <td class="px-4 py-2 text-center">
                             {{ $unit->processor
                                 ? "{$unit->processor->brand} {$unit->processor->model} {$unit->processor->base_clock}GHz" .
@@ -185,86 +166,106 @@
                             {{ $unit->computerCase ? $unit->computerCase->brand . ' ' . $unit->computerCase->model : 'N/A' }}
                         </td>
                         <td class="px-4 py-2 text-center">
+                            @php
+                                $statusBgClasses = [
+                                    'Operational' => 'bg-green-300 dark:bg-green-500',
+                                    'Needs Repair' => 'bg-yellow-300 dark:bg-yellow-500',
+                                    'Non-operational' => 'bg-red-300 dark:bg-red-500',
+                                ];
+
+                                $statusBgClass = $statusBgClasses[$unit->status] ?? 'bg-gray-200 dark:bg-gray-700';
+                            @endphp
+
                             <span
-                                class="px-2 py-1 rounded-full text-xs font-semibold
-                            {{ $unit->status === 'Working' ? 'bg-green-100 text-green-800' : '' }}
-                            {{ $unit->status === 'Under Maintenance' ? 'bg-yellow-100 text-yellow-800' : '' }}
-                            {{ $unit->status === 'Decommissioned' ? 'bg-gray-200 text-gray-700' : '' }}">
+                                class="inline-block px-2 py-1 rounded-full text-xs font-semibold
+                                {{ $statusBgClass }}
+                                text-gray-900 dark:text-white
+                                w-[110px] text-center
+                                ">
                                 {{ $unit->status }}
                             </span>
+
+
                         </td>
                         <td class="px-3 py-2 text-center">
                             <div class="relative inline-block text-left" x-data="{ open: false, top: 0, left: 0, modal: @entangle('modal') }"
                                 x-effect="if (modal) open = false">
-                                <button
-                                    @click="
+
+                                <div class="inline-flex rounded-md shadow-sm" role="group">
+                                    <!-- Main Action Button (View) -->
+                                    <button type="button" wire:click="openViewModal({{ $unit->id }})"
+                                        class="inline-flex items-center px-4 py-1 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-blue-600 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1
+                     dark:border-zinc-700 dark:bg-zinc-800 dark:text-blue-400 dark:hover:bg-blue-900 dark:focus:ring-blue-400">
+                                        View
+                                    </button>
+
+                                    <!-- Dropdown Toggle Button -->
+                                    <button type="button"
+                                        @click="
                 const rect = $el.getBoundingClientRect();
                 top = rect.bottom + window.scrollY;
                 left = rect.left + window.scrollX;
                 open = !open;
-            "
-                                    type="button"
-                                    class="inline-flex items-center rounded-md border border-gray-300 shadow-sm px-3 py-1 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none">
-                                    Actions
-                                    <svg class="-mr-1 ml-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg"
-                                        viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd"
-                                            d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.25a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z"
-                                            clip-rule="evenodd" />
-                                    </svg>
-                                </button>
+              "
+                                        aria-haspopup="true" aria-expanded="false"
+                                        class="inline-flex items-center px-2 py-1 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1
+                     dark:border-zinc-700 dark:bg-zinc-800 dark:text-gray-300 dark:hover:bg-zinc-700 dark:focus:ring-blue-400">
+                                        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+                                            fill="currentColor" aria-hidden="true">
+                                            <path fill-rule="evenodd"
+                                                d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.25a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z"
+                                                clip-rule="evenodd" />
+                                        </svg>
+                                    </button>
+                                </div>
 
                                 <!-- Teleport dropdown outside table -->
                                 <template x-teleport="body">
                                     <div x-show="open" @click.away="open = false" x-cloak
-                                        class="absolute z-[9999] w-44 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5"
+                                        class="absolute z-[9999] w-44 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5
+                  dark:bg-zinc-900 dark:ring-white/20"
                                         :style="'position:absolute; top:' + top + 'px; left:' + left + 'px;'">
                                         <div class="py-1">
                                             <button wire:click="openManageModal({{ $unit->id }})"
-                                                class="block px-4 py-2 text-sm text-yellow-600 hover:border-b hover:border-yellow-500 cursor-pointer w-full text-left">
+                                                class="block px-4 py-2 text-sm text-yellow-600 hover:border-b hover:border-yellow-500 cursor-pointer w-full text-left
+                         dark:text-yellow-400 dark:hover:border-yellow-300">
                                                 Manage
                                             </button>
-                                            <button wire:click="openViewModal({{ $unit->id }})"
-                                                class="block px-4 py-2 text-sm text-blue-600 hover:border-b hover:border-blue-500 cursor-pointer w-full text-left">
-                                                View
-                                            </button>
                                             <button wire:click="openEditModal({{ $unit->id }})"
-                                                class="block px-4 py-2 text-sm text-green-600 hover:border-b hover:border-green-500 cursor-pointer w-full text-left">
+                                                class="block px-4 py-2 text-sm text-green-600 hover:border-b hover:border-green-500 cursor-pointer w-full text-left
+                         dark:text-green-400 dark:hover:border-green-300">
                                                 Edit
                                             </button>
                                             <button wire:click="deleteUnit({{ $unit->id }})"
-                                                class="block px-4 py-2 text-sm text-red-600 hover:border-b hover:border-red-500 cursor-pointer w-full text-left">
+                                                class="block px-4 py-2 text-sm text-red-600 hover:border-b hover:border-red-500 cursor-pointer w-full text-left
+                         dark:text-red-400 dark:hover:border-red-300">
                                                 Delete
                                             </button>
                                         </div>
                                     </div>
                                 </template>
                             </div>
-
                         </td>
+
                     </tr>
                 @endforeach
             </tbody>
         </table>
     </div>
 
-
-    {{-- Create Modal --}}
+    {{-- Modals --}}
     @if ($modal === 'create')
         <livewire:system-units.unit-form :key="'create'" />
     @endif
 
-    {{-- Edit Modal --}}
     @if ($modal === 'edit' && $id)
         <livewire:system-units.unit-form :unit-id="$id" :key="'edit-' . $id" />
     @endif
 
-    {{-- Manage Modal --}}
     @if ($modal === 'manage' && $id)
         <livewire:system-units.system-unit-manage :unit-id="$id" :key="'manage-' . $id" />
     @endif
 
-    {{-- View Modal --}}
     @if ($modal === 'view' && $viewUnit)
         <div
             class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4 overflow-auto">
@@ -356,7 +357,6 @@
                         @endif
                     @endforeach
                 @endif
-
 
                 <button wire:click="closeModal" class="mt-6 px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">
                     Close
