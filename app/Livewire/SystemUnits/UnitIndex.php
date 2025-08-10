@@ -8,7 +8,10 @@ use Livewire\Attributes\On;
 use App\Models\SystemUnit;
 use App\Models\Room;
 use Illuminate\Support\Facades\Auth;
-
+use Barryvdh\DomPDF\Facade\Pdf;
+use App\Events\UnitCreated;
+use App\Events\UnitUpdated;
+use App\Events\UnitDeleted;
 
 class UnitIndex extends Component
 {
@@ -25,21 +28,131 @@ class UnitIndex extends Component
     public $name;
     public $status = 'Working';
 
-    public ?SystemUnit $viewUnit = null; // Holds the unit to view
-
-    public $allParts; // flattened collection of all components and peripherals
+    public ?SystemUnit $viewUnit = null;
+    public $allParts;
 
     protected $rules = [
         'name' => 'required|string|max:255',
         'status' => 'required|string|in:Working,Under Maintenance,Decommissioned',
         'room_id' => 'required|exists:rooms,id',
     ];
+    public bool $showSelectComponents = false;
+
+    public array $selectedComponents = [
+        'processor' => true,
+        'motherboard' => true,
+        'memory' => true,
+        'm2Ssd' => true,
+        'sataSsd' => true,
+        'hardDiskDrive' => true,
+        'computerCase' => true,
+        // add other components/peripherals as needed
+    ];
+
+    public function openSelectComponentsModal()
+    {
+        $this->showSelectComponents = true;
+    }
+
+    public function confirmComponentSelection()
+    {
+        $this->showSelectComponents = false;
+        $this->previewPdf();
+    }
+
+    public bool $showPreview = false;
+    public ?string $pdfBase64 = null;
+
+    public function previewPdf()
+    {
+        $relations = array_keys(array_filter($this->selectedComponents));
+
+        $units = SystemUnit::with($relations)->get();
+
+        $pdf = Pdf::loadView('pdf.system-units', compact('units'))
+            ->setPaper('a4', 'landscape');
+
+        $this->pdfBase64 = base64_encode($pdf->output());
+        $this->showPreview = true;
+    }
+
+    public function downloadPdf()
+    {
+        $relations = array_keys(array_filter($this->selectedComponents));
+
+        $units = SystemUnit::with($relations)->get();
+
+        $pdf = Pdf::loadView('pdf.system-units', compact('units'))
+            ->setPaper('a4', 'landscape');
+
+        return response()->streamDownload(function () use ($pdf) {
+            echo $pdf->output();
+        }, 'system-units-report.pdf');
+    }
 
     public function mount()
     {
-        $this->refreshUnits();
-        $this->rooms = Room::orderBy('name')->get();
+        $this->loadUnitsAndRooms();
     }
+
+    /**
+     * Listen for real-time Echo events and update units array directly
+     */
+    #[On('echo:units,UnitCreated')]
+    public function handleUnitCreated($unitData)
+    {
+        $this->units->push(collect($unitData));
+    }
+
+    #[On('echo:units,UnitUpdated')]
+    public function handleUnitUpdated($unitData)
+    {
+        $index = $this->units->search(fn($u) => $u['id'] === $unitData['id']);
+        if ($index !== false) {
+            $this->units[$index] = collect($unitData);
+        } else {
+            $this->units->push(collect($unitData));
+        }
+    }
+
+    #[On('echo:units,UnitDeleted')]
+    public function handleUnitDeleted($unitData)
+    {
+        $this->units = $this->units->reject(fn($u) => $u['id'] === $unitData['id']);
+    }
+
+    private function loadUnitsAndRooms()
+    {
+        $user = Auth::user();
+
+        if (!$user) {
+            $this->units = collect();
+            $this->rooms = collect();
+            return;
+        }
+
+        if ($user->hasRole('lab_incharge')) {
+            $this->units = SystemUnit::with('room')
+                ->whereHas('room', function ($q) use ($user) {
+                    $q->where('lab_in_charge_id', $user->id);
+                })
+                ->latest()
+                ->get();
+
+            $this->rooms = Room::where('lab_in_charge_id', $user->id)
+                ->orderBy('name')
+                ->get();
+
+        } elseif ($user->hasRole('chairman')) {
+            $this->units = SystemUnit::with('room')->latest()->get();
+            $this->rooms = Room::orderBy('name')->get();
+
+        } else {
+            $this->units = collect();
+            $this->rooms = collect();
+        }
+    }
+
     public function openManageModal($id)
     {
         $this->id = $id;
@@ -55,6 +168,14 @@ class UnitIndex extends Component
     public function openEditModal($id)
     {
         $unit = SystemUnit::findOrFail($id);
+
+        if (
+            Auth::user()->hasRole('lab_incharge') &&
+            $unit->room->lab_in_charge_id !== Auth::id()
+        ) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $this->id = $unit->id;
         $this->name = $unit->name;
         $this->status = $unit->status;
@@ -64,7 +185,6 @@ class UnitIndex extends Component
 
     public function openViewModal($id)
     {
-        // Load the unit with components and peripherals eagerly loaded
         $this->viewUnit = SystemUnit::with([
             'processor',
             'cpuCooler',
@@ -85,9 +205,14 @@ class UnitIndex extends Component
             'room'
         ])->findOrFail($id);
 
-        // Prepare flattened list of all parts
-        $this->loadAllParts();
+        if (
+            Auth::user()->hasRole('lab_incharge') &&
+            $this->viewUnit->room->lab_in_charge_id !== Auth::id()
+        ) {
+            abort(403, 'Unauthorized action.');
+        }
 
+        $this->loadAllParts();
         $this->modal = 'view';
     }
 
@@ -113,10 +238,8 @@ class UnitIndex extends Component
         ];
 
         $allParts = collect();
-
         foreach ($types as $type) {
             $relation = $this->viewUnit->$type ?? null;
-
             if ($relation) {
                 if ($relation instanceof \Illuminate\Support\Collection) {
                     $allParts = $allParts->concat($relation);
@@ -125,15 +248,12 @@ class UnitIndex extends Component
                 }
             }
         }
-
-        // Recursive flatten helper (in case some relations return nested collections)
         $this->allParts = $this->recursiveFlatten($allParts);
     }
 
     private function recursiveFlatten($collection)
     {
         $result = collect();
-
         foreach ($collection as $item) {
             if ($item instanceof \Illuminate\Support\Collection) {
                 $result = $result->concat($this->recursiveFlatten($item));
@@ -141,77 +261,50 @@ class UnitIndex extends Component
                 $result->push($item);
             }
         }
-
         return $result;
     }
 
     #[On('closeModal')]
     public function closeModal()
     {
-
         $this->modal = null;
         $this->reset(['id', 'name', 'status', 'room_id', 'viewUnit', 'allParts']);
-    }
-
-
-    #[On('unitCreated')]
-    #[On('unitUpdated')]
-    #[On('unitDeleted')]
-    public function refreshUnits()
-    {
-        $user = Auth::user();
-
-        if (!$user) {
-            $this->units = collect();
-            return;
-        }
-
-        if ($user->hasRole('lab_incharge')) {
-            // Only units in rooms assigned to this lab in-charge
-            $this->units = SystemUnit::with('room')
-                ->whereHas('room', function ($q) use ($user) {
-                    $q->where('lab_in_charge_id', $user->id);
-                })
-                ->latest()
-                ->get();
-
-            // Also limit rooms dropdown
-            $this->rooms = Room::where('lab_in_charge_id', $user->id)
-                ->orderBy('name')
-                ->get();
-
-        } elseif ($user->hasRole('chairman')) {
-            // All units and rooms
-            $this->units = SystemUnit::with('room')->latest()->get();
-            $this->rooms = Room::orderBy('name')->get();
-
-        } else {
-            // No access
-            $this->units = collect();
-            $this->rooms = collect();
-        }
     }
 
     public function createUnit()
     {
         $this->validate();
 
-        SystemUnit::create([
+        if (
+            Auth::user()->hasRole('lab_incharge') &&
+            !$this->rooms->pluck('id')->contains($this->room_id)
+        ) {
+            abort(403, 'Unauthorized room assignment.');
+        }
+
+        $unit = SystemUnit::with('room')->create([
             'room_id' => $this->room_id,
             'name' => $this->name,
             'status' => $this->status,
-        ]);
+        ])->fresh(['room']);
+
+        // Broadcast event with full data
+        broadcast(new UnitCreated($unit))->toOthers();
 
         $this->modal = null;
         session()->flash('success', 'System Unit created successfully.');
-
-        $this->refreshUnits();
-        $this->dispatch('unitCreated');
     }
 
     public function updateUnit()
     {
         $this->validate();
+
+        if (
+            Auth::user()->hasRole('lab_incharge') &&
+            !$this->rooms->pluck('id')->contains($this->room_id)
+        ) {
+            abort(403, 'Unauthorized room assignment.');
+        }
 
         $unit = SystemUnit::findOrFail($this->id);
         $unit->update([
@@ -220,21 +313,33 @@ class UnitIndex extends Component
             'status' => $this->status,
         ]);
 
+        $unit = $unit->fresh(['room']);
+
+        // Broadcast event with full data
+        broadcast(new UnitUpdated($unit))->toOthers();
+
         $this->modal = null;
         session()->flash('success', 'System Unit updated successfully.');
-
-        $this->refreshUnits();
-        $this->dispatch('unitUpdated');
     }
 
     public function deleteUnit($id)
     {
-        SystemUnit::findOrFail($id)->delete();
+        $unit = SystemUnit::findOrFail($id);
+
+        if (
+            Auth::user()->hasRole('lab_incharge') &&
+            $unit->room->lab_in_charge_id !== Auth::id()
+        ) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $unit->delete();
+
+        // Broadcast event with only ID
+        broadcast(new UnitDeleted(['id' => $id]))->toOthers();
+
         session()->flash('success', 'System Unit deleted.');
-        $this->refreshUnits();
-        $this->dispatch('unitDeleted');
     }
-    
 
     public function render()
     {
@@ -245,6 +350,4 @@ class UnitIndex extends Component
             'allParts' => $this->allParts,
         ]);
     }
-
-    
 }

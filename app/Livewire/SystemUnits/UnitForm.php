@@ -18,6 +18,8 @@ use App\Models\{
     ComputerCase
 };
 
+use App\Events\UnitUpdated;
+
 class UnitForm extends Component
 {
     public ?int $unitId = null;
@@ -93,7 +95,7 @@ class UnitForm extends Component
                 'status'
             ]));
 
-          
+
             $this->unitId = $unitId;
             $this->modalMode = 'edit';
         }
@@ -150,48 +152,54 @@ class UnitForm extends Component
             ->merge(HardDiskDrive::whereNotIn('id', $usedHdd)->get()->map(fn($d) => $this->mapDrive($d, 'hdd')));
     }
 
+    // ...
+
     public function save()
     {
         $this->validate();
 
-        // Map unit status to component status
         $statusMap = [
             'Operational' => 'Working',
             'Needs Repair' => 'Faulty',
             'Non-Operational' => 'Under Maintenance',
         ];
-
         $componentStatus = $statusMap[$this->status] ?? 'Working';
 
-        // Parse drive type if needed
         if (strpos($this->drive_id, '|') !== false) {
             [$type, $id] = explode('|', $this->drive_id);
             $this->drive_type = $type;
             $this->drive_id = $id;
         }
 
-        // Create or update system unit
+        $mode = $this->unitId ? 'update' : 'create';
         $unit = $this->unitId ? SystemUnit::findOrFail($this->unitId) : new SystemUnit();
-        $unit->name = $this->name;
-        $unit->status = $this->status;
-        $unit->room_id = $this->room_id;
-        $unit->processor_id = $this->processor_id;
-        $unit->cpu_cooler_id = $this->cpu_cooler_id;
-        $unit->motherboard_id = $this->motherboard_id;
-        $unit->memory_id = $this->memory_id;
-        $unit->graphics_card_id = $this->graphics_card_id;
-        $unit->power_supply_id = $this->power_supply_id;
-        $unit->computer_case_id = $this->computer_case_id;
-        $unit->drive_id = $this->drive_id;
-        $unit->drive_type = $this->drive_type;
-        $unit->save();
 
-        // Update components with mapped status
+        $unit->fill([
+            'name' => $this->name,
+            'status' => $this->status,
+            'room_id' => $this->room_id,
+            'processor_id' => $this->processor_id,
+            'cpu_cooler_id' => $this->cpu_cooler_id,
+            'motherboard_id' => $this->motherboard_id,
+            'memory_id' => $this->memory_id,
+            'graphics_card_id' => $this->graphics_card_id,
+            'power_supply_id' => $this->power_supply_id,
+            'computer_case_id' => $this->computer_case_id,
+            'drive_id' => $this->drive_id,
+            'drive_type' => $this->drive_type,
+        ])->save();
+
         $this->updateComponentStatus($componentStatus);
+        event(new UnitUpdated($unit));
+
+        // 🔥 Broadcast real-time update
+        // broadcast(new SystemUnitUpdated($unit, $mode))->toOthers();
 
         session()->flash('success', 'System unit and components updated!');
         $this->resetInput();
     }
+
+
 
     private function updateComponentStatus($componentStatus)
     {
@@ -250,7 +258,7 @@ class UnitForm extends Component
             'power_supply_id',
             'computer_case_id'
         ]);
-        $this->status = 'Operational';
+        // $this->status = 'Operational';
         $this->modalMode = 'create';
     }
 

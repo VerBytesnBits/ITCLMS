@@ -1,8 +1,121 @@
 <div class="p-4">
-    {{-- Create Button --}}
-    <button wire:click="openCreateModal" class="bg-blue-500 text-white px-4 py-2 rounded">
-        Create System Unit
-    </button>
+    <div class="flex justify-between mb-4 gap-4">
+        {{-- Search Input --}}
+        <input type="text" wire:model.debounce.300ms="search" placeholder="Search components/peripherals..."
+            class="border border-gray-300 rounded-md px-4 py-2 w-full max-w-xs focus:outline-none focus:ring-2 focus:ring-blue-500" />
+
+        <div class="flex gap-4">
+            {{-- Create Button --}}
+            <button wire:click="openCreateModal"
+                class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md shadow">
+                Create System Unit
+            </button>
+
+            {{-- PDF Export Button --}}
+            <button wire:click="openSelectComponentsModal"
+                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md shadow">
+                📄 Print / Export PDF
+            </button>
+
+        </div>
+    </div>
+
+    {{-- Legends: Operational / Non-operational counts --}}
+    <div class="flex justify-between gap-6 text-sm mb-6 px-2">
+        <div class="flex items-center gap-2">
+            <span class="w-4 h-4 bg-green-500 rounded-full inline-block"></span>
+            Operational: 5
+            <span class="w-4 h-4 bg-red-500 rounded-full inline-block"></span>
+            Non-operational: 10
+            <span class="w-4 h-4 bg-yellow-500 rounded-full inline-block"></span>
+            Needs Repair: 10
+        </div>
+        {{-- <div class="flex items-center gap-2">
+               
+            </div> --}}
+        <div>
+            {{-- Status Filter --}}
+            <select wire:model="filterStatus"
+                class="border border-gray-300 rounded-md px-3 py-2 max-w-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="">All Status</option>
+                <option value="Operational">Operational</option>
+                <option value="Non-Operational">Non-Operational</option>
+                <option value="Needs Repair">Needs Repair</option>
+            </select>
+
+            {{-- Type Filter --}}
+            <select wire:model="filterType"
+                class="border border-gray-300 rounded-md px-3 py-2 max-w-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="">All Types</option>
+                <option value="component">Component</option>
+                <option value="peripheral">Peripheral</option>
+            </select>
+
+            {{-- Room Filter --}}
+            <select wire:model="filterRoom"
+                class="border border-gray-300 rounded-md px-3 py-2 max-w-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="">All Rooms</option>
+                @foreach ($rooms as $room)
+                    <option value="{{ $room->id }}">{{ $room->name }}</option>
+                @endforeach
+            </select>
+        </div>
+    </div>
+
+
+    <!-- Component Selection Modal -->
+    <x-modal name="selectComponents" maxWidth="2xl" wire:model="showSelectComponents">
+        <div class="p-4">
+            <h2 class="text-lg font-semibold mb-4">Select Components/Peripherals to Include in PDF</h2>
+
+            <div class="flex flex-wrap gap-4 mb-6">
+                @foreach ($selectedComponents as $component => $included)
+                    <label class="inline-flex items-center space-x-2 cursor-pointer">
+                        <input type="checkbox" wire:model="selectedComponents.{{ $component }}"
+                            class="form-checkbox h-5 w-5 text-blue-600" />
+                        <span class="capitalize">{{ str_replace('_', ' ', $component) }}</span>
+                    </label>
+                @endforeach
+            </div>
+
+            <div class="flex justify-end gap-2">
+                <button wire:click="confirmComponentSelection"
+                    class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md shadow">
+                    Confirm & Preview PDF
+                </button>
+                <button wire:click="$set('showSelectComponents', false)"
+                    class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md shadow">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </x-modal>
+
+    <!-- Print Preview Modal -->
+    <x-modal name="printPreview" maxWidth="screen-xl" wire:model="showPreview" class="p-6">
+        <div class="flex flex-col h-[90vh]">
+            <h2 class="text-xl font-semibold mb-4">Print Preview</h2>
+
+            @if ($pdfBase64)
+                <iframe src="data:application/pdf;base64,{{ $pdfBase64 }}"
+                    class="flex-grow w-full rounded border border-gray-300 shadow-lg" frameborder="0"></iframe>
+            @else
+                <p class="text-gray-500">Generating preview...</p>
+            @endif
+
+            <div class="mt-4 flex justify-end gap-3">
+                <button wire:click="downloadPdf"
+                    class="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-md shadow">
+                    ⬇ Download PDF
+                </button>
+                <button wire:click="$set('showPreview', false)"
+                    class="bg-gray-500 hover:bg-gray-600 text-white px-5 py-2 rounded-md shadow">
+                    ✖ Close
+                </button>
+            </div>
+        </div>
+    </x-modal>
+
 
     {{-- Table --}}
     <div
@@ -127,6 +240,7 @@
                                     </div>
                                 </template>
                             </div>
+
                         </td>
                     </tr>
                 @endforeach
@@ -170,42 +284,51 @@
 
                 @php
                     $componentsTypes = [
-                        'processor',
-                        'cpuCooler',
-                        'motherboard',
-                        'memory',
-                        'graphicsCard',
-                        'm2Ssd',
-                        'sataSsd',
-                        'hardDiskDrive',
-                        'powerSupply',
-                        'computerCase',
+                        'processor' => 'Processor',
+                        'cpuCooler' => 'CPU Cooler',
+                        'motherboard' => 'Motherboard',
+                        'memory' => 'Memory',
+                        'graphicsCard' => 'Graphics Card',
+                        'm2Ssd' => 'M.2 SSD',
+                        'sataSsd' => 'SATA SSD',
+                        'hardDiskDrive' => 'Hard Disk Drive',
+                        'powerSupply' => 'Power Supply',
+                        'computerCase' => 'Computer Case',
                     ];
-                    $peripheralsTypes = ['monitor', 'keyboard', 'mouse', 'headset', 'speaker', 'webCamera'];
+
+                    $peripheralsTypes = [
+                        'monitor' => 'Monitor',
+                        'keyboard' => 'Keyboard',
+                        'mouse' => 'Mouse',
+                        'headset' => 'Headset',
+                        'speaker' => 'Speaker',
+                        'webCamera' => 'Web Camera',
+                    ];
+
                     $groupedParts = ['Components' => [], 'Peripherals' => []];
 
                     foreach ($allParts as $part) {
-                        foreach ($componentsTypes as $type) {
+                        foreach ($componentsTypes as $type => $label) {
                             if (
                                 $viewUnit->$type instanceof \Illuminate\Support\Collection &&
                                 $viewUnit->$type->contains($part)
                             ) {
-                                $groupedParts['Components'][] = $part;
+                                $groupedParts['Components'][] = ['label' => $label, 'part' => $part];
                                 continue 2;
                             } elseif ($viewUnit->$type === $part) {
-                                $groupedParts['Components'][] = $part;
+                                $groupedParts['Components'][] = ['label' => $label, 'part' => $part];
                                 continue 2;
                             }
                         }
-                        foreach ($peripheralsTypes as $type) {
+                        foreach ($peripheralsTypes as $type => $label) {
                             if (
                                 $viewUnit->$type instanceof \Illuminate\Support\Collection &&
                                 $viewUnit->$type->contains($part)
                             ) {
-                                $groupedParts['Peripherals'][] = $part;
+                                $groupedParts['Peripherals'][] = ['label' => $label, 'part' => $part];
                                 continue 2;
                             } elseif ($viewUnit->$type === $part) {
-                                $groupedParts['Peripherals'][] = $part;
+                                $groupedParts['Peripherals'][] = ['label' => $label, 'part' => $part];
                                 continue 2;
                             }
                         }
@@ -219,16 +342,21 @@
                         @if (!empty($groupedParts[$category]))
                             <h4 class="mt-4 font-semibold dark:text-white">{{ $category }}</h4>
                             <ul class="list-disc list-inside max-h-48 overflow-auto">
-                                @foreach ($groupedParts[$category] as $part)
+                                @foreach ($groupedParts[$category] as $data)
+                                    @php $part = $data['part']; @endphp
                                     @if (is_object($part) && isset($part->brand, $part->model, $part->status))
-                                        <li>{{ $part->brand }} {{ $part->model }} - <span
-                                                class="text-green-600 font-semibold">{{ $part->status }}</span></li>
+                                        <li>
+                                            <strong>{{ $data['label'] }}:</strong>
+                                            {{ $part->brand }} {{ $part->model }} -
+                                            <span class="text-green-600 font-semibold">{{ $part->status }}</span>
+                                        </li>
                                     @endif
                                 @endforeach
                             </ul>
                         @endif
                     @endforeach
                 @endif
+
 
                 <button wire:click="closeModal" class="mt-6 px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">
                     Close

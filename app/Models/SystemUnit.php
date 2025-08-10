@@ -4,6 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Events\UnitCreated;
+use App\Events\UnitUpdated;
+use App\Events\UnitDeleted;
 
 class SystemUnit extends Model
 {
@@ -28,8 +31,23 @@ class SystemUnit extends Model
         'computer_case_id'
     ];
 
-    
-   
+
+
+    protected static function booted()
+    {
+        static::created(function ($unit) {
+            broadcast(new UnitCreated($unit))->toOthers();
+        });
+
+        static::updated(function ($unit) {
+            broadcast(new UnitUpdated($unit))->toOthers();
+        });
+
+        static::deleted(function ($unit) {
+            broadcast(new UnitDeleted($unit->id))->toOthers();
+        });
+    }
+
     public function m2Ssd()
     {
         return $this->belongsTo(M2Ssd::class, 'drive_id');
