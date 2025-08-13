@@ -10,7 +10,7 @@
         <div class="flex flex-col md:flex-row gap-4 order-1 md:order-2 w-full md:w-auto max-w-xs">
             <button wire:click="openSelectComponentsModal"
                 class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md shadow w-full md:w-auto">
-                📄 Print / Export PDF
+                Print / Export PDF
             </button>
 
             <button wire:click="openCreateModal"
@@ -170,7 +170,7 @@
                                 $statusBgClasses = [
                                     'Operational' => 'bg-green-300 dark:bg-green-500',
                                     'Needs Repair' => 'bg-yellow-300 dark:bg-yellow-500',
-                                    'Non-operational' => 'bg-red-300 dark:bg-red-500',
+                                    'Non-operational' => 'bg-red-500 dark:bg-red-500',
                                 ];
 
                                 $statusBgClass = $statusBgClasses[$unit->status] ?? 'bg-gray-200 dark:bg-gray-700';

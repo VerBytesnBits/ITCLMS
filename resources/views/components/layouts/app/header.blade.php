@@ -17,7 +17,7 @@
 
         <flux:spacer />
 
-
+        @include('partials.theme')
         <!-- Desktop User Menu -->
         <flux:dropdown position="top" align="end">
             <flux:profile class="cursor-pointer" :initials="auth()->user()->initials()" />
@@ -39,8 +39,9 @@
                             </div>
                         </div>
                     </div>
+                
                 </flux:menu.radio.group>
-
+                
                 <flux:menu.separator />
 
                 <flux:menu.radio.group>

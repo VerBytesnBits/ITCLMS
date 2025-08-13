@@ -45,7 +45,7 @@
                             <div class="flex flex-wrap gap-1">
                                 @forelse ($user->roles as $role)
                                     <span
-                                        class="px-2 py-1 text-xs font-semibold rounded-md {{ \App\Services\RoleColorService::get($role->name) }}">
+                                        class="px-2 py-1 text-xs font-semibold rounded-full inline-block w-[110px] text-center {{ \App\Services\RoleColorService::get($role->name) }}">
                                         {{ ucwords(str_replace(['-', '_'], ' ', $role->name)) }}
                                     </span>
                                 @empty
