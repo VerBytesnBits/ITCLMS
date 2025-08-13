@@ -9,7 +9,11 @@ return new class extends Migration {
     {
         Schema::create('motherboards', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('system_unit_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('system_unit_id')
+                ->nullable()
+                ->constrained()
+                ->nullOnDelete(); // <- important
+
             $table->string('brand')->nullable();
             $table->string('model')->nullable();
             $table->string('form_factor')->nullable(); // ATX, mATX, ITX

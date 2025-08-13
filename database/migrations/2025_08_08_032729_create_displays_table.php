@@ -6,10 +6,15 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
-    public function up(): void {
+    public function up(): void
+    {
         Schema::create('displays', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('system_unit_id')->constrained()->onDelete('cascade');
+            $table->foreignId('system_unit_id')
+                ->nullable()
+                ->constrained()
+                ->nullOnDelete(); // <- important
+
             $table->string('brand');
             $table->string('model');
             $table->string('serial_number')->nullable();
@@ -22,7 +27,8 @@ return new class extends Migration {
         });
     }
 
-    public function down(): void {
+    public function down(): void
+    {
         Schema::dropIfExists('displays');
     }
 };

@@ -31,23 +31,48 @@ class UnitIndex extends Component
     public ?SystemUnit $viewUnit = null;
     public $allParts;
 
+    public bool $showSelectComponents = false;
+    public bool $showPreview = false;
+    public ?string $pdfBase64 = null;
+
+    // Centralized list of all unit relations
+    public array $unitRelations = [
+        'processor',
+        'cpuCooler',
+        'motherboard',
+        'memories',
+        'graphicsCards',
+        'powerSupply',
+        'computerCase',
+        'm2Ssds',
+        'sataSsds',
+        'hardDiskDrives',
+        'monitor',
+        'keyboard',
+        'mouse',
+        'headset',
+        'speaker',
+        'webCamera',
+    ];
+
+    // Default selected components (dynamically generated from $unitRelations)
+    public array $selectedComponents = [];
+
     protected $rules = [
         'name' => 'required|string|max:255',
         'status' => 'required|string|in:Working,Under Maintenance,Decommissioned',
         'room_id' => 'required|exists:rooms,id',
     ];
-    public bool $showSelectComponents = false;
 
-    public array $selectedComponents = [
-        'processor' => true,
-        'motherboard' => true,
-        'memory' => true,
-        'm2Ssd' => true,
-        'sataSsd' => true,
-        'hardDiskDrive' => true,
-        'computerCase' => true,
-        // add other components/peripherals as needed
-    ];
+    public function mount()
+    {
+        // Initialize selectedComponents dynamically
+        foreach ($this->unitRelations as $relation) {
+            $this->selectedComponents[$relation] = true;
+        }
+
+        $this->loadUnitsAndRooms();
+    }
 
     public function openSelectComponentsModal()
     {
@@ -60,12 +85,10 @@ class UnitIndex extends Component
         $this->previewPdf();
     }
 
-    public bool $showPreview = false;
-    public ?string $pdfBase64 = null;
-
     public function previewPdf()
     {
         $relations = array_keys(array_filter($this->selectedComponents));
+        $relations = array_intersect($relations, $this->unitRelations);
 
         $units = SystemUnit::with($relations)->get();
 
@@ -79,6 +102,7 @@ class UnitIndex extends Component
     public function downloadPdf()
     {
         $relations = array_keys(array_filter($this->selectedComponents));
+        $relations = array_intersect($relations, $this->unitRelations);
 
         $units = SystemUnit::with($relations)->get();
 
@@ -90,14 +114,6 @@ class UnitIndex extends Component
         }, 'system-units-report.pdf');
     }
 
-    public function mount()
-    {
-        $this->loadUnitsAndRooms();
-    }
-
-    /**
-     * Listen for real-time Echo events and update units array directly
-     */
     #[On('echo:units,UnitCreated')]
     public function handleUnitCreated($unitData)
     {
@@ -133,15 +149,11 @@ class UnitIndex extends Component
 
         if ($user->hasRole('lab_incharge')) {
             $this->units = SystemUnit::with('room')
-                ->whereHas('room', function ($q) use ($user) {
-                    $q->where('lab_in_charge_id', $user->id);
-                })
-                ->latest()
-                ->get();
+                ->whereHas('room', fn($q) => $q->where('lab_in_charge_id', $user->id))
+                ->latest()->get();
 
             $this->rooms = Room::where('lab_in_charge_id', $user->id)
-                ->orderBy('name')
-                ->get();
+                ->orderBy('name')->get();
 
         } elseif ($user->hasRole('chairman')) {
             $this->units = SystemUnit::with('room')->latest()->get();
@@ -169,10 +181,8 @@ class UnitIndex extends Component
     {
         $unit = SystemUnit::findOrFail($id);
 
-        if (
-            Auth::user()->hasRole('lab_incharge') &&
-            $unit->room->lab_in_charge_id !== Auth::id()
-        ) {
+        if (Auth::user()->hasRole('lab_incharge') &&
+            $unit->room->lab_in_charge_id !== Auth::id()) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -185,30 +195,11 @@ class UnitIndex extends Component
 
     public function openViewModal($id)
     {
-        $this->viewUnit = SystemUnit::with([
-            'processor',
-            'cpuCooler',
-            'motherboard',
-            'memory',
-            'graphicsCard',
-            'm2Ssd',
-            'sataSsd',
-            'hardDiskDrive',
-            'powerSupply',
-            'computerCase',
-            'keyboard',
-            'mouse',
-            'headset',
-            'speaker',
-            'webCamera',
-            'monitor',
-            'room'
-        ])->findOrFail($id);
+        $this->viewUnit = SystemUnit::with(array_merge($this->unitRelations, ['room']))
+            ->findOrFail($id);
 
-        if (
-            Auth::user()->hasRole('lab_incharge') &&
-            $this->viewUnit->room->lab_in_charge_id !== Auth::id()
-        ) {
+        if (Auth::user()->hasRole('lab_incharge') &&
+            $this->viewUnit->room->lab_in_charge_id !== Auth::id()) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -218,34 +209,15 @@ class UnitIndex extends Component
 
     private function loadAllParts()
     {
-        $types = [
-            'processor',
-            'cpuCooler',
-            'motherboard',
-            'memory',
-            'graphicsCard',
-            'm2Ssd',
-            'sataSsd',
-            'hardDiskDrive',
-            'powerSupply',
-            'computerCase',
-            'keyboard',
-            'mouse',
-            'headset',
-            'speaker',
-            'webCamera',
-            'monitor',
-        ];
-
         $allParts = collect();
-        foreach ($types as $type) {
-            $relation = $this->viewUnit->$type ?? null;
-            if ($relation) {
-                if ($relation instanceof \Illuminate\Support\Collection) {
-                    $allParts = $allParts->concat($relation);
-                } else {
-                    $allParts->push($relation);
-                }
+        foreach ($this->unitRelations as $relation) {
+            $relationData = $this->viewUnit->$relation ?? null;
+            if ($relationData) {
+                $allParts = $allParts->concat(
+                    $relationData instanceof \Illuminate\Support\Collection
+                        ? $relationData
+                        : collect([$relationData])
+                );
             }
         }
         $this->allParts = $this->recursiveFlatten($allParts);
@@ -275,10 +247,8 @@ class UnitIndex extends Component
     {
         $this->validate();
 
-        if (
-            Auth::user()->hasRole('lab_incharge') &&
-            !$this->rooms->pluck('id')->contains($this->room_id)
-        ) {
+        if (Auth::user()->hasRole('lab_incharge') &&
+            !$this->rooms->pluck('id')->contains($this->room_id)) {
             abort(403, 'Unauthorized room assignment.');
         }
 
@@ -288,7 +258,6 @@ class UnitIndex extends Component
             'status' => $this->status,
         ])->fresh(['room']);
 
-        // Broadcast event with full data
         broadcast(new UnitCreated($unit))->toOthers();
 
         $this->modal = null;
@@ -299,10 +268,8 @@ class UnitIndex extends Component
     {
         $this->validate();
 
-        if (
-            Auth::user()->hasRole('lab_incharge') &&
-            !$this->rooms->pluck('id')->contains($this->room_id)
-        ) {
+        if (Auth::user()->hasRole('lab_incharge') &&
+            !$this->rooms->pluck('id')->contains($this->room_id)) {
             abort(403, 'Unauthorized room assignment.');
         }
 
@@ -315,7 +282,6 @@ class UnitIndex extends Component
 
         $unit = $unit->fresh(['room']);
 
-        // Broadcast event with full data
         broadcast(new UnitUpdated($unit))->toOthers();
 
         $this->modal = null;
@@ -324,20 +290,29 @@ class UnitIndex extends Component
 
     public function deleteUnit($id)
     {
-        $unit = SystemUnit::findOrFail($id);
+        $unit = SystemUnit::with($this->unitRelations)->findOrFail($id);
 
-        if (
-            Auth::user()->hasRole('lab_incharge') &&
-            $unit->room->lab_in_charge_id !== Auth::id()
-        ) {
+        if (Auth::user()->hasRole('lab_incharge') &&
+            $unit->room->lab_in_charge_id !== Auth::id()) {
             abort(403, 'Unauthorized action.');
         }
 
+        // Nullify all related components/peripherals
+        foreach ($this->unitRelations as $relation) {
+            $items = $unit->$relation;
+            if ($items instanceof \Illuminate\Support\Collection) {
+                foreach ($items as $item) {
+                    $item->system_unit_id = null;
+                    $item->save();
+                }
+            } elseif ($items) {
+                $items->system_unit_id = null;
+                $items->save();
+            }
+        }
+
         $unit->delete();
-
-        // Broadcast event with only ID
         broadcast(new UnitDeleted(['id' => $id]))->toOthers();
-
         session()->flash('success', 'System Unit deleted.');
     }
 

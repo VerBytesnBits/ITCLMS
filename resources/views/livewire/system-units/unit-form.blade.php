@@ -96,43 +96,78 @@
                             $middleTab === 'components'
                                 ? $availableComponents[$selectedType] ?? []
                                 : $availablePeripherals[$selectedType] ?? [];
+
                         $selectedList =
                             $middleTab === 'components'
                                 ? $unitSelections['components'][$selectedType] ?? []
                                 : $unitSelections['peripherals'][$selectedType] ?? [];
                     @endphp
 
-                    {{-- Available items --}}
-                    <h3 class="font-semibold mb-2">Available {{ ucfirst(str_replace('_', ' ', $selectedType)) }}</h3>
-                    @forelse ($list as $item)
-                        <div class="flex justify-between items-center border-b py-1">
-                            <span>{{ $item['brand'] ?? '' }} {{ $item['model'] ?? '' }}</span>
-                            <button wire:click="addToUnit('{{ $selectedType }}', {{ $item['id'] }})"
-                                class="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded text-sm">
-                                + Add
+                    {{-- Add/Edit Form --}}
+                    @if ($formMode ?? false)
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="font-semibold">
+                                {{ $editingPartId ? 'Edit ' : 'Add ' }}
+                                {{ ucfirst(str_replace('_', ' ', $selectedType)) }}
+                            </h3>
+                            <button wire:click="$set('formMode', false)"
+                                class="bg-gray-500 text-white px-2 py-1 rounded">
+                                Back
                             </button>
                         </div>
-                    @empty
-                        <p class="text-gray-500">No items found.</p>
-                    @endforelse
 
-                    {{-- Selected items --}}
-                    @if (count($selectedList) > 0)
-                        <h3 class="font-semibold mt-4 mb-2">Selected</h3>
-                        @foreach ($selectedList as $sel)
+                        <livewire:part-form :unitId="$unitId ?? null" :type="$selectedType" :partId="$editingPartId"
+                            key="{{ $selectedType . '-' . ($editingPartId ?? 'new') }}" />
+                    @else
+                        {{-- Available Items --}}
+                        <div class="flex justify-between items-center mb-2">
+                            <h3 class="font-semibold">Available {{ ucfirst(str_replace('_', ' ', $selectedType)) }}
+                            </h3>
+                            <button wire:click="$set('formMode', true); $set('editingPartId', null)"
+                                class="bg-green-500 text-white px-2 py-1 rounded">+ Add</button>
+                        </div>
+
+                        @forelse ($list as $item)
+                            @php $itemId = $item['id'] ?? $item['temp_id']; @endphp
                             <div class="flex justify-between items-center border-b py-1">
-                                <span>{{ $sel['brand'] ?? '' }} {{ $sel['model'] ?? '' }}</span>
-                                <button wire:click="removeFromUnit('{{ $selectedType }}', {{ $sel['id'] }})"
-                                    class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-sm">
-                                    Remove
-                                </button>
+                                <span>{{ $item['brand'] ?? '' }} {{ $item['model'] ?? '' }}</span>
+                                <div class="flex gap-2">
+                                    <button
+                                        wire:click="$set('formMode', true); $set('editingPartId', {{ $item['id'] ?? 'null' }})"
+                                        class="bg-yellow-500 text-white px-2 py-1 rounded text-sm">
+                                        Edit
+                                    </button>
+                                    <button wire:click="addToUnit('{{ $selectedType }}', '{{ $itemId }}')"
+                                        class="bg-blue-500 text-white px-2 py-1 rounded text-sm">
+                                        + Add
+                                    </button>
+                                </div>
                             </div>
-                        @endforeach
+                        @empty
+                            <p class="text-gray-500">No items found.</p>
+                        @endforelse
+
+                        {{-- Selected Items --}}
+                        @if (!empty($selectedList))
+                            <h3 class="font-semibold mt-4 mb-2">Selected</h3>
+                            @foreach ($selectedList as $sel)
+                                @php $selId = $sel['id'] ?? $sel['temp_id']; @endphp
+                                <div class="flex justify-between items-center border-b py-1">
+                                    <span>{{ $sel['brand'] ?? '' }} {{ $sel['model'] ?? '' }}</span>
+                                    <button wire:click="removeFromUnit('{{ $selectedType }}', '{{ $selId }}')"
+                                        class="bg-red-500 text-white px-2 py-1 rounded text-sm">
+                                        Remove
+                                    </button>
+                                </div>
+                            @endforeach
+                        @endif
                     @endif
                 @else
                     <p class="text-gray-500">Select a type from the left to view items.</p>
                 @endif
             </div>
+
+
         </div>
 
         {{-- Save Button --}}

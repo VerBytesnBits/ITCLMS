@@ -5,10 +5,15 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
-    public function up(): void {
+    public function up(): void
+    {
         Schema::create('mice', function (Blueprint $table) { // table name 'mice' (plural of mouse)
             $table->id();
-            $table->foreignId('system_unit_id')->constrained()->onDelete('cascade');
+            $table->foreignId('system_unit_id')
+                ->nullable()
+                ->constrained()
+                ->nullOnDelete(); // <- important
+
             $table->string('brand');
             $table->string('model');
             $table->string('serial_number')->nullable();
@@ -18,7 +23,8 @@ return new class extends Migration {
             $table->timestamps();
         });
     }
-    public function down(): void {
+    public function down(): void
+    {
         Schema::dropIfExists('mice');
     }
 };

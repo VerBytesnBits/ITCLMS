@@ -2,70 +2,12 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Events\UnitCreated;
-use App\Events\UnitUpdated;
-use App\Events\UnitDeleted;
 
 class SystemUnit extends Model
 {
-    use HasFactory;
+    protected $fillable = ['name', 'room_id', 'status'];
 
-    protected $fillable = [
-        'room_id',
-        'name',
-        'brand',
-        'model',
-        'serial_number',
-        'inventory_code',
-        'status',
-        'date_purchased',
-        'drive_id',
-        'processor_id',
-        'cpu_cooler_id',
-        'motherboard_id',
-        'memory_id',
-        'graphics_card_id',
-        'power_supply_id',
-        'computer_case_id'
-    ];
-
-
-
-    protected static function booted()
-    {
-        static::created(function ($unit) {
-            broadcast(new UnitCreated($unit))->toOthers();
-        });
-
-        static::updated(function ($unit) {
-            broadcast(new UnitUpdated($unit))->toOthers();
-        });
-
-        static::deleted(function ($unit) {
-            broadcast(new UnitDeleted($unit->id))->toOthers();
-        });
-    }
-
-    public function m2Ssd()
-    {
-        return $this->belongsTo(M2Ssd::class, 'drive_id');
-    }
-
-    public function sataSsd()
-    {
-        return $this->belongsTo(SataSsd::class, 'drive_id');
-    }
-
-    public function hardDiskDrive()
-    {
-        return $this->belongsTo(HardDiskDrive::class, 'drive_id');
-    }
-
-    /**
-     * Standard component relationships
-     */
     public function room()
     {
         return $this->belongsTo(Room::class);
@@ -73,42 +15,54 @@ class SystemUnit extends Model
 
     public function processor()
     {
-        return $this->belongsTo(Processor::class);
+        return $this->hasOne(Processor::class); // One processor per unit
     }
 
     public function cpuCooler()
     {
-        return $this->belongsTo(CpuCooler::class);
+        return $this->hasOne(CpuCooler::class);
     }
 
     public function motherboard()
     {
-        return $this->belongsTo(Motherboard::class);
+        return $this->hasOne(Motherboard::class);
     }
 
-    public function memory()
+    public function memories()
     {
-        return $this->belongsTo(Memory::class);
+        return $this->hasMany(Memory::class); // multiple RAM sticks
     }
 
-    public function graphicsCard()
+    public function graphicsCards()
     {
-        return $this->belongsTo(GraphicsCard::class);
+        return $this->hasMany(GraphicsCard::class);
     }
 
     public function powerSupply()
     {
-        return $this->belongsTo(PowerSupply::class);
+        return $this->hasOne(PowerSupply::class);
     }
 
     public function computerCase()
     {
-        return $this->belongsTo(ComputerCase::class);
+        return $this->hasOne(ComputerCase::class);
     }
 
-    /**
-     * Peripheral relationships
-     */
+    public function m2Ssds()
+    {
+        return $this->hasMany(M2Ssd::class);
+    }
+
+    public function sataSsds()
+    {
+        return $this->hasMany(SataSsd::class);
+    }
+
+    public function hardDiskDrives()
+    {
+        return $this->hasMany(HardDiskDrive::class);
+    }
+
     public function monitor()
     {
         return $this->hasOne(Display::class);

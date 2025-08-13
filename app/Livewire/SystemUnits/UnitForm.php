@@ -36,27 +36,29 @@ class UnitForm extends Component
     public string $middleTab = 'components';
     public $selectedComponentType = null;
     public $selectedPeripheralType = null;
+    public $formMode = false;
+    public $editingPartId = null;
 
     public array $componentTypes = [
-        'processors',
-        'cpu_coolers',
-        'motherboards',
+        'processor',
+        'cpuCooler',
+        'motherboard',
         'memories',
-        'graphics_cards',
-        'm2_ssds',
-        'sata_ssds',
-        'hard_disk_drives',
-        'power_supplies',
-        'computer_cases'
+        'graphicsCards',
+        'powerSupply',
+        'computerCase',
+        'm2Ssds',
+        'sataSsds',
+        'hardDiskDrives'
     ];
 
     public array $peripheralTypes = [
-        'monitors',
-        'keyboards',
-        'mice',
-        'headsets',
-        'speakers',
-        'web_cameras'
+        'monitor',
+        'keyboard',
+        'mouse',
+        'headset',
+        'speaker',
+        'webCamera'
     ];
 
     public array $availableComponents = [];
@@ -85,24 +87,8 @@ class UnitForm extends Component
         $this->rooms = Room::all();
 
         if ($unitId) {
-            $unit = SystemUnit::with([
-                'processor',
-                'cpuCooler',
-                'motherboard',
-                'memory',
-                'graphicsCard',
-                'm2Ssd',
-                'sataSsd',
-                'hardDiskDrive',
-                'powerSupply',
-                'computerCase',
-                'monitor',
-                'keyboard',
-                'mouse',
-                'headset',
-                'speaker',
-                'webCamera',
-            ])->findOrFail($unitId);
+            $unit = SystemUnit::with(array_merge($this->componentTypes, $this->peripheralTypes))
+                ->findOrFail($unitId);
 
             $this->fill([
                 'name' => $unit->name,
@@ -114,7 +100,9 @@ class UnitForm extends Component
             foreach ($this->componentTypes as $type) {
                 if ($relation = $unit->{\Str::camel($type)}) {
                     $this->unitSelections['components'][$type] = collect(is_iterable($relation) ? $relation : [$relation])
-                        ->map(fn($item) => $item->only(['id', 'brand', 'model']))
+                        ->map(fn($item) => array_merge($item->only(['id', 'brand', 'model']), [
+                            'temp_id' => uniqid('temp_')
+                        ]))
                         ->toArray();
                 }
             }
@@ -122,7 +110,9 @@ class UnitForm extends Component
             foreach ($this->peripheralTypes as $type) {
                 if ($relation = $unit->{\Str::camel($type)}) {
                     $this->unitSelections['peripherals'][$type] = collect(is_iterable($relation) ? $relation : [$relation])
-                        ->map(fn($item) => $item->only(['id', 'brand', 'model']))
+                        ->map(fn($item) => array_merge($item->only(['id', 'brand', 'model']), [
+                            'temp_id' => uniqid('temp_')
+                        ]))
                         ->toArray();
                 }
             }
@@ -132,6 +122,7 @@ class UnitForm extends Component
 
         $this->loadAvailableItems();
     }
+
 
     /**
      * Generate unit name when a room is selected.
@@ -143,7 +134,8 @@ class UnitForm extends Component
         }
 
         $room = Room::find($value);
-        if (!$room) return;
+        if (!$room)
+            return;
 
         // Extract number from room name or fallback to ID
         preg_match('/\d+/', $room->name, $matches);
@@ -161,28 +153,36 @@ class UnitForm extends Component
 
     protected function loadAvailableItems()
     {
-        $this->availableComponents = [
-            'processors' => Processor::all()->toArray(),
-            'cpu_coolers' => CpuCooler::all()->toArray(),
-            'motherboards' => Motherboard::all()->toArray(),
-            'memories' => Memory::all()->toArray(),
-            'graphics_cards' => GraphicsCard::all()->toArray(),
-            'm2_ssds' => M2Ssd::all()->toArray(),
-            'sata_ssds' => SataSsd::all()->toArray(),
-            'hard_disk_drives' => HardDiskDrive::all()->toArray(),
-            'power_supplies' => PowerSupply::all()->toArray(),
-            'computer_cases' => ComputerCase::all()->toArray(),
-        ];
+        // Components
+        $this->availableComponents = [];
+        foreach ($this->componentTypes as $type) {
+            $model = $this->modelMap()[$type];
 
-        $this->availablePeripherals = [
-            'monitors' => Display::all()->toArray(),
-            'keyboards' => Keyboard::all()->toArray(),
-            'mice' => Mouse::all()->toArray(),
-            'headsets' => Headset::all()->toArray(),
-            'speakers' => Speaker::all()->toArray(),
-            'web_cameras' => WebDigitalCamera::all()->toArray(),
-        ];
+            $this->availableComponents[$type] = $model::where(function ($query) use ($type) {
+                $query->whereNull('system_unit_id'); // unassigned items
+                if ($this->unitId) {
+                    $query->orWhere('system_unit_id', $this->unitId); // include items already assigned to this unit
+                }
+            })->get()->toArray();
+        }
+
+        // Peripherals
+        $this->availablePeripherals = [];
+        foreach ($this->peripheralTypes as $type) {
+            $model = $this->modelMap()[$type];
+
+            $this->availablePeripherals[$type] = $model::where(function ($query) use ($type) {
+                $query->whereNull('system_unit_id'); // unassigned items
+                if ($this->unitId) {
+                    $query->orWhere('system_unit_id', $this->unitId); // include items already assigned to this unit
+                }
+            })->get()->toArray();
+        }
     }
+
+
+
+
 
     public function setMiddleTab($tab)
     {
@@ -198,73 +198,226 @@ class UnitForm extends Component
         }
     }
 
-    public function addToUnit($type, $id)
+    public function addToUnit($type, $idOrTempId)
     {
-        $list = $this->middleTab === 'components' ? $this->availableComponents : $this->availablePeripherals;
-        $item = collect($list[$type] ?? [])->firstWhere('id', $id);
+        $targetGroup = $this->middleTab;
+        $list = $targetGroup === 'components' ? $this->availableComponents : $this->availablePeripherals;
+
+        $item = collect($list[$type] ?? [])->firstWhere('id', $idOrTempId)
+            ?? collect($this->unitSelections[$targetGroup][$type] ?? [])
+                ->firstWhere('temp_id', $idOrTempId);
 
         if ($item) {
-            $this->unitSelections[$this->middleTab][$type][] = $item;
+            // Assign temp_id if missing
+            if (!isset($item['id']) && !isset($item['temp_id'])) {
+                $item['temp_id'] = uniqid('temp_');
+            }
+
+            $alreadyAdded = collect($this->unitSelections[$targetGroup][$type] ?? [])
+                ->contains(fn($existing) => ($existing['id'] ?? $existing['temp_id']) === ($item['id'] ?? $item['temp_id']));
+
+            if (!$alreadyAdded) {
+                $this->unitSelections[$targetGroup][$type][] = $item;
+            }
         }
+
+        $this->dispatch('unit-parts-updated', [
+            'unitId' => $this->unitId ?? 'temp_' . spl_object_id($this),
+            'selections' => $this->unitSelections
+        ]);
     }
 
-    public function removeFromUnit($type, $id)
+
+
+    public function removeFromUnit($type, $idOrTempId)
     {
-        $this->unitSelections[$this->middleTab][$type] = array_filter(
-            $this->unitSelections[$this->middleTab][$type] ?? [],
-            fn($i) => $i['id'] != $id
-        );
+        $isComponent = array_key_exists($type, $this->unitSelections['components']);
+        $targetGroup = $isComponent ? 'components' : 'peripherals';
+
+        $this->unitSelections[$targetGroup][$type] = array_values(array_filter(
+            $this->unitSelections[$targetGroup][$type],
+            fn($item) => ($item['id'] ?? $item['temp_id']) != $idOrTempId
+        ));
+
+        $this->dispatch('unit-parts-updated', [
+            'unitId' => $this->unitId ?? 'temp_' . spl_object_id($this),
+            'selections' => $this->unitSelections
+        ]);
     }
+
+
+
+
+
+
+    public function addTempPart($type, $fields)
+    {
+        $this->unitSelections[
+            $this->middleTab
+        ][$type][] = $fields;
+    }
+    protected $listeners = [
+        'part-saved' => 'handlePartSaved',
+        'part-temp-added' => 'handlePartTempAdded',
+    ];
+
+    public function handlePartTempAdded($payload)
+    {
+        $type = $payload['type'];
+        unset($payload['type']);
+
+        $targetGroup = in_array($type, $this->componentTypes) ? 'components' : 'peripherals';
+
+        if (!isset($this->unitSelections[$targetGroup][$type])) {
+            $this->unitSelections[$targetGroup][$type] = [];
+        }
+
+        // Assign temp_id if missing
+        if (!isset($payload['temp_id'])) {
+            $payload['temp_id'] = uniqid('temp_');
+        }
+
+        // Prevent duplicates
+        $alreadyExists = collect($this->unitSelections[$targetGroup][$type])
+            ->contains(fn($item) => ($item['id'] ?? $item['temp_id']) === ($payload['id'] ?? $payload['temp_id']));
+
+        if (!$alreadyExists) {
+            $this->unitSelections[$targetGroup][$type][] = $payload;
+        }
+
+        $this->formMode = false;
+        $this->editingPartId = null;
+    }
+
+
+
 
     public function save()
     {
         $this->validate();
 
-        $unit = $this->unitId ? SystemUnit::findOrFail($this->unitId) : new SystemUnit();
-        $unit->fill([
-            'name' => $this->name,
-            'status' => $this->status,
-            'room_id' => $this->room_id,
-        ])->save();
-
-        foreach ($this->unitSelections['components'] as $type => $items) {
-            $relation = \Str::camel($type);
-            $unit->$relation()->sync(collect($items)->pluck('id')->toArray());
+        // If editing existing unit
+        if ($this->unitId) {
+            $unit = SystemUnit::findOrFail($this->unitId);
+        } else {
+            // New unit
+            $unit = SystemUnit::create([
+                'name' => $this->name,
+                'status' => $this->status,
+                'room_id' => $this->room_id,
+            ]);
+            $this->unitId = $unit->id;
         }
 
-        foreach ($this->unitSelections['peripherals'] as $type => $items) {
-            $relation = \Str::camel($type);
-            $unit->$relation()->sync(collect($items)->pluck('id')->toArray());
-        }
+        // --------------------
+        // Components
+        // --------------------
+        foreach ($this->unitSelections['components'] as $type => &$items) {
+            $modelClass = $this->modelMap()[$type];
+            $isMany = in_array($type, ['memories', 'graphicsCards', 'm2Ssds', 'sataSsds', 'hardDiskDrives']);
+            $ids = [];
 
+            foreach ($items as &$item) {
+                if (!empty($item['id'])) {
+                    // Existing DB item → reassign
+                    $model = $modelClass::find($item['id']);
+                    if ($model) {
+                        $model->system_unit_id = $unit->id;
+                        $model->save();
+                        $ids[] = $model->id;
+                    }
+                } else {
+                    // New temporary item → create
+                    $item['system_unit_id'] = $unit->id;
+                    $newModel = $modelClass::create($item);
+                    $item['id'] = $newModel->id;
+                    unset($item['temp_id']);
+                    $ids[] = $newModel->id;
+                }
+            }
+
+            // Detach previous items
+            if ($isMany) {
+                $modelClass::where('system_unit_id', $unit->id)
+                    ->whereNotIn('id', $ids)
+                    ->update(['system_unit_id' => null]);
+            } else {
+                $modelClass::where('system_unit_id', $unit->id)
+                    ->where('id', '!=', $ids[0] ?? 0)
+                    ->update(['system_unit_id' => null]);
+            }
+
+            unset($item);
+        }
+        unset($items);
+
+        // --------------------
+        // Peripherals
+        // --------------------
+        foreach ($this->unitSelections['peripherals'] as $type => &$items) {
+            $modelClass = $this->modelMap()[$type];
+            $ids = [];
+
+            foreach ($items as &$item) {
+                if (!empty($item['id'])) {
+                    $model = $modelClass::find($item['id']);
+                    if ($model) {
+                        $model->system_unit_id = $unit->id;
+                        $model->save();
+                        $ids[] = $model->id;
+                    }
+                } else {
+                    $item['system_unit_id'] = $unit->id;
+                    $newModel = $modelClass::create($item);
+                    $item['id'] = $newModel->id;
+                    unset($item['temp_id']);
+                    $ids[] = $newModel->id;
+                }
+            }
+
+            // Detach peripherals no longer selected
+            $modelClass::where('system_unit_id', $unit->id)
+                ->whereNotIn('id', $ids)
+                ->update(['system_unit_id' => null]);
+
+            unset($item);
+        }
+        unset($items);
+
+        // --------------------
+        // Flash & reset
+        // --------------------
+        session()->flash('success', 'System unit saved!');
         event(new UnitUpdated($unit));
 
-        session()->flash('success', 'System unit saved!');
         $this->resetExcept('rooms', 'componentTypes', 'peripheralTypes');
         $this->loadAvailableItems();
     }
 
+
+
     private function modelMap()
     {
         return [
-            'processors' => Processor::class,
-            'cpu_coolers' => CpuCooler::class,
-            'motherboards' => Motherboard::class,
+            'processor' => Processor::class,
+            'cpuCooler' => CpuCooler::class,
+            'motherboard' => Motherboard::class,
             'memories' => Memory::class,
-            'graphics_cards' => GraphicsCard::class,
-            'm2_ssds' => M2Ssd::class,
-            'sata_ssds' => SataSsd::class,
-            'hard_disk_drives' => HardDiskDrive::class,
-            'power_supplies' => PowerSupply::class,
-            'computer_cases' => ComputerCase::class,
-            'monitors' => Display::class,
-            'keyboards' => Keyboard::class,
-            'mice' => Mouse::class,
-            'headsets' => Headset::class,
-            'speakers' => Speaker::class,
-            'web_cameras' => WebDigitalCamera::class,
+            'graphicsCards' => GraphicsCard::class,
+            'powerSupply' => PowerSupply::class,
+            'computerCase' => ComputerCase::class,
+            'm2Ssds' => M2Ssd::class,
+            'sataSsds' => SataSsd::class,
+            'hardDiskDrives' => HardDiskDrive::class,
+            'monitor' => Display::class,
+            'keyboard' => Keyboard::class,
+            'mouse' => Mouse::class,
+            'headset' => Headset::class,
+            'speaker' => Speaker::class,
+            'webCamera' => WebDigitalCamera::class,
         ];
     }
+
 
     public function render()
     {

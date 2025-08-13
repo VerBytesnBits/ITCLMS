@@ -5,10 +5,15 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
-    public function up(): void {
+    public function up(): void
+    {
         Schema::create('power_supplies', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('system_unit_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('system_unit_id')
+                ->nullable()
+                ->constrained()
+                ->nullOnDelete(); // <- important
+
             $table->string('brand')->nullable();
             $table->string('model')->nullable();
             $table->integer('wattage')->nullable();
@@ -21,7 +26,8 @@ return new class extends Migration {
         });
     }
 
-    public function down(): void {
+    public function down(): void
+    {
         Schema::dropIfExists('power_supplies');
     }
 };

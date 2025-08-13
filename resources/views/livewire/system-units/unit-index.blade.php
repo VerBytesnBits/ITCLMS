@@ -117,6 +117,7 @@
         </div>
     </x-modal>
 
+
     {{-- Table --}}
     <div
         class="overflow-x-auto bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl shadow-sm mt-6">
@@ -159,9 +160,7 @@
                     <tr class="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                         <td class="px-4 py-2 text-center">{{ $unit->id }}</td>
                         <td class="px-4 py-2 text-center">
-                            {{ $unit->processor
-                                ? "{$unit->processor->brand} {$unit->processor->model} {$unit->processor->base_clock}GHz"
-                                : 'N/A' }}
+                            {{ $unit->processor ? $unit->processor->brand . ' ' . $unit->processor->model : 'N/A' }}
                         </td>
                         <td class="px-4 py-2 text-center">
                             {{ $unit->motherboard ? $unit->motherboard->brand . ' ' . $unit->motherboard->model : 'N/A' }}
