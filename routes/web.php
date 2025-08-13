@@ -34,7 +34,7 @@ Route::middleware(['auth'])->group(function () {
         ->name('rooms');
 
     Route::view('units', 'units')
-        // ->middleware('can:view.system-units')  // adjust the permission name accordingly
+        // ->middleware('can:view.system-units')  
         ->name('units');
 
 

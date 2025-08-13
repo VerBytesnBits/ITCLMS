@@ -20,16 +20,16 @@ class DatabaseSeeder extends Seeder
     public function run(): void
 {
     $this->call([
-        CpuCoolerSeeder::class,
-        MotherboardSeeder::class,
-        MemorySeeder::class,
-        GraphicsCardSeeder::class,
-        M2SsdSeeder::class,
-        SataSsdSeeder::class,
-        HardDiskDriveSeeder::class,
-        PowerSupplySeeder::class,
-        ComputerCaseSeeder::class,
-        ProcessorSeeder::class,
+        // CpuCoolerSeeder::class,
+        // MotherboardSeeder::class,
+        // MemorySeeder::class,
+        // GraphicsCardSeeder::class,
+        // M2SsdSeeder::class,
+        // SataSsdSeeder::class,
+        // HardDiskDriveSeeder::class,
+        // PowerSupplySeeder::class,
+        // ComputerCaseSeeder::class,
+        // ProcessorSeeder::class,
         RolePermissionSeeder::class,
     ]);
 }

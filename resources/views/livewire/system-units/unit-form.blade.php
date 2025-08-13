@@ -1,205 +1,149 @@
-<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4 ">
-    <div
-        class="bg-white dark:bg-zinc-800 p-6 rounded-2xl shadow-2xl w-full max-w-4xl animate-[fade-in-scale_0.2s_ease-out] overflow-y-auto max-h-[90vh]">
+<div x-data="{ startX: 0, endX: 0 }" x-on:touchstart="startX = $event.touches[0].clientX"
+    x-on:touchend="endX = $event.changedTouches[0].clientX; if (startX - endX > 100) { $wire.dispatch('closeModal') }"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
 
-        <h2 class="text-xl font-bold mb-4 dark:text-white">
-            {{ $modalMode === 'create' ? 'Create System Unit' : 'Edit System Unit' }}
+    <div
+        class="bg-white dark:bg-zinc-800 p-6 rounded-2xl shadow-2xl w-full max-w-6xl
+        animate-[fade-in-scale_0.2s_ease-out] max-h-[90vh] overflow-auto relative">
+
+        {{-- Custom Close Button --}}
+        <button wire:click="$dispatch('closeModal')"
+            class="absolute top-4 right-4 text-gray-600 hover:text-gray-900 text-2xl font-bold"
+            aria-label="Close modal">&times;
+        </button>
+
+        {{-- Title --}}
+        <h2 class="text-2xl font-bold mb-6 text-center text-zinc-800 dark:text-white">
+            {{ $modalMode === 'edit' ? 'Edit Unit' : 'Add Unit' }}
         </h2>
 
-        <form wire:submit.prevent="save" class="space-y-4">
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-
-                {{-- Unit Name --}}
-                <div>
-                    <label for="name" class="block mb-1 font-semibold dark:text-white">Unit Name</label>
-                    <input type="text" id="name" wire:model.defer="name"
-                        class="w-full border rounded px-3 py-2 dark:bg-zinc-700 dark:text-white" />
-                    @error('name')
-                        <span class="text-red-500 text-sm">{{ $message }}</span>
-                    @enderror
-                </div>
-
-                {{-- Room --}}
-                <div>
-                    <label for="room_id" class="block mb-1 font-semibold dark:text-white">Room</label>
-                    <select id="room_id" wire:model.defer="room_id"
-                        class="w-full border rounded px-3 py-2 dark:bg-zinc-700 dark:text-white">
-                        <option value="">-- Select Room --</option>
-                        @foreach ($rooms as $room)
-                            <option value="{{ $room->id }}">{{ $room->name }}</option>
-                        @endforeach
-                    </select>
-                    @error('room_id')
-                        <span class="text-red-500 text-sm">{{ $message }}</span>
-                    @enderror
-                </div>
-
-                {{-- Processor --}}
-                <div class="sm:col-span-2">
-                    <label for="processor_id" class="block mb-1 font-semibold dark:text-white">Processor</label>
-                    <select id="processor_id" wire:model.defer="processor_id"
-                        class="w-full border rounded px-3 py-2 dark:bg-zinc-700 dark:text-white">
-                        <option value="">-- Select Processor --</option>
-                        @foreach ($processors as $cpu)
-                            <option value="{{ $cpu->id }}">
-                                {{ $cpu->brand }} {{ $cpu->model }}
-                                {{ $cpu->base_clock ? $cpu->base_clock . 'GHz' : '' }}
-                                {{ $cpu->boost_clock ? '(Boost ' . $cpu->boost_clock . 'GHz)' : '' }}
-                            </option>
-                        @endforeach
-                    </select>
-                    @error('processor_id')
-                        <span class="text-red-500 text-sm">{{ $message }}</span>
-                    @enderror
-                </div>
-
-                {{-- CPU Cooler --}}
-                <div>
-                    <label for="cpu_cooler_id" class="block mb-1 font-semibold dark:text-white">CPU Cooler</label>
-                    <select id="cpu_cooler_id" wire:model.defer="cpu_cooler_id"
-                        class="w-full border rounded px-3 py-2 dark:bg-zinc-700 dark:text-white">
-                        <option value="">-- Select CPU Cooler --</option>
-                        @foreach ($cpuCoolers as $cooler)
-                            <option value="{{ $cooler->id }}">{{ $cooler->brand }} {{ $cooler->model }}</option>
-                        @endforeach
-                    </select>
-                    @error('cpu_cooler_id')
-                        <span class="text-red-500 text-sm">{{ $message }}</span>
-                    @enderror
-                </div>
-
-                {{-- Motherboard --}}
-                <div>
-                    <label for="motherboard_id" class="block mb-1 font-semibold dark:text-white">Motherboard</label>
-                    <select id="motherboard_id" wire:model.defer="motherboard_id"
-                        class="w-full border rounded px-3 py-2 dark:bg-zinc-700 dark:text-white">
-                        <option value="">-- Select Motherboard --</option>
-                        @foreach ($motherboards as $board)
-                            <option value="{{ $board->id }}">{{ $board->brand }} {{ $board->model }}</option>
-                        @endforeach
-                    </select>
-                    @error('motherboard_id')
-                        <span class="text-red-500 text-sm">{{ $message }}</span>
-                    @enderror
-                </div>
-
-                {{-- Memory --}}
-                <div>
-                    <label for="memory_id" class="block mb-1 font-semibold dark:text-white">RAM</label>
-                    <select id="memory_id" wire:model.defer="memory_id"
-                        class="w-full border rounded px-3 py-2 dark:bg-zinc-700 dark:text-white">
-                        <option value="">-- Select RAM --</option>
-                        @foreach ($memories as $ram)
-                            <option value="{{ $ram->id }}">{{ $ram->type }} {{ $ram->capacity }}GB</option>
-                        @endforeach
-                    </select>
-                    @error('memory_id')
-                        <span class="text-red-500 text-sm">{{ $message }}</span>
-                    @enderror
-                </div>
-
-                {{-- Graphics Card --}}
-                <div>
-                    <label for="graphics_card_id" class="block mb-1 font-semibold dark:text-white">Graphics Card</label>
-                    <select id="graphics_card_id" wire:model.defer="graphics_card_id"
-                        class="w-full border rounded px-3 py-2 dark:bg-zinc-700 dark:text-white">
-                        <option value="">-- Select GPU --</option>
-                        @foreach ($graphicsCards as $gpu)
-                            <option value="{{ $gpu->id }}">{{ $gpu->brand }} {{ $gpu->model }}</option>
-                        @endforeach
-                    </select>
-                    @error('graphics_card_id')
-                        <span class="text-red-500 text-sm">{{ $message }}</span>
-                    @enderror
-                </div>
-
-                {{-- Drive --}}
-                <div class="sm:col-span-2">
-                    <label for="drive" class="block mb-1 font-semibold dark:text-white">Select Drive</label>
-                    <select id="drive" wire:model="drive_id"
-                        class="w-full border rounded px-3 py-2 dark:bg-zinc-700 dark:text-white">
-                        <option value="">-- Select Drive --</option>
-                        <optgroup label="M.2 SSDs">
-                            @foreach ($m2Ssds as $ssd)
-                                <option value="m2|{{ $ssd->id }}">{{ $ssd->brand }} {{ $ssd->model }}
-                                    ({{ $ssd->capacity }}GB)
-                                </option>
-                            @endforeach
-                        </optgroup>
-                        <optgroup label="SATA SSDs">
-                            @foreach ($sataSsds as $ssd)
-                                <option value="sata|{{ $ssd->id }}">{{ $ssd->brand }} {{ $ssd->model }}
-                                    ({{ $ssd->capacity }}GB)
-                                </option>
-                            @endforeach
-                        </optgroup>
-                        <optgroup label="Hard Disk Drives">
-                            @foreach ($hardDiskDrives as $hdd)
-                                <option value="hdd|{{ $hdd->id }}">{{ $hdd->brand }} {{ $hdd->model }}
-                                    ({{ $hdd->capacity }}GB)
-                                </option>
-                            @endforeach
-                        </optgroup>
-                    </select>
-                </div>
-
-                {{-- Power Supply --}}
-                <div>
-                    <label for="power_supply_id" class="block mb-1 font-semibold dark:text-white">Power Supply</label>
-                    <select id="power_supply_id" wire:model.defer="power_supply_id"
-                        class="w-full border rounded px-3 py-2 dark:bg-zinc-700 dark:text-white">
-                        <option value="">-- Select PSU --</option>
-                        @foreach ($powerSupplies as $psu)
-                            <option value="{{ $psu->id }}">{{ $psu->brand }} {{ $psu->wattage }}W</option>
-                        @endforeach
-                    </select>
-                    @error('power_supply_id')
-                        <span class="text-red-500 text-sm">{{ $message }}</span>
-                    @enderror
-                </div>
-
-                {{-- Case --}}
-                <div>
-                    <label for="computer_case_id" class="block mb-1 font-semibold dark:text-white">Case</label>
-                    <select id="computer_case_id" wire:model.defer="computer_case_id"
-                        class="w-full border rounded px-3 py-2 dark:bg-zinc-700 dark:text-white">
-                        <option value="">-- Select Case --</option>
-                        @foreach ($computerCases as $case)
-                            <option value="{{ $case->id }}">{{ $case->brand }} {{ $case->model }}</option>
-                        @endforeach
-                    </select>
-                    @error('computer_case_id')
-                        <span class="text-red-500 text-sm">{{ $message }}</span>
-                    @enderror
-                </div>
-
-                {{-- Status --}}
-                <div>
-                    <label for="status" class="block mb-1 font-semibold dark:text-white">Status</label>
-                    <select id="status" wire:model.defer="status" class="...">
-                        @foreach ($statuses as $statusOption)
-                            <option value="{{ $statusOption }}">{{ $statusOption }}</option>
-                        @endforeach
-                    </select>
-
-                    @error('status')
-                        <span class="text-red-500 text-sm">{{ $message }}</span>
-                    @enderror
-                </div>
-
+        {{-- Unit Info Fields --}}
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div>
+                <label class="block mb-1 font-semibold">Unit Name</label>
+                <input type="text" wire:model.defer="name" @if ($modalMode === 'create') readonly @endif
+                    class="w-full rounded-md border-gray-300 dark:bg-zinc-700 dark:border-zinc-600">
+                @error('name')
+                    <span class="text-red-500 text-sm">{{ $message }}</span>
+                @enderror
             </div>
 
-            {{-- Buttons --}}
-            <div class="flex justify-end space-x-2 pt-4">
-                <button type="button" wire:click="$dispatch('closeModal')"
-                    class="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400 dark:bg-zinc-600 dark:hover:bg-zinc-700">
-                    Cancel
-                </button>
-                <button type="submit"
-                    class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">
-                    {{ $modalMode === 'create' ? 'Save' : 'Update' }}
-                </button>
+            <div>
+                <label class="block mb-1 font-semibold">Room</label>
+                <select wire:model="room_id" wire:change="regenerateName($event.target.value)"
+                    class="w-full rounded-md border-gray-300 dark:bg-zinc-700 dark:border-zinc-600">
+                    <option value="">-- Select Room --</option>
+                    @foreach ($rooms as $room)
+                        <option value="{{ $room->id }}">{{ $room->name }}</option>
+                    @endforeach
+                </select>
+
+                @error('room_id')
+                    <span class="text-red-500 text-sm">{{ $message }}</span>
+                @enderror
             </div>
-        </form>
+
+            <div>
+                <label class="block mb-1 font-semibold">Status</label>
+                <select wire:model.defer="status"
+                    class="w-full rounded-md border-gray-300 dark:bg-zinc-700 dark:border-zinc-600">
+                    <option value="Operational">Operational</option>
+                    <option value="Needs Repair">Needs Repair</option>
+                    <option value="Non-Operational">Non-Operational</option>
+                </select>
+                @error('status')
+                    <span class="text-red-500 text-sm">{{ $message }}</span>
+                @enderror
+            </div>
+        </div>
+
+        {{-- Middle Tabs --}}
+        <div class="flex mb-4 border-b">
+            <button wire:click="setMiddleTab('components')"
+                class="px-4 py-2 {{ $middleTab === 'components' ? 'border-b-2 border-blue-600 font-semibold' : '' }}">
+                Components
+            </button>
+            <button wire:click="setMiddleTab('peripherals')"
+                class="px-4 py-2 {{ $middleTab === 'peripherals' ? 'border-b-2 border-blue-600 font-semibold' : '' }}">
+                Peripherals
+            </button>
+        </div>
+
+        {{-- 2-Column Layout --}}
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+
+            {{-- Left Column: Types --}}
+            <div class="border rounded-md p-2 overflow-auto max-h-[60vh]">
+                @php
+                    $types = $middleTab === 'components' ? $componentTypes : $peripheralTypes;
+                    $selectedType = $middleTab === 'components' ? $selectedComponentType : $selectedPeripheralType;
+                @endphp
+
+                @foreach ($types as $type)
+                    <button wire:click="selectMiddleType('{{ $type }}')"
+                        class="block w-full text-left px-3 py-2 rounded mb-1
+                        {{ $selectedType === $type ? 'bg-blue-300 font-semibold' : 'hover:bg-gray-100' }}">
+                        {{ ucfirst(str_replace('_', ' ', $type)) }}
+                    </button>
+                @endforeach
+            </div>
+
+            {{-- Right Column: Items --}}
+            <div class="md:col-span-3 border rounded-md p-2 overflow-auto max-h-[60vh]">
+                @if ($selectedType)
+                    @php
+                        $list =
+                            $middleTab === 'components'
+                                ? $availableComponents[$selectedType] ?? []
+                                : $availablePeripherals[$selectedType] ?? [];
+                        $selectedList =
+                            $middleTab === 'components'
+                                ? $unitSelections['components'][$selectedType] ?? []
+                                : $unitSelections['peripherals'][$selectedType] ?? [];
+                    @endphp
+
+                    {{-- Available items --}}
+                    <h3 class="font-semibold mb-2">Available {{ ucfirst(str_replace('_', ' ', $selectedType)) }}</h3>
+                    @forelse ($list as $item)
+                        <div class="flex justify-between items-center border-b py-1">
+                            <span>{{ $item['brand'] ?? '' }} {{ $item['model'] ?? '' }}</span>
+                            <button wire:click="addToUnit('{{ $selectedType }}', {{ $item['id'] }})"
+                                class="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded text-sm">
+                                + Add
+                            </button>
+                        </div>
+                    @empty
+                        <p class="text-gray-500">No items found.</p>
+                    @endforelse
+
+                    {{-- Selected items --}}
+                    @if (count($selectedList) > 0)
+                        <h3 class="font-semibold mt-4 mb-2">Selected</h3>
+                        @foreach ($selectedList as $sel)
+                            <div class="flex justify-between items-center border-b py-1">
+                                <span>{{ $sel['brand'] ?? '' }} {{ $sel['model'] ?? '' }}</span>
+                                <button wire:click="removeFromUnit('{{ $selectedType }}', {{ $sel['id'] }})"
+                                    class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-sm">
+                                    Remove
+                                </button>
+                            </div>
+                        @endforeach
+                    @endif
+                @else
+                    <p class="text-gray-500">Select a type from the left to view items.</p>
+                @endif
+            </div>
+        </div>
+
+        {{-- Save Button --}}
+        <div class="mt-6 flex justify-end gap-2">
+            <button wire:click="$dispatch('closeModal')"
+                class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md">
+                Cancel
+            </button>
+            <button wire:click="save" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md">
+                Save Unit
+            </button>
+        </div>
     </div>
 </div>
