@@ -295,12 +295,63 @@ class UnitForm extends Component
         session()->flash('success', 'Part deleted successfully.');
     }
 
+    // ==============================
+    // Edit Part to Unit
+    // ==============================
+
     public function editUnitPart($type, $partId)
     {
         $this->selectedType = $type;
-        $this->editingPartId = $partId;
-        $this->formMode = true; // show the form
+        $this->editingPartId = $partId; // Only this part will be editable
     }
+
+    public function updateUnitPart($type, $partId, $updatedData)
+    {
+        if (!$this->unitId || !$partId) {
+            return;
+        }
+
+        $modelClass = PartsConfig::modelMap()[$type] ?? null;
+        if (!$modelClass) {
+            return;
+        }
+
+        // Get allowed fields from PartsConfig
+        $allowedFields = array_keys(PartsConfig::defaultFields($type));
+
+        // Filter incoming data to only allowed fields
+        $updateData = [];
+        foreach ($allowedFields as $field) {
+            if (array_key_exists($field, $updatedData)) {
+                $updateData[$field] = $updatedData[$field];
+            }
+        }
+
+        // Save to DB
+        $part = $modelClass::find($partId);
+        if ($part) {
+            $part->update($updateData);
+        }
+
+        // Update local array so UI updates instantly
+        $group = in_array($type, $this->componentTypes) ? 'components' : 'peripherals';
+        foreach ($this->unitSelections[$group][$type] as &$item) {
+            if (($item['id'] ?? null) == $partId) {
+                foreach ($updateData as $field => $value) {
+                    $item[$field] = $value;
+                }
+                break;
+            }
+        }
+
+        // Exit edit mode
+        $this->editingPartId = null;
+
+        $this->loadAvailableItems();
+        session()->flash('success', 'Part updated successfully.');
+    }
+
+
 
 
     // ==============================
@@ -372,10 +423,10 @@ class UnitForm extends Component
             }
         }
 
-        // If unit is non-operational, update parts status
-        if ($unit->status === 'Non-Operational') {
-            $unit->updatePartsStatus('Under Maintenance');
-        }
+        // // If unit is non-operational, update parts status
+        // if ($unit->status === 'Non-Operational') {
+        //     $unit->updatePartsStatus('Under Maintenance');
+        // }
 
         session()->flash('success', 'System unit saved!');
         event(new UnitUpdated($unit));

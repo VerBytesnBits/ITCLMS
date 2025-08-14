@@ -94,34 +94,34 @@ class SystemUnit extends Model
     }
 
     // 🔹 Helper method to update all related parts
-    public function updatePartsStatus($status)
-    {
-        $relations = [
-            'processor',
-            'cpuCooler',
-            'motherboard',
-            'memories',
-            'graphicsCards',
-            'm2Ssds',
-            'sataSsds',
-            'hardDiskDrives',
-            'powerSupply',
-            'computerCase',
-            'monitor',
-            'keyboard',
-            'mouse',
-            'headset',
-            'speaker',
-            'webCamera'
-        ];
+    // public function updatePartsStatus($status)
+    // {
+    //     $relations = [
+    //         'processor',
+    //         'cpuCooler',
+    //         'motherboard',
+    //         'memories',
+    //         'graphicsCards',
+    //         'm2Ssds',
+    //         'sataSsds',
+    //         'hardDiskDrives',
+    //         'powerSupply',
+    //         'computerCase',
+    //         'monitor',
+    //         'keyboard',
+    //         'mouse',
+    //         'headset',
+    //         'speaker',
+    //         'webCamera'
+    //     ];
 
-        foreach ($relations as $relation) {
-            $related = $this->{$relation}();
-            if ($related instanceof \Illuminate\Database\Eloquent\Relations\HasMany) {
-                $related->update(['status' => $status]);
-            } else {
-                $related->update(['status' => $status]);
-            }
-        }
-    }
+    //     foreach ($relations as $relation) {
+    //         $related = $this->{$relation}();
+    //         if ($related instanceof \Illuminate\Database\Eloquent\Relations\HasMany) {
+    //             $related->update(['status' => $status]);
+    //         } else {
+    //             $related->update(['status' => $status]);
+    //         }
+    //     }
+    // }
 }

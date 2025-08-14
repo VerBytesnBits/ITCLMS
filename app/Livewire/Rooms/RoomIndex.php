@@ -18,24 +18,7 @@ class RoomIndex extends Component
     public ?int $id = null;
 
     public $rooms;
-     public array $unitRelations = [
-        'processor',
-        'cpuCooler',
-        'motherboard',
-        'memories',
-        'graphicsCards',
-        'powerSupply',
-        'computerCase',
-        'm2Ssds',
-        'sataSsds',
-        'hardDiskDrives',
-        'monitor',
-        'keyboard',
-        'mouse',
-        'headset',
-        'speaker',
-        'webCamera',
-    ];
+
     public function mount()
     {
         $this->refreshRooms();
