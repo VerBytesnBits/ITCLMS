@@ -18,7 +18,24 @@ class RoomIndex extends Component
     public ?int $id = null;
 
     public $rooms;
-
+     public array $unitRelations = [
+        'processor',
+        'cpuCooler',
+        'motherboard',
+        'memories',
+        'graphicsCards',
+        'powerSupply',
+        'computerCase',
+        'm2Ssds',
+        'sataSsds',
+        'hardDiskDrives',
+        'monitor',
+        'keyboard',
+        'mouse',
+        'headset',
+        'speaker',
+        'webCamera',
+    ];
     public function mount()
     {
         $this->refreshRooms();
@@ -66,6 +83,17 @@ class RoomIndex extends Component
         } else {
             $this->rooms = collect();
         }
+    }
+    public $viewRoomId = null;
+
+    public function viewRoomUnits($roomId)
+    {
+        $this->viewRoomId = $roomId;
+    }
+
+    public function closeUnitsModal()
+    {
+        $this->viewRoomId = null;
     }
 
     public function render()

@@ -26,7 +26,7 @@ class UnitIndex extends Component
 
     public $room_id;
     public $name;
-    public $status = 'Working';
+    public $status = 'Operational';
 
     public ?SystemUnit $viewUnit = null;
     public $allParts;
@@ -34,6 +34,8 @@ class UnitIndex extends Component
     public bool $showSelectComponents = false;
     public bool $showPreview = false;
     public ?string $pdfBase64 = null;
+    public ?int $filterRoomId = null; // selected room for filtering
+
 
     // Centralized list of all unit relations
     public array $unitRelations = [
@@ -60,7 +62,7 @@ class UnitIndex extends Component
 
     protected $rules = [
         'name' => 'required|string|max:255',
-        'status' => 'required|string|in:Working,Under Maintenance,Decommissioned',
+        'status' => 'required|string|in:Operational,Needs Repair,Non-Operational',
         'room_id' => 'required|exists:rooms,id',
     ];
 
@@ -148,22 +150,28 @@ class UnitIndex extends Component
         }
 
         if ($user->hasRole('lab_incharge')) {
-            $this->units = SystemUnit::with('room')
-                ->whereHas('room', fn($q) => $q->where('lab_in_charge_id', $user->id))
-                ->latest()->get();
+            $unitsQuery = SystemUnit::with('room')
+                ->whereHas('room', fn($q) => $q->where('lab_in_charge_id', $user->id));
 
-            $this->rooms = Room::where('lab_in_charge_id', $user->id)
-                ->orderBy('name')->get();
-
+            $roomsQuery = Room::where('lab_in_charge_id', $user->id)->orderBy('name');
         } elseif ($user->hasRole('chairman')) {
-            $this->units = SystemUnit::with('room')->latest()->get();
-            $this->rooms = Room::orderBy('name')->get();
-
+            $unitsQuery = SystemUnit::with('room');
+            $roomsQuery = Room::orderBy('name');
         } else {
             $this->units = collect();
             $this->rooms = collect();
+            return;
         }
+
+        // Apply room filter if selected
+        if ($this->filterRoomId) {
+            $unitsQuery->where('room_id', $this->filterRoomId);
+        }
+
+        $this->units = $unitsQuery->latest()->get();
+        $this->rooms = $roomsQuery->get();
     }
+
 
     public function openManageModal($id)
     {
@@ -181,8 +189,10 @@ class UnitIndex extends Component
     {
         $unit = SystemUnit::findOrFail($id);
 
-        if (Auth::user()->hasRole('lab_incharge') &&
-            $unit->room->lab_in_charge_id !== Auth::id()) {
+        if (
+            Auth::user()->hasRole('lab_incharge') &&
+            $unit->room->lab_in_charge_id !== Auth::id()
+        ) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -198,8 +208,10 @@ class UnitIndex extends Component
         $this->viewUnit = SystemUnit::with(array_merge($this->unitRelations, ['room']))
             ->findOrFail($id);
 
-        if (Auth::user()->hasRole('lab_incharge') &&
-            $this->viewUnit->room->lab_in_charge_id !== Auth::id()) {
+        if (
+            Auth::user()->hasRole('lab_incharge') &&
+            $this->viewUnit->room->lab_in_charge_id !== Auth::id()
+        ) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -215,8 +227,8 @@ class UnitIndex extends Component
             if ($relationData) {
                 $allParts = $allParts->concat(
                     $relationData instanceof \Illuminate\Support\Collection
-                        ? $relationData
-                        : collect([$relationData])
+                    ? $relationData
+                    : collect([$relationData])
                 );
             }
         }
@@ -247,8 +259,10 @@ class UnitIndex extends Component
     {
         $this->validate();
 
-        if (Auth::user()->hasRole('lab_incharge') &&
-            !$this->rooms->pluck('id')->contains($this->room_id)) {
+        if (
+            Auth::user()->hasRole('lab_incharge') &&
+            !$this->rooms->pluck('id')->contains($this->room_id)
+        ) {
             abort(403, 'Unauthorized room assignment.');
         }
 
@@ -268,8 +282,10 @@ class UnitIndex extends Component
     {
         $this->validate();
 
-        if (Auth::user()->hasRole('lab_incharge') &&
-            !$this->rooms->pluck('id')->contains($this->room_id)) {
+        if (
+            Auth::user()->hasRole('lab_incharge') &&
+            !$this->rooms->pluck('id')->contains($this->room_id)
+        ) {
             abort(403, 'Unauthorized room assignment.');
         }
 
@@ -292,8 +308,10 @@ class UnitIndex extends Component
     {
         $unit = SystemUnit::with($this->unitRelations)->findOrFail($id);
 
-        if (Auth::user()->hasRole('lab_incharge') &&
-            $unit->room->lab_in_charge_id !== Auth::id()) {
+        if (
+            Auth::user()->hasRole('lab_incharge') &&
+            $unit->room->lab_in_charge_id !== Auth::id()
+        ) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -314,6 +332,13 @@ class UnitIndex extends Component
         $unit->delete();
         broadcast(new UnitDeleted(['id' => $id]))->toOthers();
         session()->flash('success', 'System Unit deleted.');
+    }
+    #[On('viewUnits')]
+    public function filterByRoom($roomId)
+    {
+        $this->filterRoomId = $roomId;
+        $this->loadUnitsAndRooms(); // reload units for this room
+        $this->modal = 'viewRoomUnits'; // optional: open modal if you have one
     }
 
     public function render()

@@ -268,69 +268,7 @@
             </tbody>
         </table>
     </div>
-    {{-- Table container
-    <div
-        class="overflow-x-auto bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl shadow-sm mt-6">
-        <table class="min-w-full text-sm text-left text-gray-700 dark:text-gray-200">
-            <thead>
-                <tr
-                    class="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 uppercase text-sm whitespace-nowrap">
-                    <th class="px-2 py-1 text-center">ID</th>
-                    <th class="px-4 py-3 text-center">CPU<div class="text-xs text-gray-500">(model)</div>
-                    </th>
-                    <th class="px-4 py-3 text-center">MBOARD<div class="text-xs text-gray-500">(model)</div>
-                    </th>
-                    <th class="px-4 py-3 text-center">RAM<div class="text-xs text-gray-500">(type & capacity)</div>
-                    </th>
-                    <th class="px-4 py-3 text-center">DRIVE<div class="text-xs text-gray-500">(type & capacity)</div>
-                    </th>
-                    <th class="px-4 py-3 text-center">CASING<div class="text-xs text-gray-500">(model)</div>
-                    </th>
-                    <th class="px-4 py-3 text-center">STATUS<div class="text-xs text-gray-500">(Operational, Needs
-                            Repair, Non-operational)</div>
-                    </th>
-                    <th class="px-3 py-2 text-center">Actions</th>
-                </tr>
-            </thead>
-
-            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                @foreach ($units as $unit)
-                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors whitespace-nowrap">
-                        <td class="px-2 py-1 text-center">{{ $unit->id }}</td>
-                        <td class="px-4 py-2 text-center">
-                            {{ $unit->processor
-                                ? "{$unit->processor->brand} {$unit->processor->model} {$unit->processor->base_clock}GHz" .
-                                    ($unit->processor->boost_clock ? " / {$unit->processor->boost_clock}GHz" : '')
-                                : 'N/A' }}
-                        </td>
-                        <td class="px-4 py-2 text-center">
-                            {{ $unit->motherboard ? $unit->motherboard->brand . ' ' . $unit->motherboard->model : 'N/A' }}
-                        </td>
-                        <td class="px-4 py-2 text-center">
-                            {{ $unit->memory ? $unit->memory->type . ' ' . $unit->memory->capacity . 'GB' : 'N/A' }}
-                        </td>
-                        <td class="px-4 py-2 text-center">
-                            @if ($unit->drive_type === 'm2' && $unit->m2Ssd)
-                                M.2 - ({{ $unit->m2Ssd->capacity }} GB)
-                            @elseif ($unit->drive_type === 'sata' && $unit->sataSsd)
-                                SATA - ({{ $unit->sataSsd->capacity }} GB)
-                            @elseif ($unit->drive_type === 'hdd' && $unit->hardDiskDrive)
-                                HDD - ({{ $unit->hardDiskDrive->capacity }} GB)
-                            @else
-                                N/A
-                            @endif
-                        </td>
-                        <td class="px-4 py-2 text-center">
-                            {{ $unit->computerCase ? $unit->computerCase->brand . ' ' . $unit->computerCase->model : 'N/A' }}
-                        </td>
-                       
-                        
-
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
-    </div> --}}
+   
 
     {{-- Modals --}}
     @if ($modal === 'create')

@@ -27,11 +27,11 @@
                         dark:bg-zinc-700 dark:text-white dark:border-zinc-600 focus:ring-2 focus:ring-blue-500 form-select">
 
 
-                            <option value="">— Select Lab In-Charge —</option>
-                            @foreach ($labInChargeOptions as $id => $name)
-                                <option value="{{ $id }}">{{ $name }}</option>
-                            @endforeach
-                     
+                        <option value="">— Select Lab In-Charge —</option>
+                        @foreach ($labInChargeOptions as $id => $name)
+                            <option value="{{ $id }}">{{ $name }}</option>
+                        @endforeach
+
 
                     </select>
 
@@ -45,12 +45,9 @@
                 <!-- Status -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-200">Status</label>
-                    <select wire:model.defer="status"
-                        class="w-full px-4 py-2 border border-gray-300 rounded-md 
-                        dark:bg-zinc-700 dark:text-white dark:border-zinc-600 focus:ring-2 focus:ring-blue-500">
-                        <option value="">Select status</option>
-                        <option value="active">Active</option>
-                        <option value="inactive">Inactive</option>
+                    <select wire:model="status" class="form-select">
+                        <option value="Available">Available</option>
+                        <option value="Unavailable">Unavailable</option>
                     </select>
                     @error('status')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>

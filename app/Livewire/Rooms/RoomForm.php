@@ -14,7 +14,7 @@ class RoomForm extends Component
 
     public $name = '';
     public $description = '';
-    public $status = 'active';
+    public $status = 'Available'; // default value
     public $lab_in_charge_id = null;
 
     public $labInChargeOptions;
@@ -32,12 +32,14 @@ class RoomForm extends Component
         }
     }
 
+
+
     protected function rules()
     {
         return [
             'name' => ['required', 'min:3', Rule::unique('rooms', 'name')->ignore($this->room?->id)],
             'description' => ['nullable', 'string'],
-            'status' => ['required', Rule::in(['active', 'inactive'])],
+            'status' => ['required', Rule::in(['Available', 'Unavailable'])], // updated ENUM
             'lab_in_charge_id' => [
                 'nullable',
                 'exists:users,id',
@@ -55,6 +57,7 @@ class RoomForm extends Component
             ],
         ];
     }
+
 
     public function save()
     {

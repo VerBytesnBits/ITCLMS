@@ -26,7 +26,7 @@ return new class extends Migration {
             $table->string('inventory_code')->nullable();
 
             // Status enum with default 'Working'
-            $table->enum('status', ['Working', 'Under Maintenance', 'Decommissioned'])->default('Working');
+             $table->enum('status', ['Operational', 'Needs Repair', 'Non-operational'])->default('Operational');
 
             // Date purchased nullable
             $table->date('date_purchased')->nullable();

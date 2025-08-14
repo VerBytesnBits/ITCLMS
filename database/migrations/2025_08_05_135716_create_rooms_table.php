@@ -16,7 +16,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->foreignId('lab_in_charge_id')->nullable()->constrained('users')->nullOnDelete();
-            $table->string('status')->default('active');
+            $table->enum('status', ['Unavailable','Available'])->default('Available');
             $table->timestamps();
         });
     }
