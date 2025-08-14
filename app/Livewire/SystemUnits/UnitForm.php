@@ -5,185 +5,177 @@ namespace App\Livewire\SystemUnits;
 use Livewire\Component;
 use App\Models\{
     SystemUnit,
-    Room,
-    Processor,
-    CpuCooler,
-    Motherboard,
-    Memory,
-    GraphicsCard,
-    M2Ssd,
-    SataSsd,
-    HardDiskDrive,
-    PowerSupply,
-    ComputerCase,
-    Display,
-    Headset,
-    Keyboard,
-    Mouse,
-    Speaker,
-    WebDigitalCamera,
+    Room
 };
 use App\Events\UnitUpdated;
+use App\Support\PartsConfig;
 
 class UnitForm extends Component
 {
+    // ==============================
+    // Properties
+    // ==============================
     public ?int $unitId = null;
+    public string $name = '';
+    public string $status = 'Operational';
+    public ?int $room_id = null;
 
-    public $name;
-    public $status = 'Operational';
-    public $room_id;
-
+    // UI state management
     public string $middleTab = 'components';
-    public $selectedComponentType = null;
-    public $selectedPeripheralType = null;
-    public $formMode = false;
-    public $editingPartId = null;
+    public ?string $selectedComponentType = null;
+    public ?string $selectedPeripheralType = null;
+    public bool $formMode = false;
+    public ?int $editingPartId = null;
 
-    public array $componentTypes = [
-        'processor',
-        'cpuCooler',
-        'motherboard',
-        'memories',
-        'graphicsCards',
-        'powerSupply',
-        'computerCase',
-        'm2Ssds',
-        'sataSsds',
-        'hardDiskDrives'
-    ];
+    // Available part types (fetched from PartsConfig)
+    public array $componentTypes = [];
+    public array $peripheralTypes = [];
 
-    public array $peripheralTypes = [
-        'monitor',
-        'keyboard',
-        'mouse',
-        'headset',
-        'speaker',
-        'webCamera'
-    ];
-
+    // Lists for available and selected items
     public array $availableComponents = [];
     public array $availablePeripherals = [];
-
     public array $unitSelections = [
         'components' => [],
         'peripherals' => []
     ];
 
+    // Misc UI data
     public $rooms = [];
-    public $modalMode = 'create';
+    public string $modalMode = 'create';
+    public array $newPart = ['brand' => '', 'model' => ''];
+    public ?int $editPartId = null;
 
-    // Inline Add/Edit Part
-    public $newPart = ['brand' => '', 'model' => ''];
-    public $editPartId = null;
-
+    // ==============================
+    // Validation
+    // ==============================
     protected $rules = [
         'name' => 'required|string|max:255',
         'status' => 'required|in:Operational,Needs Repair,Non-Operational',
         'room_id' => 'required|exists:rooms,id'
     ];
 
+    // Events from PartForm
+    protected $listeners = [
+        'part-saved' => 'handlePartSaved',
+        'part-temp-added' => 'handlePartTempAdded',
+    ];
+
+    // ==============================
+    // Lifecycle
+    // ==============================
     public function mount($unitId = null)
     {
+        // Fetch available rooms
         $this->rooms = Room::all();
 
+        // Load component & peripheral type keys
+        $this->componentTypes = PartsConfig::componentTypes();
+        $this->peripheralTypes = PartsConfig::peripheralTypes();
+
+        // Initialize selections to empty arrays
+        $this->initializeSelections();
+
+        // If editing existing unit
         if ($unitId) {
-            $unit = SystemUnit::with(array_merge($this->componentTypes, $this->peripheralTypes))
-                ->findOrFail($unitId);
-
-            $this->fill([
-                'name' => $unit->name,
-                'status' => $unit->status,
-                'room_id' => $unit->room_id,
-                'unitId' => $unitId
-            ]);
-
-            foreach ($this->componentTypes as $type) {
-                if ($relation = $unit->{\Str::camel($type)}) {
-                    $this->unitSelections['components'][$type] = collect(is_iterable($relation) ? $relation : [$relation])
-                        ->map(fn($item) => array_merge($item->only(['id', 'brand', 'model']), [
-                            'temp_id' => uniqid('temp_')
-                        ]))
-                        ->toArray();
-                }
-            }
-
-            foreach ($this->peripheralTypes as $type) {
-                if ($relation = $unit->{\Str::camel($type)}) {
-                    $this->unitSelections['peripherals'][$type] = collect(is_iterable($relation) ? $relation : [$relation])
-                        ->map(fn($item) => array_merge($item->only(['id', 'brand', 'model']), [
-                            'temp_id' => uniqid('temp_')
-                        ]))
-                        ->toArray();
-                }
-            }
-
-            $this->modalMode = 'edit';
+            $this->loadUnitForEdit($unitId);
         }
 
+        // Load available parts lists
         $this->loadAvailableItems();
     }
 
-
-    /**
-     * Generate unit name when a room is selected.
-     */
-    public function regenerateName($value)
+    // ==============================
+    // Load Unit for Edit
+    // ==============================
+    private function loadUnitForEdit($unitId)
     {
-        if ($this->modalMode !== 'create' || empty($value)) {
-            return;
-        }
+        $unit = SystemUnit::with(array_merge($this->componentTypes, $this->peripheralTypes))
+            ->findOrFail($unitId);
 
-        $room = Room::find($value);
+        $this->fill([
+            'name' => $unit->name,
+            'status' => $unit->status,
+            'room_id' => $unit->room_id,
+            'unitId' => $unitId
+        ]);
+
+        $this->loadUnitSelections($unit);
+        $this->modalMode = 'edit';
+    }
+
+    private function loadUnitSelections(SystemUnit $unit)
+    {
+        $this->initializeSelections();
+
+        foreach (['components' => $this->componentTypes, 'peripherals' => $this->peripheralTypes] as $group => $types) {
+            foreach ($types as $type) {
+                if ($relation = $unit->{\Str::camel($type)}) {
+                    $items = collect(is_iterable($relation) ? $relation : [$relation])
+                        ->map(fn($item) => array_merge(
+                            $item->only(['id', 'brand', 'model']),
+                            ['temp_id' => uniqid('temp_')]
+                        ))
+                        ->toArray();
+
+                    $this->unitSelections[$group][$type] = $items;
+                }
+            }
+        }
+    }
+
+    private function initializeSelections()
+    {
+        foreach (['components' => $this->componentTypes, 'peripherals' => $this->peripheralTypes] as $group => $types) {
+            foreach ($types as $type) {
+                $this->unitSelections[$group][$type] = $this->unitSelections[$group][$type] ?? [];
+            }
+        }
+    }
+
+    // ==============================
+    // Generate Name for New Units
+    // ==============================
+    public function regenerateName($roomId)
+    {
+        if ($this->modalMode !== 'create' || empty($roomId))
+            return;
+
+        $room = Room::find($roomId);
         if (!$room)
             return;
 
-        // Extract number from room name or fallback to ID
         preg_match('/\d+/', $room->name, $matches);
-        $labNumber = !empty($matches[0]) ? $matches[0] : $room->id;
+        $labNumber = $matches[0] ?? $room->id;
 
-        // Find the highest unit number in that room
         $lastNumber = SystemUnit::where('room_id', $room->id)
             ->selectRaw('MAX(CAST(SUBSTRING_INDEX(name, "-", -1) AS UNSIGNED)) as max_num')
             ->value('max_num');
 
         $nextNumber = str_pad(($lastNumber ?? 0) + 1, 2, '0', STR_PAD_LEFT);
-
         $this->name = "PC-L{$labNumber}-{$nextNumber}";
     }
 
+    // ==============================
+    // Load Available Items
+    // ==============================
     protected function loadAvailableItems()
     {
-        // Components
-        $this->availableComponents = [];
-        foreach ($this->componentTypes as $type) {
-            $model = $this->modelMap()[$type];
+        $this->availableComponents = PartsConfig::getAvailableParts(
+            $this->componentTypes,
+            $this->unitId,
+            $this->unitSelections['components']
+        );
 
-            $this->availableComponents[$type] = $model::where(function ($query) use ($type) {
-                $query->whereNull('system_unit_id'); // unassigned items
-                if ($this->unitId) {
-                    $query->orWhere('system_unit_id', $this->unitId); // include items already assigned to this unit
-                }
-            })->get()->toArray();
-        }
-
-        // Peripherals
-        $this->availablePeripherals = [];
-        foreach ($this->peripheralTypes as $type) {
-            $model = $this->modelMap()[$type];
-
-            $this->availablePeripherals[$type] = $model::where(function ($query) use ($type) {
-                $query->whereNull('system_unit_id'); // unassigned items
-                if ($this->unitId) {
-                    $query->orWhere('system_unit_id', $this->unitId); // include items already assigned to this unit
-                }
-            })->get()->toArray();
-        }
+        $this->availablePeripherals = PartsConfig::getAvailableParts(
+            $this->peripheralTypes,
+            $this->unitId,
+            $this->unitSelections['peripherals']
+        );
     }
 
-
-
-
-
+    // ==============================
+    // Tab & Selection Methods
+    // ==============================
     public function setMiddleTab($tab)
     {
         $this->middleTab = $tab;
@@ -198,47 +190,82 @@ class UnitForm extends Component
         }
     }
 
+    // ==============================
+    // Add Part to Unit
+    // ==============================
     public function addToUnit($type, $idOrTempId)
     {
-        $targetGroup = $this->middleTab;
-        $list = $targetGroup === 'components' ? $this->availableComponents : $this->availablePeripherals;
+        $group = $this->middleTab;
+        $list = $group === 'components' ? $this->availableComponents : $this->availablePeripherals;
 
         $item = collect($list[$type] ?? [])->firstWhere('id', $idOrTempId)
-            ?? collect($this->unitSelections[$targetGroup][$type] ?? [])
-                ->firstWhere('temp_id', $idOrTempId);
+            ?? collect($this->unitSelections[$group][$type] ?? [])->firstWhere('temp_id', $idOrTempId);
 
-        if ($item) {
-            // Assign temp_id if missing
-            if (!isset($item['id']) && !isset($item['temp_id'])) {
-                $item['temp_id'] = uniqid('temp_');
-            }
+        if (!$item)
+            return;
 
-            $alreadyAdded = collect($this->unitSelections[$targetGroup][$type] ?? [])
-                ->contains(fn($existing) => ($existing['id'] ?? $existing['temp_id']) === ($item['id'] ?? $item['temp_id']));
+        $modelClass = PartsConfig::modelMap()[$type];
 
-            if (!$alreadyAdded) {
-                $this->unitSelections[$targetGroup][$type][] = $item;
+        // If part is not saved in DB yet
+        if (empty($item['id'])) {
+            $partData = [
+                'brand' => $item['brand'] ?? '',
+                'model' => $item['model'] ?? '',
+                'system_unit_id' => $this->unitId ?? null,
+            ];
+            $newModel = $modelClass::create($partData);
+            $item['id'] = $newModel->id;
+            unset($item['temp_id']);
+        } else {
+            // If already exists in DB, link it to the unit
+            if ($this->unitId) {
+                $model = $modelClass::find($item['id']);
+                if ($model) {
+                    $model->system_unit_id = $this->unitId;
+                    $model->save();
+                }
             }
         }
 
+        // Avoid duplicates in selection
+        $alreadyAdded = collect($this->unitSelections[$group][$type] ?? [])
+            ->contains(fn($existing) => ($existing['id'] ?? null) === ($item['id'] ?? null));
+
+        if (!$alreadyAdded) {
+            $this->unitSelections[$group][$type][] = $item;
+        }
+
+        $this->loadAvailableItems();
         $this->dispatch('unit-parts-updated', [
-            'unitId' => $this->unitId ?? 'temp_' . spl_object_id($this),
+            'unitId' => $this->unitId,
             'selections' => $this->unitSelections
         ]);
     }
 
-
-
+    // ==============================
+    // Remove Part from In-memory Selection
+    // ==============================
     public function removeFromUnit($type, $idOrTempId)
     {
-        $isComponent = array_key_exists($type, $this->unitSelections['components']);
-        $targetGroup = $isComponent ? 'components' : 'peripherals';
+        $group = array_key_exists($type, $this->unitSelections['components']) ? 'components' : 'peripherals';
 
-        $this->unitSelections[$targetGroup][$type] = array_values(array_filter(
-            $this->unitSelections[$targetGroup][$type],
+        // If this unit is saved in DB, unassign the part
+        if ($this->unitId && is_numeric($idOrTempId)) {
+            $modelClass = PartsConfig::modelMap()[$type];
+            $modelClass::where('id', $idOrTempId)
+                ->where('system_unit_id', $this->unitId)
+                ->update(['system_unit_id' => null]);
+        }
+
+        // Remove from in-memory selection
+        $this->unitSelections[$group][$type] = array_values(array_filter(
+            $this->unitSelections[$group][$type] ?? [],
             fn($item) => ($item['id'] ?? $item['temp_id']) != $idOrTempId
         ));
 
+        // Refresh available items
+        $this->loadAvailableItems();
+
         $this->dispatch('unit-parts-updated', [
             'unitId' => $this->unitId ?? 'temp_' . spl_object_id($this),
             'selections' => $this->unitSelections
@@ -246,147 +273,110 @@ class UnitForm extends Component
     }
 
 
-
-
-
-
-    public function addTempPart($type, $fields)
+    // ==============================
+    // Delete Part from DB (Completely)
+    // ==============================
+    public function deleteUnitPart($type, $partId)
     {
-        $this->unitSelections[
-            $this->middleTab
-        ][$type][] = $fields;
-    }
-    protected $listeners = [
-        'part-saved' => 'handlePartSaved',
-        'part-temp-added' => 'handlePartTempAdded',
-    ];
+        $modelClass = PartsConfig::modelMap()[$type];
+        $part = $modelClass::find($partId);
 
+        if ($part) {
+            // Permanently delete from DB
+            $part->delete();
+        }
+
+        // Also remove from local array so UI updates immediately
+        $this->removeFromUnit($type, $partId);
+
+        // Refresh available items list
+        $this->loadAvailableItems();
+
+        session()->flash('success', 'Part deleted successfully.');
+    }
+
+    public function editUnitPart($type, $partId)
+    {
+        $this->selectedType = $type;
+        $this->editingPartId = $partId;
+        $this->formMode = true; // show the form
+    }
+
+
+    // ==============================
+    // Part Events
+    // ==============================
     public function handlePartTempAdded($payload)
     {
         $type = $payload['type'];
         unset($payload['type']);
 
-        $targetGroup = in_array($type, $this->componentTypes) ? 'components' : 'peripherals';
+        $modelClass = PartsConfig::modelMap()[$type];
 
-        if (!isset($this->unitSelections[$targetGroup][$type])) {
-            $this->unitSelections[$targetGroup][$type] = [];
+        $newModel = $modelClass::create([
+            'brand' => $payload['brand'] ?? '',
+            'model' => $payload['model'] ?? '',
+            'system_unit_id' => null
+        ]);
+
+        $item = [
+            'id' => $newModel->id,
+            'brand' => $newModel->brand,
+            'model' => $newModel->model
+        ];
+
+        $group = in_array($type, $this->componentTypes) ? 'components' : 'peripherals';
+
+        if (!isset($this->unitSelections[$group][$type])) {
+            $this->unitSelections[$group][$type] = [];
         }
 
-        // Assign temp_id if missing
-        if (!isset($payload['temp_id'])) {
-            $payload['temp_id'] = uniqid('temp_');
-        }
+        $this->unitSelections[$group][$type][] = $item;
 
-        // Prevent duplicates
-        $alreadyExists = collect($this->unitSelections[$targetGroup][$type])
-            ->contains(fn($item) => ($item['id'] ?? $item['temp_id']) === ($payload['id'] ?? $payload['temp_id']));
-
-        if (!$alreadyExists) {
-            $this->unitSelections[$targetGroup][$type][] = $payload;
-        }
-
+        $this->loadAvailableItems();
         $this->formMode = false;
         $this->editingPartId = null;
     }
 
+    public function handlePartSaved()
+    {
+        $this->loadAvailableItems();
+    }
 
-
-
+    // ==============================
+    // Save Unit (Create or Update)
+    // ==============================
     public function save()
     {
         $this->validate();
 
-        // If editing existing unit
-        if ($this->unitId) {
-            $unit = SystemUnit::findOrFail($this->unitId);
-        } else {
-            // New unit
-            $unit = SystemUnit::create([
+        // Create or update the unit
+        $unit = $this->unitId
+            ? SystemUnit::findOrFail($this->unitId)
+            : SystemUnit::create([
                 'name' => $this->name,
                 'status' => $this->status,
-                'room_id' => $this->room_id,
+                'room_id' => $this->room_id
             ]);
-            $this->unitId = $unit->id;
-        }
 
-        // --------------------
-        // Components
-        // --------------------
-        foreach ($this->unitSelections['components'] as $type => &$items) {
-            $modelClass = $this->modelMap()[$type];
-            $isMany = in_array($type, ['memories', 'graphicsCards', 'm2Ssds', 'sataSsds', 'hardDiskDrives']);
-            $ids = [];
+        $this->unitId = $unit->id;
 
-            foreach ($items as &$item) {
-                if (!empty($item['id'])) {
-                    // Existing DB item → reassign
-                    $model = $modelClass::find($item['id']);
-                    if ($model) {
-                        $model->system_unit_id = $unit->id;
-                        $model->save();
-                        $ids[] = $model->id;
-                    }
-                } else {
-                    // New temporary item → create
-                    $item['system_unit_id'] = $unit->id;
-                    $newModel = $modelClass::create($item);
-                    $item['id'] = $newModel->id;
-                    unset($item['temp_id']);
-                    $ids[] = $newModel->id;
+        // Update parts linkage
+        foreach (['components', 'peripherals'] as $group) {
+            foreach ($this->unitSelections[$group] as $type => &$items) {
+                $ids = collect($items)->pluck('id')->filter()->all();
+                if (!empty($ids)) {
+                    $modelClass = PartsConfig::modelMap()[$type];
+                    $modelClass::whereIn('id', $ids)->update(['system_unit_id' => $unit->id]);
                 }
             }
-
-            // Detach previous items
-            if ($isMany) {
-                $modelClass::where('system_unit_id', $unit->id)
-                    ->whereNotIn('id', $ids)
-                    ->update(['system_unit_id' => null]);
-            } else {
-                $modelClass::where('system_unit_id', $unit->id)
-                    ->where('id', '!=', $ids[0] ?? 0)
-                    ->update(['system_unit_id' => null]);
-            }
-
-            unset($item);
         }
-        unset($items);
 
-        // --------------------
-        // Peripherals
-        // --------------------
-        foreach ($this->unitSelections['peripherals'] as $type => &$items) {
-            $modelClass = $this->modelMap()[$type];
-            $ids = [];
-
-            foreach ($items as &$item) {
-                if (!empty($item['id'])) {
-                    $model = $modelClass::find($item['id']);
-                    if ($model) {
-                        $model->system_unit_id = $unit->id;
-                        $model->save();
-                        $ids[] = $model->id;
-                    }
-                } else {
-                    $item['system_unit_id'] = $unit->id;
-                    $newModel = $modelClass::create($item);
-                    $item['id'] = $newModel->id;
-                    unset($item['temp_id']);
-                    $ids[] = $newModel->id;
-                }
-            }
-
-            // Detach peripherals no longer selected
-            $modelClass::where('system_unit_id', $unit->id)
-                ->whereNotIn('id', $ids)
-                ->update(['system_unit_id' => null]);
-
-            unset($item);
+        // If unit is non-operational, update parts status
+        if ($unit->status === 'Non-Operational') {
+            $unit->updatePartsStatus('Under Maintenance');
         }
-        unset($items);
 
-        // --------------------
-        // Flash & reset
-        // --------------------
         session()->flash('success', 'System unit saved!');
         event(new UnitUpdated($unit));
 
@@ -394,31 +384,9 @@ class UnitForm extends Component
         $this->loadAvailableItems();
     }
 
-
-
-    private function modelMap()
-    {
-        return [
-            'processor' => Processor::class,
-            'cpuCooler' => CpuCooler::class,
-            'motherboard' => Motherboard::class,
-            'memories' => Memory::class,
-            'graphicsCards' => GraphicsCard::class,
-            'powerSupply' => PowerSupply::class,
-            'computerCase' => ComputerCase::class,
-            'm2Ssds' => M2Ssd::class,
-            'sataSsds' => SataSsd::class,
-            'hardDiskDrives' => HardDiskDrive::class,
-            'monitor' => Display::class,
-            'keyboard' => Keyboard::class,
-            'mouse' => Mouse::class,
-            'headset' => Headset::class,
-            'speaker' => Speaker::class,
-            'webCamera' => WebDigitalCamera::class,
-        ];
-    }
-
-
+    // ==============================
+    // Render
+    // ==============================
     public function render()
     {
         return view('livewire.system-units.unit-form', [

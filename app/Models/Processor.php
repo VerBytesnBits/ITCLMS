@@ -18,4 +18,19 @@ class Processor extends Model
     {
         return $this->belongsTo(SystemUnit::class);
     }
+
+    protected static function booted()
+    {
+        static::updated(function ($model) {
+            if ($model->isDirty('status') && $model->status === 'Needs Repair') {
+                $unit = $model->systemUnit;
+                if ($unit && $unit->status !== 'Non-Operational') {
+                    $unit->update(['status' => 'Non-Operational']);
+                    $unit->updatePartsStatus('Under Maintenance');
+                }
+            }
+        });
+    }
 }
+
+

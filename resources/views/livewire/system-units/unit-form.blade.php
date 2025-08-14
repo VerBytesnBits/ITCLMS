@@ -128,18 +128,37 @@
                         </div>
 
                         @forelse ($list as $item)
-                            @php $itemId = $item['id'] ?? $item['temp_id']; @endphp
+                            @php
+                                // This will be either the DB id or a temporary id
+                                $itemId = $item['id'] ?? $item['temp_id'];
+                                $isTemp = isset($item['temp_id']); // Track if unsaved
+                            @endphp
+
                             <div class="flex justify-between items-center border-b py-1">
                                 <span>{{ $item['brand'] ?? '' }} {{ $item['model'] ?? '' }}</span>
+
                                 <div class="flex gap-2">
+                                    {{-- Edit --}}
+                                    {{-- Edit Button --}}
                                     <button
-                                        wire:click="$set('formMode', true); $set('editingPartId', {{ $item['id'] ?? 'null' }})"
+                                        wire:click="editUnitPart('{{ $selectedType }}', {{ $item['id'] ?? 'null' }})"
                                         class="bg-yellow-500 text-white px-2 py-1 rounded text-sm">
                                         Edit
                                     </button>
+
+
+                                    {{-- Add to Unit --}}
                                     <button wire:click="addToUnit('{{ $selectedType }}', '{{ $itemId }}')"
                                         class="bg-blue-500 text-white px-2 py-1 rounded text-sm">
                                         + Add
+                                    </button>
+
+                                    {{-- Delete from Unit / Temporary --}}
+                                    <button
+                                        wire:click="{{ $isTemp ? "removeFromUnit('$selectedType', '$itemId')" : "deleteUnitPart('$selectedType', '$itemId')" }}"
+                                        onclick="return confirm('Are you sure you want to remove this part?')"
+                                        class="bg-red-500 text-white px-2 py-1 rounded text-sm">
+                                        Delete
                                     </button>
                                 </div>
                             </div>
@@ -147,16 +166,18 @@
                             <p class="text-gray-500">No items found.</p>
                         @endforelse
 
+
+
                         {{-- Selected Items --}}
                         @if (!empty($selectedList))
-                            <h3 class="font-semibold mt-4 mb-2">Selected</h3>
+                            <h3 class="font-semibold mt-4 mb-2">Mounted</h3>
                             @foreach ($selectedList as $sel)
                                 @php $selId = $sel['id'] ?? $sel['temp_id']; @endphp
                                 <div class="flex justify-between items-center border-b py-1">
                                     <span>{{ $sel['brand'] ?? '' }} {{ $sel['model'] ?? '' }}</span>
                                     <button wire:click="removeFromUnit('{{ $selectedType }}', '{{ $selId }}')"
                                         class="bg-red-500 text-white px-2 py-1 rounded text-sm">
-                                        Remove
+                                        Unmount
                                     </button>
                                 </div>
                             @endforeach

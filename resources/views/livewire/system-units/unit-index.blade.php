@@ -243,11 +243,11 @@
                                          dark:bg-zinc-900 dark:ring-white/20"
                                         :style="'position:absolute; top:' + top + 'px; left:' + left + 'px;'">
                                         <div class="py-1">
-                                            <button wire:click="openManageModal({{ $unit->id }})"
+                                            {{-- <button wire:click="openManageModal({{ $unit->id }})"
                                                 class="block px-4 py-2 text-sm text-yellow-600 hover:border-b hover:border-yellow-500 cursor-pointer w-full text-left
                                                  dark:text-yellow-400 dark:hover:border-yellow-300">
                                                 Manage
-                                            </button>
+                                            </button> --}}
                                             <button wire:click="openEditModal({{ $unit->id }})"
                                                 class="block px-4 py-2 text-sm text-green-600 hover:border-b hover:border-green-500 cursor-pointer w-full text-left
                                                  dark:text-green-400 dark:hover:border-green-300">
@@ -279,9 +279,9 @@
         <livewire:system-units.unit-form :unit-id="$id" :key="'edit-' . $id" />
     @endif
 
-    @if ($modal === 'manage' && $id)
+    {{-- @if ($modal === 'manage' && $id)
         <livewire:system-units.system-unit-manage :unit-id="$id" :key="'manage-' . $id" />
-    @endif
+    @endif --}}
 
     @if ($modal === 'view' && $viewUnit)
         <div

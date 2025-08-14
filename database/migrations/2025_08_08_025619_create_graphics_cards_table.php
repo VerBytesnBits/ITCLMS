@@ -20,7 +20,8 @@ return new class extends Migration {
             $table->integer('memory_size')->nullable(); // GB
             $table->string('memory_type')->nullable();
             $table->string('serial_number')->nullable();
-            $table->enum('status', ['Working', 'Faulty', 'Under Maintenance'])->default('Working');
+            $table->enum('status', ['Operational', 'Needs Repair', 'Non-operational'])->default('Operational');
+            $table->enum('condition', ['New', 'Excellent', 'Good', 'Fair', 'Poor', 'Defective'])->default('New');
             $table->date('date_purchased')->nullable();
             $table->timestamps();
         });

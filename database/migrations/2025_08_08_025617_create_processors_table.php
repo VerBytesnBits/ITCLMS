@@ -22,7 +22,9 @@ return new class extends Migration {
             $table->float('base_clock')->nullable(); // GHz
             $table->float('boost_clock')->nullable(); // GHz
             $table->string('serial_number')->nullable();
-            $table->enum('status', ['Working', 'Faulty', 'Under Maintenance'])->default('Working');
+            $table->enum('status', ['Operational', 'Needs Repair', 'Non-operational'])->default('Operational');
+            $table->enum('condition', ['New', 'Excellent', 'Good', 'Fair', 'Poor', 'Defective'])->default('New');
+
             $table->date('date_purchased')->nullable();
             $table->timestamps();
         });

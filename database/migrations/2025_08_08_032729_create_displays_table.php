@@ -21,7 +21,8 @@ return new class extends Migration {
             $table->string('resolution')->nullable(); // e.g. 1920x1080
             $table->decimal('size_inches', 5, 2)->nullable(); // e.g. 24.50
             $table->enum('panel_type', ['IPS', 'TN', 'VA', 'OLED'])->nullable();
-            $table->enum('status', ['Working', 'Faulty', 'Repaired'])->default('Working');
+            $table->enum('status', ['Operational', 'Needs Repair', 'Non-operational'])->default('Operational');
+            $table->enum('condition', ['New', 'Excellent', 'Good', 'Fair', 'Poor', 'Defective'])->default('New');
             $table->date('date_purchased')->nullable();
             $table->timestamps();
         });

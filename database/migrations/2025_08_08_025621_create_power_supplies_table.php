@@ -20,7 +20,8 @@ return new class extends Migration {
             $table->string('efficiency_rating')->nullable(); // e.g., 80+ Bronze
             $table->boolean('modular')->nullable(); // true/false
             $table->string('serial_number')->nullable();
-            $table->enum('status', ['Working', 'Faulty', 'Under Maintenance'])->default('Working');
+            $table->enum('status', ['Operational', 'Needs Repair', 'Non-operational'])->default('Operational');
+            $table->enum('condition', ['New', 'Excellent', 'Good', 'Fair', 'Poor', 'Defective'])->default('New');
             $table->date('date_purchased')->nullable();
             $table->timestamps();
         });
