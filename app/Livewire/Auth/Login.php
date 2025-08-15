@@ -23,7 +23,7 @@ class Login extends Component
 
     public bool $remember = false;
 
-   
+
     public function login(): void
     {
         $this->validate([
@@ -31,7 +31,7 @@ class Login extends Component
             'password' => 'required',
         ]);
 
-        if (! Auth::attempt(['email' => $this->email, 'password' => $this->password])) {
+        if (!Auth::attempt(['email' => $this->email, 'password' => $this->password])) {
             // 🔴 Invalid login attempt
             $this->dispatch('swal', toast: true, icon: 'error', title: 'Invalid Credentials!', timer: 3000);
 
@@ -46,8 +46,9 @@ class Login extends Component
             'message' => 'You have successfully logged in!',
         ]);
 
-        $this->redirectIntended(route('dashboard'), navigate: true);
-        
+        // $this->redirectIntended(route('dashboard'), navigate: true);
+            $this->redirect(route('dashboard'), navigate: true);
+
     }
 
     /**
@@ -55,7 +56,7 @@ class Login extends Component
      */
     protected function ensureIsNotRateLimited(): void
     {
-        if (! RateLimiter::tooManyAttempts($this->throttleKey(), 5)) {
+        if (!RateLimiter::tooManyAttempts($this->throttleKey(), 5)) {
             return;
         }
 

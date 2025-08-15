@@ -1,0 +1,178 @@
+[
+  {
+    "system_unit": {
+      "name": "Unit-Sample-5",
+      "serial_number": "SU-2025-001",
+      "status": "Operational",
+      "room_id": 1
+    },
+    "processor": {
+      "brand": "Intel",
+      "model": "Core i7-12700K",
+      "serial_number": "PROC-12345",
+      "generation": "",
+      "cores": 12,
+      "threads": null,
+      "base_clock": 3.6,
+      "boost_clock": null,
+      "status": "Operational",
+      "condition": "New",
+      "date_purchased": null
+    },
+    "cpuCooler": {
+      "brand": "Noctua",
+      "model": "NH-D15",
+      "serial_number": "COOL-44444",
+      "type": "Air",
+      "fan_size": null,
+      "status": "Operational",
+      "condition": "New",
+      "date_purchased": null
+    },
+    "motherboard": {
+      "brand": "ASUS",
+      "model": "ROG STRIX Z690-E",
+      "serial_number": "MB-98765",
+      "form_factor": "ATX",
+      "chipset": "Z690",
+      "socket": "",
+      "status": "Operational",
+      "condition": "New",
+      "date_purchased": null
+    },
+    "memories": {
+      "brand": "Corsair",
+      "model": "Vengeance LPX",
+      "serial_number": "RAM-11111",
+      "type": "DDR4",
+      "capacity": 16,
+      "speed": 3200,
+      "status": "Operational",
+      "condition": "New",
+      "date_purchased": null
+    },
+    "graphicsCards": {
+      "brand": "NVIDIA",
+      "model": "RTX 3060 Ti",
+      "serial_number": "GPU-55555",
+      "chipset": "",
+      "memory_size": 8,
+      "memory_type": "GDDR6",
+      "status": "Operational",
+      "condition": "New",
+      "date_purchased": null
+    },
+    "powerSupply": {
+      "brand": "Seasonic",
+      "model": "Focus GX-750",
+      "serial_number": "PSU-22222",
+      "wattage": 750,
+      "efficiency_rating": "",
+      "modular": null,
+      "status": "Operational",
+      "condition": "New",
+      "date_purchased": null
+    },
+    "computerCase": {
+      "brand": "NZXT",
+      "model": "H510",
+      "serial_number": "CASE-33333",
+      "form_factor": "",
+      "color": "Black",
+      "status": "Operational",
+      "condition": "New",
+      "date_purchased": null
+    },
+    "m2Ssds": {
+      "brand": "Western Digital",
+      "model": "Black SN850",
+      "serial_number": "M2-88888",
+      "type": "",
+      "capacity": "1TB",
+      "interface": "",
+      "status": "Operational",
+      "condition": "New",
+      "date_purchased": null
+    },
+    "sataSsds": {
+      "brand": "Samsung",
+      "model": "860 EVO",
+      "serial_number": "SATA-77777",
+      "type": "",
+      "capacity": "1TB",
+      "interface": "SATA",
+      "status": "Operational",
+      "condition": "New",
+      "date_purchased": null
+    },
+    "hardDiskDrives": {
+      "brand": "Seagate",
+      "model": "Barracuda",
+      "serial_number": "HDD-66666",
+      "capacity": "2TB",
+      "type": "HDD",
+      "rpm": 7200,
+      "interface": "",
+      "status": "Operational",
+      "condition": "New",
+      "date_purchased": null
+    },
+    "monitor": {
+      "brand": "Dell",
+      "model": "UltraSharp U2720Q",
+      "serial_number": "MON-30303",
+      "resolution": "3840x2160",
+      "size_inches": 27,
+      "panel_type": null,
+      "status": "Operational",
+      "condition": "New",
+      "date_purchased": null
+    },
+    "keyboard": {
+      "brand": "Logitech",
+      "model": "K380",
+      "serial_number": "KB-99999",
+      "connection_type": "Wireless",
+      "status": "Operational",
+      "condition": "New",
+      "date_purchased": null
+    },
+    "mouse": {
+      "brand": "Logitech",
+      "model": "MX Master 3",
+      "serial_number": "MOUSE-10101",
+      "connection_type": "Wireless",
+      "status": "Operational",
+      "condition": "New",
+      "date_purchased": null
+    },
+    "headset": {
+      "brand": "HyperX",
+      "model": "Cloud II",
+      "serial_number": "HS-20202",
+      "connection_type": "Wired",
+      "status": "Operational",
+      "condition": "New",
+      "date_purchased": null
+    },
+    "speaker": {
+      "brand": "Creative",
+      "model": "Pebble V3",
+      "serial_number": "SPK-40404",
+      "connection_type": "Wired",
+      "status": "Operational",
+      "condition": "New",
+      "date_purchased": null
+    },
+    "webCamera": {
+      "brand": "Logitech",
+      "model": "C920",
+      "serial_number": "CAM-50505",
+      "resolution": "1080p",
+      "connection_type": "Wired",
+      "status": "Operational",
+      "condition": "New",
+      "date_purchased": null
+    }
+  }
+]

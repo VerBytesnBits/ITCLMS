@@ -6,7 +6,6 @@ use Livewire\Component;
 use Livewire\Attributes\Url;
 use Livewire\Attributes\On;
 use App\Models\Room;
-use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
 class RoomIndex extends Component
@@ -18,6 +17,7 @@ class RoomIndex extends Component
     public ?int $id = null;
 
     public $rooms;
+    public $viewRoomId = null;
 
     public function mount()
     {
@@ -50,24 +50,37 @@ class RoomIndex extends Component
     {
         $user = Auth::user();
 
-
         if (!$user) {
             $this->rooms = collect();
             return;
         }
 
+        $baseQuery = $this->rooms = Room::with([
+            'labInCharge',
+            'systemUnits.processor',
+            'systemUnits.motherboard',
+            'systemUnits.memories',
+            'systemUnits.graphicsCards',
+            'systemUnits.m2Ssds',
+            'systemUnits.sataSsds',
+            'systemUnits.hardDiskDrives',
+            'systemUnits.powerSupply',
+            'systemUnits.computerCase',
+            'systemUnits.cpuCooler',
+            'systemUnits.monitor',
+            'systemUnits.keyboard',
+            'systemUnits.mouse',
+            'systemUnits.headset',
+            'systemUnits.speaker',
+            'systemUnits.webCamera',
+        ])->latest()->get();
+
         if ($user->hasRole('lab_incharge')) {
-            $this->rooms = Room::with('labInCharge')
-                ->where('lab_in_charge_id', $user->id)
-                ->latest()
-                ->get();
-        } elseif ($user->hasRole('chairman')) {
-            $this->rooms = Room::with('labInCharge')->latest()->get();
-        } else {
-            $this->rooms = collect();
+            $baseQuery->where('lab_in_charge_id', $user->id);
         }
+
+        // $this->rooms = $baseQuery->get();
     }
-    public $viewRoomId = null;
 
     public function viewRoomUnits($roomId)
     {
@@ -82,7 +95,7 @@ class RoomIndex extends Component
     public function render()
     {
         return view('livewire.rooms.room-index', [
-            'rooms' => $this->rooms, // use filtered $this->rooms
+            'rooms' => $this->rooms,
         ]);
     }
 }

@@ -22,6 +22,7 @@ return new class extends Migration {
             $table->enum('status', ['Operational', 'Needs Repair', 'Non-operational'])->default('Operational');
             $table->enum('condition', ['New', 'Excellent', 'Good', 'Fair', 'Poor', 'Defective'])->default('New');
             $table->date('date_purchased')->nullable();
+            
             $table->timestamps();
         });
     }

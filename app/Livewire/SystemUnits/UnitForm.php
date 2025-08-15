@@ -9,6 +9,7 @@ use App\Models\{
 };
 use App\Events\UnitUpdated;
 use App\Support\PartsConfig;
+use Livewire\Attributes\On;
 
 class UnitForm extends Component
 {
@@ -54,11 +55,6 @@ class UnitForm extends Component
         'room_id' => 'required|exists:rooms,id'
     ];
 
-    // Events from PartForm
-    protected $listeners = [
-        'part-saved' => 'handlePartSaved',
-        'part-temp-added' => 'handlePartTempAdded',
-    ];
 
     // ==============================
     // Lifecycle
@@ -295,61 +291,24 @@ class UnitForm extends Component
         session()->flash('success', 'Part deleted successfully.');
     }
 
-    // ==============================
-    // Edit Part to Unit
-    // ==============================
-
+    // // ==============================
+    // // Edit Part to Unit
+    // // ==============================
     public function editUnitPart($type, $partId)
     {
         $this->selectedType = $type;
-        $this->editingPartId = $partId; // Only this part will be editable
+        $this->editingPartId = $partId;
+        $this->formMode = true; // Show the form
     }
-
-    public function updateUnitPart($type, $partId, $updatedData)
+    #[On('part-saved')]
+    public function refreshParts()
     {
-        if (!$this->unitId || !$partId) {
-            return;
-        }
-
-        $modelClass = PartsConfig::modelMap()[$type] ?? null;
-        if (!$modelClass) {
-            return;
-        }
-
-        // Get allowed fields from PartsConfig
-        $allowedFields = array_keys(PartsConfig::defaultFields($type));
-
-        // Filter incoming data to only allowed fields
-        $updateData = [];
-        foreach ($allowedFields as $field) {
-            if (array_key_exists($field, $updatedData)) {
-                $updateData[$field] = $updatedData[$field];
-            }
-        }
-
-        // Save to DB
-        $part = $modelClass::find($partId);
-        if ($part) {
-            $part->update($updateData);
-        }
-
-        // Update local array so UI updates instantly
-        $group = in_array($type, $this->componentTypes) ? 'components' : 'peripherals';
-        foreach ($this->unitSelections[$group][$type] as &$item) {
-            if (($item['id'] ?? null) == $partId) {
-                foreach ($updateData as $field => $value) {
-                    $item[$field] = $value;
-                }
-                break;
-            }
-        }
-
-        // Exit edit mode
-        $this->editingPartId = null;
-
         $this->loadAvailableItems();
-        session()->flash('success', 'Part updated successfully.');
+        $this->formMode = false;
+        $this->editingPartId = null;
     }
+
+
 
 
 
@@ -357,6 +316,7 @@ class UnitForm extends Component
     // ==============================
     // Part Events
     // ==============================
+    #[On('part-temp-added')]
     public function handlePartTempAdded($payload)
     {
         $type = $payload['type'];
@@ -388,52 +348,84 @@ class UnitForm extends Component
         $this->formMode = false;
         $this->editingPartId = null;
     }
-
+    #[On('part-saved')]
     public function handlePartSaved()
     {
         $this->loadAvailableItems();
+        $this->formMode = false;
+        $this->editingPartId = null;
     }
 
     // ==============================
     // Save Unit (Create or Update)
     // ==============================
+    public function openCreateModal()
+    {
+        $this->reset([
+            'unitId',
+            'name',
+            'status',
+            'room_id',
+            'unitSelections',
+            'middleTab',
+            'selectedComponentType',
+            'selectedPeripheralType'
+        ]);
+
+        $this->modalMode = 'create';
+        $this->dispatch('openModal');
+    }
+
     public function save()
     {
         $this->validate();
 
-        // Create or update the unit
-        $unit = $this->unitId
-            ? SystemUnit::findOrFail($this->unitId)
-            : SystemUnit::create([
+        // Create or update the unit based on modal mode
+        if ($this->modalMode === 'create') {
+            $unit = SystemUnit::create([
                 'name' => $this->name,
                 'status' => $this->status,
                 'room_id' => $this->room_id
             ]);
+        } else {
+            $unit = SystemUnit::findOrFail($this->unitId);
+            $unit->update([
+                'name' => $this->name,
+                'status' => $this->status,
+                'room_id' => $this->room_id
+            ]);
+        }
 
+        // Always store the current ID
         $this->unitId = $unit->id;
 
-        // Update parts linkage
+        // Link components and peripherals
         foreach (['components', 'peripherals'] as $group) {
             foreach ($this->unitSelections[$group] as $type => &$items) {
                 $ids = collect($items)->pluck('id')->filter()->all();
                 if (!empty($ids)) {
                     $modelClass = PartsConfig::modelMap()[$type];
-                    $modelClass::whereIn('id', $ids)->update(['system_unit_id' => $unit->id]);
+                    $modelClass::whereIn('id', $ids)
+                        ->update(['system_unit_id' => $unit->id]);
                 }
             }
         }
 
-        // // If unit is non-operational, update parts status
-        // if ($unit->status === 'Non-Operational') {
-        //     $unit->updatePartsStatus('Under Maintenance');
-        // }
-
         session()->flash('success', 'System unit saved!');
         event(new UnitUpdated($unit));
 
-        $this->resetExcept('rooms', 'componentTypes', 'peripheralTypes');
+        // Close modal only in edit mode
+        if ($this->modalMode === 'edit') {
+            $this->dispatch('closeModal');
+        } else {
+            // Reset for a fresh create form
+            $this->resetExcept('rooms', 'componentTypes', 'peripheralTypes');
+        }
+
         $this->loadAvailableItems();
     }
+
+
 
     // ==============================
     // Render

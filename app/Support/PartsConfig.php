@@ -1,9 +1,149 @@
 <?php
 
+
+
 namespace App\Support;
 
 class PartsConfig
 {
+    public static function unitRelations(): array
+    {
+        return [
+            'processor',
+            'cpuCooler',
+            'motherboard',
+            'memories',
+            'graphicsCards',
+            'powerSupply',
+            'computerCase',
+            'm2Ssds',
+            'sataSsds',
+            'hardDiskDrives',
+            'monitor',
+            'keyboard',
+            'mouse',
+            'headset',
+            'speaker',
+            'webCamera',
+        ];
+    }
+
+   
+
+    /**
+     * Build the parts config.
+     * If $components/$peripherals are omitted, fall back to static type lists.
+     */
+    public static function get(array $components = null, array $peripherals = null): array
+    {
+        // If not provided, use all known types
+        if ($components === null) {
+            $components = array_fill_keys(self::componentTypes(), true);
+        }
+        if ($peripherals === null) {
+            $peripherals = array_fill_keys(self::peripheralTypes(), true);
+        }
+
+        $labels = self::typeLabels();
+        $allParts = array_merge(array_keys($components), array_keys($peripherals));
+
+        $config = [];
+        foreach ($allParts as $type) {
+            $config[$type] = [
+                'label' => $labels[$type] ?? ucfirst($type),
+                'sub' => self::getSubtitle($type),
+                // IMPORTANT: this must be the SystemUnit relation name
+                'value' => $type,
+                // Provide a closure for table-friendly formatting
+                'formatter' => self::getFormatter($type),
+            ];
+        }
+
+        return $config;
+    }
+
+    /**
+     * Small helper for column subtitles (shown under header).
+     */
+    public static function getSubtitle(string $type): ?string
+    {
+        $map = [
+            'processor' => '(model)',
+            'motherboard' => '(model)',
+            'memories' => '(type & capacity)',
+            'graphicsCards' => '(model)',
+            'm2Ssds' => '(type & capacity)',
+            'sataSsds' => '(type & capacity)',
+            'hardDiskDrives' => '(type & capacity)',
+            'monitor' => '(model)',
+            'keyboard' => '(model)',
+            'mouse' => '(model)',
+            'headset' => '(model)',
+            'speaker' => '(model)',
+            'webCamera' => '(model)',
+            'powerSupply' => '(model)',
+            'cpuCooler' => '(model)',
+            'computerCase' => '(model)',
+        ];
+        return $map[$type] ?? null;
+    }
+
+    /**
+     * Table-friendly formatter factory:
+     * returns a Closure(array $part): array<string,string>
+     */
+    public static function getFormatter(string $type): \Closure
+    {
+        $defaultFields = self::defaultFields($type);
+
+        return function ($part) use ($defaultFields): array {
+            // Convert models/objects to array
+            if (is_object($part)) {
+                if (method_exists($part, 'toArray')) {
+                    $part = $part->toArray();
+                } else {
+                    $part = (array) $part;
+                }
+            }
+
+            // Ensure it's still an array
+            if (!is_array($part)) {
+                return [];
+            }
+
+            $out = [];
+
+            // Prioritize key identifiers
+            if (!empty($part['brand']))
+                $out['Brand'] = $part['brand'];
+            if (!empty($part['model']))
+                $out['Model'] = $part['model'];
+            if (!empty($part['status']))
+                $out['Status'] = $part['status'];
+            if (!empty($part['condition']))
+                $out['Condition'] = $part['condition'];
+
+            // Add remaining non-empty fields defined for this type
+            $skip = ['brand', 'model', 'status', 'condition', 'date_purchased', 'system_unit_id', 'id', 'created_at', 'updated_at'];
+            foreach ($defaultFields as $field => $_) {
+                if (in_array($field, $skip, true))
+                    continue;
+                if (isset($part[$field]) && $part[$field] !== '' && $part[$field] !== null) {
+                    $label = ucwords(str_replace('_', ' ', $field));
+                    $out[$label] = (string) $part[$field];
+                }
+            }
+
+            return $out;
+        };
+    }
+
+
+    // … keep your existing componentTypes(), peripheralTypes(), typeLabels(), modelMap(),
+    // defaultFields(), validationRules(), enumOptions(), getAvailableParts() as-is.
+
+
+
     /**
      * Components
      */
@@ -35,6 +175,31 @@ class PartsConfig
             'headset',
             'speaker',
             'webCamera'
+        ];
+    }
+    //labels
+    public static function typeLabels(): array
+    {
+        return [
+            // Components
+            'processor' => 'Processor',
+            'cpuCooler' => 'CPU Cooler',
+            'motherboard' => 'Motherboard',
+            'memories' => 'Memory',
+            'graphicsCards' => 'Graphics Card',
+            'm2Ssds' => 'M.2 SSD',
+            'sataSsds' => 'SATA SSD',
+            'hardDiskDrives' => 'Hard Disk Drive',
+            'powerSupply' => 'Power Supply',
+            'computerCase' => 'Computer Case',
+
+            // Peripherals
+            'monitor' => 'Monitor',
+            'keyboard' => 'Keyboard',
+            'mouse' => 'Mouse',
+            'headset' => 'Headset',
+            'speaker' => 'Speaker',
+            'webCamera' => 'Web Camera',
         ];
     }
 
@@ -76,6 +241,8 @@ class PartsConfig
             'condition' => 'New',
             'date_purchased' => null
         ];
+        $connectionTypeEnum = 'nullable|in:Wired,Wireless';
+
 
         $map = [
             'processor' => $common + [
@@ -96,7 +263,7 @@ class PartsConfig
             ],
             'memories' => $common + [
                 'type' => '',
-                'capacity' => '',
+                'capacity' => null,
                 'speed' => null
             ],
             'graphicsCards' => $common + [
@@ -135,21 +302,23 @@ class PartsConfig
                 'panel_type' => null
             ],
             'keyboard' => $common + [
-                'connection_type' => ''
+                'connection_type' => null,
             ],
             'mouse' => $common + [
-                'connection_type' => ''
+                'connection_type' => null,
             ],
             'headset' => $common + [
-                'connection_type' => ''
+                'connection_type' => null,
             ],
             'speaker' => $common + [
-                'connection_type' => ''
+                'connection_type' => null,
             ],
             'webCamera' => $common + [
                 'resolution' => '',
-                'connection_type' => ''
+                'connection_type' => null,
             ],
+
+
         ];
 
         return $map[$type] ?? $common;
@@ -162,6 +331,7 @@ class PartsConfig
     {
         $statusEnum = 'required|in:Operational,Needs Repair,Non-operational';
         $conditionEnum = 'required|in:New,Excellent,Good,Fair,Poor,Defective';
+        $connectionTypeEnum = 'nullable|in:Wired,Wireless';
 
         $common = [
             'fields.brand' => 'required|string|max:255',
@@ -171,6 +341,7 @@ class PartsConfig
             'fields.condition' => $conditionEnum,
             'fields.date_purchased' => 'nullable|date',
         ];
+
 
         $map = [
             'processor' => $common + [
@@ -191,7 +362,7 @@ class PartsConfig
             ],
             'memories' => $common + [
                 'fields.type' => 'nullable|string|max:255',
-                'fields.capacity' => 'nullable|string|max:255',
+                'fields.capacity' => 'nullable|integer',
                 'fields.speed' => 'nullable|integer|min:1',
             ],
             'graphicsCards' => $common + [
@@ -227,24 +398,27 @@ class PartsConfig
             'monitor' => $common + [
                 'fields.resolution' => 'nullable|string|max:255',
                 'fields.size_inches' => 'nullable|integer|min:1',
-                'fields.panel_type' => 'nullable|string|max:255',
+                'fields.panel_type' => 'nullable|in:IPS,TN,VA,OLED', // 👈 enforce enum
             ],
+
             'keyboard' => $common + [
-                'fields.connection_type' => 'nullable|string|max:255',
+                'fields.connection_type' => $connectionTypeEnum,
             ],
             'mouse' => $common + [
-                'fields.connection_type' => 'nullable|string|max:255',
+                'fields.connection_type' => $connectionTypeEnum,
             ],
             'headset' => $common + [
-                'fields.connection_type' => 'nullable|string|max:255',
+                'fields.connection_type' => $connectionTypeEnum,
             ],
             'speaker' => $common + [
-                'fields.connection_type' => 'nullable|string|max:255',
+                'fields.connection_type' => $connectionTypeEnum,
             ],
             'webCamera' => $common + [
                 'fields.resolution' => 'nullable|string|max:255',
-                'fields.connection_type' => 'nullable|string|max:255',
+                'fields.connection_type' => $connectionTypeEnum,
             ],
+
+
         ];
 
         return $map[$type] ?? $common;
@@ -257,9 +431,13 @@ class PartsConfig
     {
         return [
             'status' => ['Operational', 'Needs Repair', 'Non-operational'],
-            'condition' => ['New', 'Excellent', 'Good', 'Fair', 'Poor', 'Defective']
+            'condition' => ['New', 'Excellent', 'Good', 'Fair', 'Poor', 'Defective'],
+            'connection_type' => ['Wired', 'Wireless'],
+            'panel_type' => ['IPS', 'TN', 'VA', 'OLED'] // 👈 added here
         ];
     }
+
+
 
     /**
      * Available parts query

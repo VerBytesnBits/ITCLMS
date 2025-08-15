@@ -5,99 +5,87 @@
     <title>System Units Report</title>
     <style>
         body { font-family: Arial, sans-serif; font-size: 12px; color: #000; }
-        .header { text-align: center; margin-bottom: 10px; }
+        .header { text-align: center; margin-bottom: 12px; }
         .header h1 { font-size: 16px; margin: 0; }
         .header h2 { font-size: 14px; margin: 0; font-weight: normal; }
-
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        .room-title { margin-top: 18px; font-weight: bold; }
+        table { width: 100%; border-collapse: collapse; margin-top: 8px; page-break-inside: avoid; }
         table, th, td { border: 1px solid #000; }
         th { background-color: #f0f0f0; text-align: center; padding: 5px; font-size: 11px; }
-        td { padding: 5px; text-align: center; font-size: 11px; }
-
-        .status-working { background-color: #d4edda; }
-        .status-maintenance { background-color: #fff3cd; }
-        .status-decommissioned { background-color: #e2e3e5; }
-
-        /* Hide columns dynamically */
-        .hidden-col { display: none; }
+        td { vertical-align: top; padding: 5px; font-size: 11px; }
+        .part-block { margin-bottom: 6px; }
+        .kv { line-height: 1.2; }
+        .muted { color: #555; }
     </style>
 </head>
 <body>
+    <div class="header">
+        <h1>LABORATORY INVENTORY SYSTEM</h1>
+        <h2>System Units Report</h2>
+        <small>{{ now()->format('F d, Y') }}</small>
+    </div>
 
-<div class="header">
-    <h1>LABORATORY INVENTORY SYSTEM</h1>
-    <h2>System Units Report</h2>
-    <small>{{ now()->format('F d, Y') }}</small>
-</div>
+    @foreach ($rooms as $room)
+        <div class="room-title">Room: {{ $room['room_name'] }}</div>
 
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 70px;">Unit ID</th>
+                     <th style="width: 70px;">Unit Name</th>
+                    @foreach ($selectedKeys as $key)
+                        @php
+                            // Prefer labels from config; fallback to the first unit's label if present
+                            $label = $partsConfig[$key]['label'] ?? ucfirst($key);
+                            $sub   = $partsConfig[$key]['sub']   ?? '';
+                        @endphp
+                        <th>
+                            {{ $label }}
+                            @if (!empty($sub))
+                                <br><small class="muted">{{ $sub }}</small>
+                            @endif
+                        </th>
+                    @endforeach
+                </tr>
+            </thead>
+            <tbody>
+                @forelse ($room['units'] as $unit)
+                    <tr>
+                        <td style="text-align:center;">{{ $unit['unit_id'] }}</td>
+                        <td style="text-align:center;">{{ $unit['unit_name'] }}</td>
 
-<table id="units-table">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th class="col-cpu">CPU<br><small>(model)</small></th>
-            <th class="col-mboard">MBOARD<br><small>(model)</small></th>
-            <th class="col-ram">RAM<br><small>(type & capacity)</small></th>
-            <th class="col-drive">DRIVE<br><small>(type & capacity)</small></th>
-            <th class="col-gpu">GPU<br><small>(model)</small></th>
-            <th class="col-monitor">Monitor<br><small>(model)</small></th>
-            <th class="col-keyboard">Keyboard<br><small>(model)</small></th>
-            <th class="col-mouse">Mouse<br><small>(model)</small></th>
-            <th class="col-status">STATUS</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach ($units as $unit)
-            <tr>
-                <td>{{ $unit->id }}</td>
-                <td class="col-cpu">
-                    {{ $unit->processor
-                        ? "{$unit->processor->brand} {$unit->processor->model} {$unit->processor->base_clock}GHz" .
-                            ($unit->processor->boost_clock ? " / {$unit->processor->boost_clock}GHz" : '')
-                        : 'N/A' }}
-                </td>
-                <td class="col-mboard">
-                    {{ $unit->motherboard ? $unit->motherboard->brand . ' ' . $unit->motherboard->model : 'N/A' }}
-                </td>
-                <td class="col-ram">
-                    {{ $unit->memory ? $unit->memory->type . ' ' . $unit->memory->capacity . 'GB' : 'N/A' }}
-                </td>
-                <td class="col-drive">
-                    @if ($unit->drive_type === 'm2' && $unit->m2Ssd)
-                        M.2 - ({{ $unit->m2Ssd->capacity }} GB)
-                    @elseif ($unit->drive_type === 'sata' && $unit->sataSsd)
-                        SATA - ({{ $unit->sataSsd->capacity }} GB)
-                    @elseif ($unit->drive_type === 'hdd' && $unit->hardDiskDrive)
-                        HDD - ({{ $unit->hardDiskDrive->capacity }} GB)
-                    @else
-                        N/A
-                    @endif
-                </td>
-                <td class="col-gpu">{{ $unit->gpu ? $unit->gpu->brand . ' ' . $unit->gpu->model : 'N/A' }}</td>
-                <td class="col-monitor">{{ $unit->monitor ? $unit->monitor->brand . ' ' . $unit->monitor->model : 'N/A' }}</td>
-                <td class="col-keyboard">{{ $unit->keyboard ? $unit->keyboard->brand . ' ' . $unit->keyboard->model : 'N/A' }}</td>
-                <td class="col-mouse">{{ $unit->mouse ? $unit->mouse->brand . ' ' . $unit->mouse->model : 'N/A' }}</td>
-                <td class="col-status
-                    {{ $unit->status === 'Working' ? 'status-working' : '' }}
-                    {{ $unit->status === 'Under Maintenance' ? 'status-maintenance' : '' }}
-                    {{ $unit->status === 'Decommissioned' ? 'status-decommissioned' : '' }}">
-                    {{ $unit->status }}
-                </td>
-            </tr>
-        @endforeach
-    </tbody>
-</table>
+                        @foreach ($selectedKeys as $key)
+                            @php
+                                $part = $unit['parts'][$key] ?? null;
+                                $detailsList = $part['details'] ?? [];
+                            @endphp
 
-<script>
-    document.querySelectorAll('.col-toggle').forEach(checkbox => {
-        checkbox.addEventListener('change', function () {
-            let colClass = 'col-' + this.dataset.col;
-            document.querySelectorAll('.' + colClass).forEach(cell => {
-                cell.classList.toggle('hidden-col', !this.checked);
-            });
-        });
-    });
-</script>
-
+                            <td>
+                                @if (empty($detailsList))
+                                    <span class="muted">—</span>
+                                @else
+                                    @foreach ($detailsList as $detail)
+                                        <div class="part-block">
+                                            @foreach ($detail as $k => $v)
+                                                @if (!is_null($v) && $v !== '' && $v !== 'N/A')
+                                                    <div class="kv"><strong>{{ $k }}:</strong> {{ $v }}</div>
+                                                @endif
+                                            @endforeach
+                                        </div>
+                                    @endforeach
+                                @endif
+                            </td>
+                        @endforeach
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="{{ 1 + count($selectedKeys) }}" style="text-align:center;">
+                            <em class="muted">No units in this room.</em>
+                        </td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    @endforeach
 </body>
 </html>

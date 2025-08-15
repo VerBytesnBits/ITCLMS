@@ -12,6 +12,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use App\Events\UnitCreated;
 use App\Events\UnitUpdated;
 use App\Events\UnitDeleted;
+use App\Support\PartsConfig;
 
 class UnitIndex extends Component
 {
@@ -38,24 +39,10 @@ class UnitIndex extends Component
 
 
     // Centralized list of all unit relations
-    public array $unitRelations = [
-        'processor',
-        'cpuCooler',
-        'motherboard',
-        'memories',
-        'graphicsCards',
-        'powerSupply',
-        'computerCase',
-        'm2Ssds',
-        'sataSsds',
-        'hardDiskDrives',
-        'monitor',
-        'keyboard',
-        'mouse',
-        'headset',
-        'speaker',
-        'webCamera',
-    ];
+
+    public array $unitRelations;
+
+
 
     // Default selected components (dynamically generated from $unitRelations)
     public array $selectedComponents = [];
@@ -68,7 +55,9 @@ class UnitIndex extends Component
 
     public function mount()
     {
-        // Initialize selectedComponents dynamically
+        $this->unitRelations = PartsConfig::unitRelations();
+      
+
         foreach ($this->unitRelations as $relation) {
             $this->selectedComponents[$relation] = true;
         }
@@ -76,45 +65,6 @@ class UnitIndex extends Component
         $this->loadUnitsAndRooms();
     }
 
-    public function openSelectComponentsModal()
-    {
-        $this->showSelectComponents = true;
-    }
-
-    public function confirmComponentSelection()
-    {
-        $this->showSelectComponents = false;
-        $this->previewPdf();
-    }
-
-    public function previewPdf()
-    {
-        $relations = array_keys(array_filter($this->selectedComponents));
-        $relations = array_intersect($relations, $this->unitRelations);
-
-        $units = SystemUnit::with($relations)->get();
-
-        $pdf = Pdf::loadView('pdf.system-units', compact('units'))
-            ->setPaper('a4', 'landscape');
-
-        $this->pdfBase64 = base64_encode($pdf->output());
-        $this->showPreview = true;
-    }
-
-    public function downloadPdf()
-    {
-        $relations = array_keys(array_filter($this->selectedComponents));
-        $relations = array_intersect($relations, $this->unitRelations);
-
-        $units = SystemUnit::with($relations)->get();
-
-        $pdf = Pdf::loadView('pdf.system-units', compact('units'))
-            ->setPaper('a4', 'landscape');
-
-        return response()->streamDownload(function () use ($pdf) {
-            echo $pdf->output();
-        }, 'system-units-report.pdf');
-    }
 
     #[On('echo:units,UnitCreated')]
     public function handleUnitCreated($unitData)

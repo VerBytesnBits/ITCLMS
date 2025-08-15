@@ -13,15 +13,23 @@
         </button>
 
         {{-- Title --}}
-        <h2 class="text-2xl font-bold mb-6 text-center text-zinc-800 dark:text-white">
+        {{-- <h2 class="text-2xl font-bold mb-6 text-center text-zinc-800 dark:text-white">
             {{ $modalMode === 'edit' ? 'Edit Unit' : 'Add Unit' }}
+        </h2> --}}
+        <h2 class="text-2xl font-bold mb-6 text-center text-zinc-800 dark:text-white">
+            @if ($modalMode === 'edit')
+                Edit {{ $name }}
+            @else
+                Add Unit
+            @endif
         </h2>
+
 
         {{-- Unit Info Fields --}}
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <div>
                 <label class="block mb-1 font-semibold">Unit Name</label>
-                <input type="text" wire:model.defer="name" @if ($modalMode === 'create') readonly @endif
+                <input type="text" wire:model.defer="name" @if ($modalMode === 'edit' || $modalMode === 'create') disabled @endif
                     class="w-full rounded-md border-gray-300 dark:bg-zinc-700 dark:border-zinc-600">
                 @error('name')
                     <span class="text-red-500 text-sm">{{ $message }}</span>
@@ -150,7 +158,7 @@
                                     {{-- Add to Unit --}}
                                     <button wire:click="addToUnit('{{ $selectedType }}', '{{ $itemId }}')"
                                         class="bg-blue-500 text-white px-2 py-1 rounded text-sm">
-                                        + Add
+                                        + Assign
                                     </button>
 
                                     {{-- Delete from Unit / Temporary --}}
@@ -170,14 +178,14 @@
 
                         {{-- Selected Items --}}
                         @if (!empty($selectedList))
-                            <h3 class="font-semibold mt-4 mb-2">Mounted</h3>
+                            <h3 class="font-semibold mt-4 mb-2">Assigned</h3>
                             @foreach ($selectedList as $sel)
                                 @php $selId = $sel['id'] ?? $sel['temp_id']; @endphp
                                 <div class="flex justify-between items-center border-b py-1">
                                     <span>{{ $sel['brand'] ?? '' }} {{ $sel['model'] ?? '' }}</span>
                                     <button wire:click="removeFromUnit('{{ $selectedType }}', '{{ $selId }}')"
                                         class="bg-red-500 text-white px-2 py-1 rounded text-sm">
-                                        Unmount
+                                        Unassign
                                     </button>
                                 </div>
                             @endforeach
