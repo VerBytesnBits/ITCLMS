@@ -5,11 +5,12 @@
         <flux:separator variant="subtle" />
     </div>
 
-    <div class="flex justify-start">
-        <button wire:click="openCreateModal"
+    <div class="flex justify-end">
+        {{-- <button wire:click="openCreateModal"
             class="bg-blue-500 dark:bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-600 dark:hover:bg-blue-700 transition shadow">
             Create Role
-        </button>
+        </button> --}}
+        <flux:button variant="primary" color="lime" wire:click="openCreateModal"> Create Role</flux:button>
     </div>
 
     <div
@@ -19,7 +20,7 @@
                 <tr>
                     <th class="px-6 py-4">Role</th>
                     <th class="px-6 py-4">Permissions</th>
-                    <th class="px-6 py-4 text-right">Actions</th>
+                    <th class="px-6 py-4">Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -70,16 +71,19 @@
                         </td>
 
 
-                        <td class="px-6 py-4 text-right space-x-3">
-                            <button wire:click="openEditModal({{ $role->id }})"
+                        <td class="px-6 py-4">
+                            {{-- <button wire:click="openEditModal({{ $role->id }})"
                                 class="text-blue-500 text-sm font-medium hover:underline cursor-pointer">
                                 Edit
-                            </button>
-
-                            <button wire:click="deleteUser({{ $role->id }})"
+                            </button> --}}
+                            <flux:button variant="primary" color="blue" size="sm"
+                                wire:click="openEditModal({{ $role->id }})">Edit</flux:button>
+                            <flux:button variant="danger" size="sm" wire:click="deleteUser({{ $role->id }})">Delete
+                            </flux:button>
+                            {{-- <button wire:click="deleteUser({{ $role->id }})"
                                 class="text-red-500 text-sm font-medium hover:underline cursor-pointer">
                                 Delete
-                            </button>
+                            </button> --}}
                         </td>
                     </tr>
                 @endforeach

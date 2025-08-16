@@ -2,10 +2,11 @@
     {{-- Create Button --}}
     @can('create.laboratories')
         <div class="flex justify-end">
-            <button wire:click="openCreateModal"
+            {{-- <button wire:click="openCreateModal"
                 class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2 rounded-lg shadow-md transition duration-200">
                 Create Room
-            </button>
+            </button> --}}
+            <flux:button variant="primary" color="lime" wire:click="openCreateModal">Add Room</flux:button>
         </div>
     @endcan
 
@@ -35,17 +36,19 @@
                 {{-- Actions --}}
                 <div class="flex space-x-3 mt-auto">
                     @can('update.laboratories')
-                        <button wire:click="openEditModal({{ $room->id }})"
+                        {{-- <button wire:click="openEditModal({{ $room->id }})"
                             class="flex-1 text-blue-600 dark:text-blue-400 font-medium text-sm hover:underline focus:outline-none">
                             Edit
-                        </button>
+                        </button> --}}
+                        <flux:button variant="primary" color="blue" size="sm"  wire:click="openEditModal({{ $room->id }})">Edit</flux:button>
                     @endcan
 
                     @can('delete.laboratories')
-                        <button wire:click="deleteRoom({{ $room->id }})"
+                        {{-- <button wire:click="deleteRoom({{ $room->id }})"
                             class="flex-1 text-red-600 dark:text-red-400 font-medium text-sm hover:underline focus:outline-none">
                             Delete
-                        </button>
+                        </button> --}}
+                        <flux:button variant="danger" size="sm" wire:click="deleteRoom({{ $room->id }})">Delete</flux:button>
                     @endcan
                 </div>
             </div>

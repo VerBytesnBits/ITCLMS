@@ -4,7 +4,7 @@
             class="bg-white dark:bg-zinc-800 p-6 rounded-2xl shadow-2xl w-full max-w-xl 
               animate-[fade-in-scale_0.2s_ease-out]">
             <h2 class="text-2xl font-bold mb-6 text-center text-zinc-800 dark:text-white">
-                {{ $room ? 'Update Room' : 'Create Room' }}
+                {{ $room ? 'Edit Room' : 'Add Room' }}
             </h2>
 
             <form wire:submit.prevent="save" class="space-y-5">

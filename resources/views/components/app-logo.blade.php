@@ -8,7 +8,7 @@
     <div class="w-1/2">
         <div class="grid grid-rows-[auto_auto] text-left sm:text-left">
             <h1
-                class="text-sm sm:text-base md:text-lg font-black uppercase tracking-[0.4em] sm:tracking-[0.8em] md:tracking-[1.2em]
+                class="text-sm sm:text-base md:text-lg font-black uppercase tracking-[0.4em] sm:tracking-[0.8em] md:tracking-[0.6em]
                text-black  dark:text-white  light-outline">
                 ITCLMS
             </h1>

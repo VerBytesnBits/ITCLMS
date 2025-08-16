@@ -22,7 +22,16 @@ class UnitIndex extends Component
     #[Url(as: 'id')]
     public ?int $id = null;
 
-    public $units;
+    // Filters (persisted in URL)
+    #[Url(as: 'room', except: '')]
+    public ?string $filterRoomId = '';
+
+    #[Url(as: 'status', except: '')]
+    public ?string $filterStatus = ''; // default empty = show all
+
+    #[Url(as: 'Type', except: '')]
+    public ?string $filterType = '';
+
     public $rooms;
 
     public $room_id;
@@ -35,14 +44,9 @@ class UnitIndex extends Component
     public bool $showSelectComponents = false;
     public bool $showPreview = false;
     public ?string $pdfBase64 = null;
-    public ?int $filterRoomId = null; // selected room for filtering
-
 
     // Centralized list of all unit relations
-
     public array $unitRelations;
-
-
 
     // Default selected components (dynamically generated from $unitRelations)
     public array $selectedComponents = [];
@@ -56,72 +60,135 @@ class UnitIndex extends Component
     public function mount()
     {
         $this->unitRelations = PartsConfig::unitRelations();
-      
 
         foreach ($this->unitRelations as $relation) {
             $this->selectedComponents[$relation] = true;
         }
 
-        $this->loadUnitsAndRooms();
+        $this->loadRooms();
     }
-
 
     #[On('echo:units,UnitCreated')]
     public function handleUnitCreated($unitData)
     {
-        $this->units->push(collect($unitData));
+        // Just refresh Livewire view — units are queried dynamically
+        $this->dispatch('$refresh');
     }
 
+    // #[On('echo:units,UnitUpdated')]
+    // public function handleUnitUpdated($unitData)
+    // {
+
+    // }
     #[On('echo:units,UnitUpdated')]
     public function handleUnitUpdated($unitData)
     {
-        $index = $this->units->search(fn($u) => $u['id'] === $unitData['id']);
-        if ($index !== false) {
-            $this->units[$index] = collect($unitData);
-        } else {
-            $this->units->push(collect($unitData));
-        }
+        // Make sure $units is a Collection of models
+        $this->units = $this->units->map(function ($unit) use ($unitData) {
+            if ($unit->id === $unitData['id']) {
+                $unit->status = $unitData['status']; // update status
+            }
+            return $unit;
+        });
+
+        $this->dispatch('$refresh'); // optional if you need UI refresh
     }
+
+    public function updateUnitStatus($unitId, $newStatus)
+    {
+        $unit = SystemUnit::findOrFail($unitId);
+        $unit->status = $newStatus;
+        $unit->save();
+
+        // Broadcast to others
+        broadcast(new UnitUpdated($unit))->toOthers();
+    }
+
 
     #[On('echo:units,UnitDeleted')]
     public function handleUnitDeleted($unitData)
     {
-        $this->units = $this->units->reject(fn($u) => $u['id'] === $unitData['id']);
+        $this->dispatch('$refresh');
     }
 
-    private function loadUnitsAndRooms()
+    private function loadRooms()
     {
         $user = Auth::user();
 
         if (!$user) {
-            $this->units = collect();
             $this->rooms = collect();
             return;
         }
 
         if ($user->hasRole('lab_incharge')) {
-            $unitsQuery = SystemUnit::with('room')
-                ->whereHas('room', fn($q) => $q->where('lab_in_charge_id', $user->id));
-
             $roomsQuery = Room::where('lab_in_charge_id', $user->id)->orderBy('name');
         } elseif ($user->hasRole('chairman')) {
-            $unitsQuery = SystemUnit::with('room');
             $roomsQuery = Room::orderBy('name');
         } else {
-            $this->units = collect();
             $this->rooms = collect();
             return;
         }
 
-        // Apply room filter if selected
-        if ($this->filterRoomId) {
-            $unitsQuery->where('room_id', $this->filterRoomId);
-        }
-
-        $this->units = $unitsQuery->latest()->get();
         $this->rooms = $roomsQuery->get();
     }
 
+    public function getRoomIdForQuery(): ?int
+    {
+        return $this->filterRoomId !== '' ? (int) $this->filterRoomId : null;
+    }
+
+    //  Dynamic query for units
+    public function getUnitsProperty()
+    {
+        $user = Auth::user();
+
+        if (!$user) {
+            return collect();
+        }
+
+        if ($user->hasRole('lab_incharge')) {
+            $unitsQuery = SystemUnit::with('room')
+                ->whereHas('room', fn($q) => $q->where('lab_in_charge_id', $user->id));
+        } elseif ($user->hasRole('chairman')) {
+            $unitsQuery = SystemUnit::with('room');
+        } else {
+            return collect();
+        }
+
+        // Apply filters dynamically
+        // if ($this->filterRoomId) {
+        //     $unitsQuery->where('room_id', $this->filterRoomId);
+        // }
+        if ($filterRoomId = $this->getRoomIdForQuery()) {
+            $unitsQuery->where('room_id', $filterRoomId);
+        }
+
+
+
+
+        if ($this->filterStatus) {
+            $unitsQuery->where('status', $this->filterStatus);
+        }
+
+
+
+
+        if ($this->filterType) {
+            $unitsQuery->where('type', $this->filterType);
+        }
+
+        return $unitsQuery->latest()->get();
+    }
+
+    //  Legend counts (always fresh)
+    public function getCountsProperty()
+    {
+        return [
+            'operational' => SystemUnit::where('status', 'Operational')->count(),
+            'non_operational' => SystemUnit::where('status', 'Non-Operational')->count(),
+            'needs_repair' => SystemUnit::where('status', 'Needs Repair')->count(),
+        ];
+    }
 
     public function openManageModal($id)
     {
@@ -283,18 +350,18 @@ class UnitIndex extends Component
         broadcast(new UnitDeleted(['id' => $id]))->toOthers();
         session()->flash('success', 'System Unit deleted.');
     }
+
     #[On('viewUnits')]
     public function filterByRoom($roomId)
     {
         $this->filterRoomId = $roomId;
-        $this->loadUnitsAndRooms(); // reload units for this room
-        $this->modal = 'viewRoomUnits'; // optional: open modal if you have one
+        $this->modal = 'viewRoomUnits'; // optional
     }
 
     public function render()
     {
         return view('livewire.system-units.unit-index', [
-            'units' => $this->units,
+            'units' => $this->units, // dynamic from getUnitsProperty
             'rooms' => $this->rooms,
             'viewUnit' => $this->viewUnit,
             'allParts' => $this->allParts,

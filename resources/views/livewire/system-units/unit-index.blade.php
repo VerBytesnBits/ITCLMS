@@ -3,69 +3,88 @@ use App\Support\PartsConfig;
 ?>
 
 <div class="p-4">
-    <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
+    <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
         {{-- Search Input --}}
-        <div class="order-3 md:order-1 w-full md:w-auto max-w-xs">
+        {{-- <div class="order-3 md:order-1 w-full md:w-auto max-w-xs">
             <input type="text" wire:model.debounce.300ms="search" placeholder="Search components/peripherals..."
                 class="border border-gray-300 rounded-md px-4 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500" />
-        </div>
+        </div> --}}
+        <flux:input icon="magnifying-glass" wire:model.debounce.300ms="search" autocomplete="off"
+            placeholder="Search unit/components/peripherals..." />
 
         {{-- Buttons Container --}}
         <div class="flex flex-col md:flex-row gap-4 order-1 md:order-2 w-full md:w-auto max-w-xs">
-            {{-- <button wire:click="openSelectComponentsModal"
-                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md shadow w-full md:w-auto">
-                Print / Export PDF
-            </button> --}}
 
-            {{-- <button wire:click="openCreateModal"
-                class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md shadow w-full md:w-auto">
-                Add Unit
-            </button> --}}
 
             <livewire:unit-export-pdf :rooms="$rooms" />
-            <button wire:click="openCreateModal"
+            {{-- <button wire:click="openCreateModal"
                 class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md shadow">
                 Add Unit
-            </button>
+            </button> --}}
+            <flux:button variant="primary" color="lime" wire:click="openCreateModal">Add unit</flux:button>
 
 
         </div>
     </div>
 
     {{-- Legends and Filters --}}
-    <div class="flex flex-col md:flex-row justify-between gap-6 text-sm mb-6 px-2 items-center">
+    <div class="flex flex-col md:flex-row justify-between gap-6 text-sm mb-6 items-center">
         <div class="flex flex-wrap items-center gap-4">
-            <span class="w-3 h-3 bg-green-500 rounded-full inline-block"></span> Operational: 5
-            <span class="w-3 h-3 bg-red-500 rounded-full inline-block"></span> Non-operational: 10
-            <span class="w-3 h-3 bg-yellow-500 rounded-full inline-block"></span> Needs Repair: 10
+            <span class="w-3 h-3 bg-green-500 rounded-full inline-block"></span>
+            Operational: {{ $this->counts['operational'] }}
+            <span class="w-3 h-3 bg-red-500 rounded-full inline-block"></span>
+            Non-operational: {{ $this->counts['non_operational'] }}
+            <span class="w-3 h-3 bg-yellow-500 rounded-full inline-block"></span>
+            Needs Repair: {{ $this->counts['needs_repair'] }}
         </div>
 
-        <div class="flex flex-col md:flex-row gap-4 w-full md:w-auto">
-            {{-- Status Filter --}}
-            <select wire:model="filterStatus"
-                class="border border-gray-300 rounded-md px-3 py-2 max-w-xs w-full md:w-auto focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <option value="">All Status</option>
-                <option value="Operational">Operational</option>
-                <option value="Non-Operational">Non-Operational</option>
-                <option value="Needs Repair">Needs Repair</option>
-            </select>
 
-            {{-- Type Filter --}}
-            <select wire:model="filterType"
-                class="border border-gray-300 rounded-md px-3 py-2 max-w-xs w-full md:w-auto focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <option value="">All Types</option>
-                <option value="component">Component</option>
-                <option value="peripheral">Peripheral</option>
-            </select>
+        <div class="flex flex-col md:flex-row gap-4 w-full md:w-auto items-center">
+            <flux:subheading class="whitespace-nowrap">Filter by:</flux:subheading>
+            <div class="flex justify-start items-center gap-2">
+                {{-- <flux:select wire:model.live="filterStatus">
+                    <flux:select.option value="">All Status</flux:select.option>
+                    <flux:select.option value="Operational">Operational</flux:select.option>
+                    <flux:select.option value="Non-Operational">Non-Operational</flux:select.option>
+                    <flux:select.option value="Needs Repair">Needs Repair</flux:select.option>
+                </flux:select> --}}
 
-            {{-- Room Filter --}}
-            <select wire:model="filterRoom"
-                class="border border-gray-300 rounded-md px-3 py-2 max-w-xs w-full md:w-auto focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <option value="">All Rooms</option>
-                @foreach ($rooms as $room)
-                    <option value="{{ $room->id }}">{{ $room->name }}</option>
-                @endforeach
-            </select>
+
+                <flux:dropdown>
+                    <flux:button icon:trailing="plus">Status</flux:button>
+                    <flux:menu>
+                        <flux:menu.radio.group wire:model.live="filterStatus">
+                            <flux:menu.radio checked value="">All Status</flux:menu.radio>
+                            <flux:menu.radio value="Operational">Operational</flux:menu.radio>
+                            <flux:menu.radio value="Non-Operational">Non-Operational</flux:menu.radio>
+                            <flux:menu.radio value="Needs Repair">Needs Repair</flux:menu.radio>
+                        </flux:menu.radio.group>
+                    </flux:menu>
+                </flux:dropdown>
+                <flux:dropdown>
+                    <flux:button icon:trailing="plus">Type</flux:button>
+                    <flux:menu>
+                        <flux:menu.radio.group wire:model.live="filterType">
+                            <flux:menu.radio checked value="">All Types</flux:menu.radio>
+                            <flux:menu.radio value="component">Component</flux:menu.radio>
+                            <flux:menu.radio value="peripheral">Peripheral</flux:menu.radio>
+                        </flux:menu.radio.group>
+                    </flux:menu>
+                </flux:dropdown>
+
+                <flux:dropdown>
+                    <flux:button icon:trailing="plus">Room</flux:button>
+                    <flux:menu>
+                        <flux:menu.radio.group wire:model.live="filterRoomId">
+                            <flux:menu.radio checked value="">All Rooms</flux:menu.radio>
+                            @foreach ($rooms as $room)
+                                <flux:menu.radio value="{{ $room->id }}">{{ $room->name }}</flux:menu.radio>
+                            @endforeach
+                        </flux:menu.radio.group>
+                    </flux:menu>
+                </flux:dropdown>
+            </div>
+
         </div>
     </div>
 
@@ -77,10 +96,18 @@ use App\Support\PartsConfig;
         class="overflow-x-auto bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl shadow-sm mt-6">
         <table class="min-w-full text-sm text-left text-gray-700 dark:text-gray-200">
             @php
-                // Merge both component and peripheral types into one ordered array for display
-                $tableColumns = array_merge(PartsConfig::componentTypes(), PartsConfig::peripheralTypes());
-
+                $componentTypes = PartsConfig::componentTypes();
+                $peripheralTypes = PartsConfig::peripheralTypes();
                 $labels = PartsConfig::typeLabels();
+
+                // Filter table columns based on selected type
+                if ($filterType === 'component') {
+                    $tableColumns = $componentTypes;
+                } elseif ($filterType === 'peripheral') {
+                    $tableColumns = $peripheralTypes;
+                } else {
+                    $tableColumns = array_merge($componentTypes, $peripheralTypes);
+                }
             @endphp
 
             <thead>
@@ -92,7 +119,6 @@ use App\Support\PartsConfig;
                     @foreach ($tableColumns as $type)
                         <th class="px-4 py-3 text-center">
                             <div class="font-bold">{{ strtoupper($labels[$type] ?? ucfirst($type)) }}</div>
-                            {{-- Optional: subtitles per type --}}
                             <div class="text-xs text-gray-500">
                                 @if ($type === 'memory')
                                     (type & capacity)
@@ -111,6 +137,7 @@ use App\Support\PartsConfig;
                     <th class="px-4 py-3 text-center">Actions</th>
                 </tr>
             </thead>
+
 
             <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                 @foreach ($units as $unit)
@@ -141,52 +168,50 @@ use App\Support\PartsConfig;
 
                         {{-- Status --}}
                         <td class="px-4 py-2 text-center">
-                            <x-status-badge :status="$unit->status" />
+                            <x-status-badge :status="$unit['status']" />
                         </td>
 
 
                         {{-- Actions --}}
                         <td class="px-3 py-2 text-center">
-                            <div class="relative inline-block text-left" x-data="{ open: false, top: 0, left: 0, modal: @entangle('modal') }"
-                                x-effect="if (modal) open = false">
-                                <div class="inline-flex rounded-md shadow-sm" role="group">
+                            <div class="relative inline-block text-left" x-data="{ open: false, buttonEl: null }">
+                                <div class="inline-flex rounded-md shadow-sm">
                                     <button type="button" wire:click="openViewModal({{ $unit->id }})"
-                                        class="inline-flex items-center px-4 py-1 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-blue-600 hover:bg-blue-50
-                             dark:border-zinc-700 dark:bg-zinc-800 dark:text-blue-400 dark:hover:bg-blue-900">
+                                        class="px-4 py-2 font-medium rounded-l-md border bg-white text-sm text-black dark:text-white hover:bg-blue-50  dark:hover:bg-gray-700 dark:bg-zinc-800">
                                         View
                                     </button>
-                                    <button type="button"
-                                        @click="
-                                const rect = $el.getBoundingClientRect();
-                                top = rect.bottom + window.scrollY;
-                                left = rect.left + window.scrollX;
-                                open = !open;
-                            "
-                                        class="inline-flex items-center px-2 py-1 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50
-                             dark:border-zinc-700 dark:bg-zinc-800 dark:text-gray-300 dark:hover:bg-zinc-700">
-                                        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
-                                            fill="currentColor">
+
+                                    <button type="button" @click="buttonEl = $el; open = !open"
+                                        class="px-2 py-1 rounded-r-md border bg-white text-sm text-gray-700  hover:bg-blue-50   dark:hover:bg-gray-700 dark:bg-zinc-800 dark:text-gray-300">
+                                        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="currentColor"
+                                            viewBox="0 0 20 20">
                                             <path fill-rule="evenodd"
                                                 d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.25a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z"
                                                 clip-rule="evenodd" />
                                         </svg>
                                     </button>
                                 </div>
+
                                 <template x-teleport="body">
-                                    <div x-show="open" @click.away="open = false" x-cloak
-                                        class="absolute z-[9999] w-44 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5
-                             dark:bg-zinc-900 dark:ring-white/20"
-                                        :style="'position:absolute; top:' + top + 'px; left:' + left + 'px;'">
-                                        <div class="py-1">
-                                            <button wire:click="openEditModal({{ $unit->id }})"
-                                                class="block px-4 py-2 text-sm text-green-600 hover:border-b hover:border-green-500 w-full text-left
-                                     dark:text-green-400 dark:hover:border-green-300">
+                                    <div x-show="open" x-transition.opacity.origin.top.duration.200ms
+                                        @click.away="open = false" x-cloak
+                                        class="absolute z-50 w-44 rounded-lg shadow-lg bg-white dark:bg-zinc-900 ring-1 ring-black/10 dark:ring-white/20 overflow-hidden"
+                                        :style="'top:' + (buttonEl?.getBoundingClientRect().bottom + window.scrollY) +
+                                        'px; left:' + (buttonEl?.getBoundingClientRect().left + window.scrollX) + 'px;'">
+                                        <div class="flex flex-col divide-y divide-gray-100 dark:divide-zinc-800">
+                                            <button @click="open = false; $wire.openEditModal({{ $unit->id }})"
+                                                class="px-4 py-2 text-sm font-medium text-black dark:text-white hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors duration-150">
                                                 Edit
                                             </button>
-                                            <button wire:click="deleteUnit({{ $unit->id }})"
-                                                class="block px-4 py-2 text-sm text-red-600 hover:border-b hover:border-red-500 w-full text-left
-                                     dark:text-red-400 dark:hover:border-red-300">
+
+                                            <button @click="open = false; $wire.deleteUnit({{ $unit->id }})"
+                                                class="px-4 py-2 text-sm font-medium text-black dark:text-white hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors duration-150">
                                                 Delete
+                                            </button>
+
+                                            <button @click="open = false; $wire.openReportModal({{ $unit->id }})"
+                                                class="px-4 py-2 text-sm font-medium text-black dark:text-white hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors duration-150 rounded-b-lg">
+                                                Report
                                             </button>
                                         </div>
                                     </div>
