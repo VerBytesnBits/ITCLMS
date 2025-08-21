@@ -26,28 +26,28 @@ class Login extends Component
 
     public function login(): void
     {
-        $this->validate([
-            'email' => 'required|email',
-            'password' => 'required',
-        ]);
+        $this->validate();
+        $this->ensureIsNotRateLimited();
 
-        if (!Auth::attempt(['email' => $this->email, 'password' => $this->password])) {
-            // 🔴 Invalid login attempt
+        if (!Auth::attempt(['email' => $this->email, 'password' => $this->password], $this->remember)) {
+            RateLimiter::hit($this->throttleKey());
+            // Invalid login attempt
             $this->dispatch('swal', toast: true, icon: 'error', title: 'Invalid Credentials!', timer: 3000);
 
             throw ValidationException::withMessages([
                 'email' => __('auth.failed'),
             ]);
         }
-
-        // ✅ Successful login
+        RateLimiter::clear($this->throttleKey());
+        Session::regenerate();
+        // Successful login
         session()->flash('alert', [
             'type' => 'success',
             'message' => 'You have successfully logged in!',
         ]);
 
         // $this->redirectIntended(route('dashboard'), navigate: true);
-            $this->redirect(route('dashboard'), navigate: true);
+            $this->redirectIntended(default: route('dashboard', absolute: false), navigate: true);
 
     }
 

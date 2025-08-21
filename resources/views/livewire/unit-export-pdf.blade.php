@@ -57,7 +57,7 @@
     </x-modal>
 
     <!-- Print Preview Modal -->
-    <x-modal name="printPreview" maxWidth="screen-2xl" wire:model="showPreview" class="p-0" :showClose="false">
+    <x-modal name="printPreview" maxWidth="screen-5xl" wire:model="showPreview" class="p-0" :showClose="false">
         <div class="flex flex-col h-[90vh] w-full md:w-[55vw] mx-auto p-4 bg-white dark:bg-zinc-900 rounded-lg">
             <div class="flex items-center justify-between mb-4">
                 <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-100">Print Preview</h2>

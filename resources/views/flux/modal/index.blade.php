@@ -10,7 +10,7 @@
 @php
 $closable ??= $variant === 'bare' ? false : true;
 
-$classes = Flux::classes()
+$classes = Flux\Flux::classes()
     ->add(match ($variant) {
         default => 'p-6 [:where(&)]:max-w-xl shadow-lg rounded-xl',
         'flyout' => match($position) {
@@ -53,7 +53,7 @@ if ($dismissible === false) {
     $attributes = $attributes->merge(['disable-click-outside' => '']);
 }
 
-[ $styleAttributes, $attributes ] = Flux::splitAttributes($attributes, ['autofocus', 'class', 'style', 'wire:close', 'x-on:close', 'wire:cancel', 'x-on:cancel']);
+[ $styleAttributes, $attributes ] = Flux\Flux::splitAttributes($attributes, ['autofocus', 'class', 'style', 'wire:close', 'x-on:close', 'wire:cancel', 'x-on:cancel']);
 @endphp
 
 <ui-modal {{ $attributes }} data-flux-modal>

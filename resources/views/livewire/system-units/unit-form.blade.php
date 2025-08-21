@@ -201,12 +201,12 @@
 
         {{-- Save Button --}}
         <div class="mt-6 flex justify-end gap-2">
-            <button wire:click="$dispatch('closeModal')"
+            <button  wire:click="$dispatch('closeModal')"
                 class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md">
                 Cancel
             </button>
             <button wire:click="save" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md">
-                Save Unit
+                {{ $unitId ? 'Update Unit' : 'Add Unit' }}
             </button>
         </div>
     </div>

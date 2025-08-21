@@ -21,7 +21,7 @@
 <body>
     <div class="header">
         <h1>LABORATORY INVENTORY SYSTEM</h1>
-        <h2>System Units Report</h2>
+        <h2>Units Report</h2>
         <small>{{ now()->format('F d, Y') }}</small>
     </div>
 

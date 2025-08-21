@@ -28,7 +28,48 @@ class PartsConfig
         ];
     }
 
-   
+    /**
+     * Get all parts attached to a given System Unit,
+     * formatted with labels for dropdowns or reports.
+     */
+    public static function getPartsForUnit($unit): array
+    {
+        if (!$unit) {
+            return [];
+        }
+
+        $parts = [];
+        $labels = self::typeLabels();
+
+        foreach (self::unitRelations() as $relation) {
+            if (!method_exists($unit, $relation)) {
+                continue;
+            }
+
+            $items = $unit->$relation;
+
+            // Normalize to iterable
+            if (is_null($items)) {
+                continue;
+            } elseif ($items instanceof \Illuminate\Database\Eloquent\Model) {
+                $items = collect([$items]); // wrap single model
+            } elseif (!($items instanceof \Illuminate\Support\Collection)) {
+                $items = collect([]); // fallback safety
+            }
+
+            foreach ($items as $item) {
+                $parts[] = [
+                    'id' => $item->id ?? null,
+                    'type' => $relation,
+                    'label' => ($labels[$relation] ?? ucfirst($relation))
+                        . ' - ' . ($item->model ?? $item->serial_number ?? $item->brand ?? 'Unknown'),
+                ];
+            }
+        }
+
+        return $parts;
+    }
+
 
     /**
      * Build the parts config.

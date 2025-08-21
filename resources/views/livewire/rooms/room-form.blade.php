@@ -63,7 +63,7 @@
                     </button>
                     <button type="submit"
                         class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm cursor-pointer">
-                        {{ $room ? 'Update' : 'Save' }}
+                        {{ $room ? 'Update' : 'Add' }}
                     </button>
                 </div>
             </form>

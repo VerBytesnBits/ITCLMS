@@ -2,6 +2,7 @@
 
 namespace App\Livewire\SystemUnits;
 
+use App\Events\UnitCreated;
 use Livewire\Component;
 use App\Models\{
     SystemUnit,
@@ -309,10 +310,6 @@ class UnitForm extends Component
     }
 
 
-
-
-
-
     // ==============================
     // Part Events
     // ==============================
@@ -387,13 +384,20 @@ class UnitForm extends Component
                 'status' => $this->status,
                 'room_id' => $this->room_id
             ]);
+            event(new UnitCreated($unit));
         } else {
             $unit = SystemUnit::findOrFail($this->unitId);
             $unit->update([
                 'name' => $this->name,
                 'status' => $this->status,
                 'room_id' => $this->room_id
+
             ]);
+
+            event(new UnitUpdated($unit));
+
+
+            
         }
 
         // Always store the current ID
@@ -412,7 +416,7 @@ class UnitForm extends Component
         }
 
         session()->flash('success', 'System unit saved!');
-        event(new UnitUpdated($unit));
+
 
         // Close modal only in edit mode
         if ($this->modalMode === 'edit') {

@@ -30,7 +30,16 @@
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
                 </div> --}}
-                <flux:input wire:model.defer="password" type="password" label="Password" />
+                <!-- Show password fields only on create -->
+                @if (!$user)
+                    <flux:input wire:model.defer="password" type="password" label="Password" />
+
+                    <flux:input wire:model.defer="password_confirmation" type="password" label="Confirm Password" />
+                @endif
+
+
+
+
                 <!-- Roles Selection - Pills -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Roles</label>
@@ -58,7 +67,7 @@
                     <label for="assigned_room_id" class="block text-sm font-medium text-gray-700 dark:text-gray-200">
                         Assign Room
                     </label>
-                     {{-- && !selectedRoles.includes('chairman') --}}
+                    {{-- && !selectedRoles.includes('chairman') --}}
                     <select wire:model.defer="assigned_room_id" id="assigned_room_id"
                         :disabled="!selectedRoles.includes('lab_incharge')"
                         class="w-full px-4 py-2 border rounded-md dark:bg-zinc-700 dark:text-white disabled:opacity-50">
@@ -81,7 +90,7 @@
                     </button>
                     <button type="submit"
                         class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">
-                        {{ $user ? 'Update' : 'save' }}
+                        {{ $user ? 'Update' : 'Add' }}
                     </button>
                 </div>
             </form>
