@@ -1,12 +1,5 @@
 import './session-alert';
-import './bootstrap';
+import './echo';
 
 
-
-
-
-
-
-
-  
 

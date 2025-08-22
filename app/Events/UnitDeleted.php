@@ -24,6 +24,11 @@ class UnitDeleted implements ShouldBroadcastNow
         return new Channel('units');
     }
 
+     public function broadcastAs()
+    {
+        return 'UnitDeleted';
+    }
+
     public function broadcastWith()
     {
         return [

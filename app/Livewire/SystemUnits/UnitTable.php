@@ -13,10 +13,10 @@ use App\Livewire\SystemUnits\Traits\HandlesUnitEcho;
 
 class UnitTable extends Component
 {
-   
+
     public $units; // injected from parent (UnitIndex)
 
- 
+
     public function openViewModal($id)
     {
         $this->dispatch('openViewModalFromTable', id: $id);
@@ -31,7 +31,7 @@ class UnitTable extends Component
     {
         $this->dispatch('openReportModalFromTable', id: $id);
     }
-   
+
     public function deleteUnit($id)
     {
         $unit = SystemUnit::with(PartsConfig::unitRelations())->findOrFail($id);
@@ -58,10 +58,10 @@ class UnitTable extends Component
         }
 
         $unit->delete();
-        //  event(new UnitDeleted($unit->id));
-        broadcast(new UnitDeleted(['id' => $id]))->toOthers();
+        event(new UnitDeleted($unit->id));
+        broadcast(new UnitDeleted($unit->id))->toOthers();
 
-       
+
         session()->flash('success', 'System Unit deleted.');
     }
 

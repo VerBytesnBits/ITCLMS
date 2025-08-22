@@ -7,6 +7,19 @@ use Illuminate\Support\Facades\Route;
 use App\Livewire\SystemUnits\Index as SystemUnitIndex;
 use App\Livewire\SystemUnits\Show as SystemUnitShow;
 use App\Livewire\Processors\Create as ProcessorCreate;
+use App\Events\TestPing;
+
+
+Route::get('/test-broadcast', function () {
+    broadcast(new TestPing());
+    return 'Ping sent!';
+});
+Route::get('/test-unit', function () {
+    $unit = \App\Models\SystemUnit::first();
+    broadcast(new \App\Events\UnitCreated($unit));
+    return 'UnitCreated fired!';
+});
+
 
 Route::get('/', function () {
     return redirect()->route('login');

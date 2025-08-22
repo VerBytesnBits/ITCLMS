@@ -11,6 +11,7 @@ use App\Models\Room;
 use App\Support\PartsConfig;
 use App\Livewire\SystemUnits\Traits\HandlesUnitEcho;
 use App\Livewire\SystemUnits\Traits\HandlesUnitModals;
+use App\Events\UnitCreated;
 
 class UnitIndex extends Component
 {
@@ -34,7 +35,7 @@ class UnitIndex extends Component
     public $rooms;
     public $room_id;
     public $name;
-    public $status = 'Operational';
+    public $status = '';
     public ?SystemUnit $viewUnit = null;
 
     public array $unitRelations;
@@ -46,13 +47,14 @@ class UnitIndex extends Component
         'room_id' => 'required|exists:rooms,id',
     ];
 
+
     public function mount()
     {
         $this->unitRelations = PartsConfig::unitRelations();
         $this->loadRooms();
-        $this->loadUnits();
-        $this->units = collect(SystemUnit::with('room')->get());
+        $this->loadUnits(); // <-- initial load
     }
+
 
     private function loadRooms()
     {
@@ -69,16 +71,36 @@ class UnitIndex extends Component
     private function getRoomIdForQuery(): ?int
     {
         return $this->filterRoomId !== '' ? (int) $this->filterRoomId : null;
+
+    }
+    // #[On('echo:units,UnitCreated')]
+    // #[On('echo:units,UnitUpdated')]
+    // #[On('echo:units,UnitDeleted')]
+    // public function refreshUnits()
+    // {
+    //     logger('Livewire heard UnitUpdated!');
+    //     $this->loadUnits(); // refresh data in memory
+    // }
+    // #[On('unit-saved')]
+    // #[On('unit-updated')]
+    // #[On('echo:units,UnitCreated')]
+    // #[On('echo:units,UnitUpdated')]
+    // #[On('echo:units,UnitDeleted')]
+    // public function refreshUnits()
+    // {
+    //     $this->loadUnits(); // reload from DB
+    // }
+    #[On('echo:units,UnitCreated')]
+    public function handleRealtimeUnitCreated($unit)
+    {
+        // Reload units when event is received
+        $this->loadUnits();
     }
 
-    private function loadUnits()
+    public function loadUnits()
     {
-        $user = Auth::user();
 
-        if (!$user) {
-            $this->units = collect();
-            return;
-        }
+        $user = Auth::user();
 
         $unitsQuery = match (true) {
             $user->hasRole('lab_incharge') => SystemUnit::with('room')
@@ -122,25 +144,27 @@ class UnitIndex extends Component
         ];
     }
 
-    public function createUnit()
-    {
-        $this->validate();
+    // public function createUnit()
+    // {
+    //     $this->validate();
 
-        if (Auth::user()->hasRole('lab_incharge') && !$this->rooms->pluck('id')->contains($this->room_id)) {
-            abort(403, 'Unauthorized room assignment.');
-        }
+    //     if (Auth::user()->hasRole('lab_incharge') && !$this->rooms->pluck('id')->contains($this->room_id)) {
+    //         abort(403, 'Unauthorized room assignment.');
+    //     }
 
-        $unit = SystemUnit::with('room')->create([
-            'room_id' => $this->room_id,
-            'name' => $this->name,
-            'status' => $this->status,
-        ])->fresh(['room']);
+    //     $unit = SystemUnit::with('room')->create([
+    //         'room_id' => $this->room_id,
+    //         'name' => $this->name,
+    //         'status' => $this->status,
+    //     ])->fresh(['room']);
+    //     event(new UnitCreated($unit));
+    //     // event(new \App\Events\UnitCreated($unit));
 
-        event(new \App\Events\UnitCreated($unit));
 
-        $this->modal = null;
-        session()->flash('success', 'System Unit created successfully.');
-    }
+    //     $this->modal = null;
+    //     session()->flash('success', 'System Unit created successfully.');
+    // }
+
 
     public function updateUnit()
     {
@@ -169,9 +193,10 @@ class UnitIndex extends Component
     public function render()
     {
         return view('livewire.system-units.unit-index', [
-            'units' => $this->units,
+            'units' => $this->units,   // <--- use the reactive property
             'rooms' => $this->rooms,
             'viewUnit' => $this->viewUnit,
         ]);
     }
+
 }

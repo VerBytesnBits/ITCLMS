@@ -82,111 +82,114 @@ use App\Support\PartsConfig;
         </div>
     </div>
 
-    <livewire:system-units.unit-table :units="$units" />
+    <livewire:system-units.unit-table :units="$units"/>
+
+   
 
 
 
-{{-- Modals --}}
 
-@if ($modal === 'report')
-    <livewire:unit-reports.report-form :unit-id="$selectedUnitId" :key="'report-' . $selectedUnitId" />
-@endif
+    {{-- Modals --}}
 
-@if ($modal === 'create')
-    <livewire:system-units.unit-form :key="'create'" />
-@endif
+    @if ($modal === 'report')
+        <livewire:unit-reports.report-form :unit-id="$selectedUnitId" :key="'report-' . $selectedUnitId" />
+    @endif
 
-@if ($modal === 'edit' && $id)
-    <livewire:system-units.unit-form :unit-id="$id" :key="'edit-' . $id" />
-@endif
+    @if ($modal === 'create')
+        <livewire:system-units.unit-form :key="'create'" />
+    @endif
 
-@if ($modal === 'view' && $viewUnit)
-    <div x-data @keydown.escape.window="$wire.closeModal()" {{-- closes on Esc key too --}}
-        class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4 overflow-auto">
+    @if ($modal === 'edit' && $id)
+        <livewire:system-units.unit-form :unit-id="$id" :key="'edit-' . $id" />
+    @endif
 
-        <div @click.outside="$wire.closeModal()" {{-- closes when clicking outside --}}
-            class="bg-white dark:bg-zinc-800 p-6 rounded-2xl shadow-2xl w-full max-w-xl animate-[fade-in-scale_0.2s_ease-out] relative">
+    @if ($modal === 'view' && $viewUnit)
+        <div x-data @keydown.escape.window="$wire.closeModal()" {{-- closes on Esc key too --}}
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4 overflow-auto">
+
+            <div @click.outside="$wire.closeModal()" {{-- closes when clicking outside --}}
+                class="bg-white dark:bg-zinc-800 p-6 rounded-2xl shadow-2xl w-full max-w-xl animate-[fade-in-scale_0.2s_ease-out] relative">
 
 
 
-            <h2 class="text-2xl font-bold mb-4 dark:text-white">
-                Unit Details: {{ $viewUnit->name }}
-            </h2>
+                <h2 class="text-2xl font-bold mb-4 dark:text-white">
+                    Unit Details: {{ $viewUnit->name }}
+                </h2>
 
-            <p><strong>Room:</strong> {{ $viewUnit->room?->name ?? 'N/A' }}</p>
-            <p><strong>Status:</strong> {{ $viewUnit->status }}</p>
+                <p><strong>Room:</strong> {{ $viewUnit->room?->name ?? 'N/A' }}</p>
+                <p><strong>Status:</strong> {{ $viewUnit->status }}</p>
 
-            <h3 class="mt-6 text-xl font-semibold dark:text-white">Components & Peripherals</h3>
+                <h3 class="mt-6 text-xl font-semibold dark:text-white">Components & Peripherals</h3>
 
-            @php
-                $componentTypes = PartsConfig::componentTypes();
-                $peripheralTypes = PartsConfig::peripheralTypes();
-                $labels = PartsConfig::typeLabels();
+                @php
+                    $componentTypes = PartsConfig::componentTypes();
+                    $peripheralTypes = PartsConfig::peripheralTypes();
+                    $labels = PartsConfig::typeLabels();
 
-                $groupedParts = ['Components' => [], 'Peripherals' => []];
+                    $groupedParts = ['Components' => [], 'Peripherals' => []];
 
-                foreach ($componentTypes as $type) {
-                    $items = $viewUnit->$type;
-                    if ($items instanceof \Illuminate\Support\Collection) {
-                        foreach ($items as $part) {
+                    foreach ($componentTypes as $type) {
+                        $items = $viewUnit->$type;
+                        if ($items instanceof \Illuminate\Support\Collection) {
+                            foreach ($items as $part) {
+                                $groupedParts['Components'][] = [
+                                    'label' => $labels[$type] ?? ucfirst($type),
+                                    'part' => $part,
+                                ];
+                            }
+                        } elseif ($items) {
                             $groupedParts['Components'][] = [
                                 'label' => $labels[$type] ?? ucfirst($type),
-                                'part' => $part,
+                                'part' => $items,
                             ];
                         }
-                    } elseif ($items) {
-                        $groupedParts['Components'][] = [
-                            'label' => $labels[$type] ?? ucfirst($type),
-                            'part' => $items,
-                        ];
                     }
-                }
 
-                foreach ($peripheralTypes as $type) {
-                    $items = $viewUnit->$type;
-                    if ($items instanceof \Illuminate\Support\Collection) {
-                        foreach ($items as $part) {
+                    foreach ($peripheralTypes as $type) {
+                        $items = $viewUnit->$type;
+                        if ($items instanceof \Illuminate\Support\Collection) {
+                            foreach ($items as $part) {
+                                $groupedParts['Peripherals'][] = [
+                                    'label' => $labels[$type] ?? ucfirst($type),
+                                    'part' => $part,
+                                ];
+                            }
+                        } elseif ($items) {
                             $groupedParts['Peripherals'][] = [
                                 'label' => $labels[$type] ?? ucfirst($type),
-                                'part' => $part,
+                                'part' => $items,
                             ];
                         }
-                    } elseif ($items) {
-                        $groupedParts['Peripherals'][] = [
-                            'label' => $labels[$type] ?? ucfirst($type),
-                            'part' => $items,
-                        ];
                     }
-                }
-            @endphp
+                @endphp
 
 
-            @if (empty($groupedParts['Components']) && empty($groupedParts['Peripherals']))
-                <p class="text-gray-600 dark:text-gray-400">No components or peripherals found.</p>
-            @else
-                @foreach (['Components', 'Peripherals'] as $category)
-                    @if (!empty($groupedParts[$category]))
-                        <h4 class="mt-4 font-semibold dark:text-white">{{ $category }}</h4>
-                        <ul class="list-disc list-inside max-h-48 overflow-auto">
-                            @foreach ($groupedParts[$category] as $data)
-                                @php $part = $data['part']; @endphp
-                                @if (is_object($part) && isset($part->brand, $part->model, $part->status))
-                                    <li>
-                                        <strong>{{ $data['label'] }}:</strong>
-                                        {{ $part->brand }} {{ $part->model }} -
-                                        <span class="text-green-600 font-semibold">{{ $part->status }}</span>
-                                    </li>
-                                @endif
-                            @endforeach
-                        </ul>
-                    @endif
-                @endforeach
-            @endif
-            <button wire:click="closeModal" class="mt-6 px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">
-                Close
-            </button>
+                @if (empty($groupedParts['Components']) && empty($groupedParts['Peripherals']))
+                    <p class="text-gray-600 dark:text-gray-400">No components or peripherals found.</p>
+                @else
+                    @foreach (['Components', 'Peripherals'] as $category)
+                        @if (!empty($groupedParts[$category]))
+                            <h4 class="mt-4 font-semibold dark:text-white">{{ $category }}</h4>
+                            <ul class="list-disc list-inside max-h-48 overflow-auto">
+                                @foreach ($groupedParts[$category] as $data)
+                                    @php $part = $data['part']; @endphp
+                                    @if (is_object($part) && isset($part->brand, $part->model, $part->status))
+                                        <li>
+                                            <strong>{{ $data['label'] }}:</strong>
+                                            {{ $part->brand }} {{ $part->model }} -
+                                            <span class="text-green-600 font-semibold">{{ $part->status }}</span>
+                                        </li>
+                                    @endif
+                                @endforeach
+                            </ul>
+                        @endif
+                    @endforeach
+                @endif
+                <button wire:click="closeModal" class="mt-6 px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">
+                    Close
+                </button>
+            </div>
         </div>
-    </div>
-@endif
+    @endif
 
 </div>

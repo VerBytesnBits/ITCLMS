@@ -384,7 +384,10 @@ class UnitForm extends Component
                 'status' => $this->status,
                 'room_id' => $this->room_id
             ]);
+            broadcast(new UnitCreated($unit))->toOthers();
             event(new UnitCreated($unit));
+            $this->dispatch('unit-saved');
+            
         } else {
             $unit = SystemUnit::findOrFail($this->unitId);
             $unit->update([
@@ -393,11 +396,12 @@ class UnitForm extends Component
                 'room_id' => $this->room_id
 
             ]);
-
+            broadcast(new UnitUpdated($unit))->toOthers();
             event(new UnitUpdated($unit));
+            $this->dispatch('unit-updated');
 
 
-            
+
         }
 
         // Always store the current ID

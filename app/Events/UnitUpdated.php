@@ -5,6 +5,7 @@ namespace App\Events;
 use App\Models\SystemUnit;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
@@ -15,9 +16,15 @@ class UnitUpdated implements ShouldBroadcastNow
 
     public $unit;
 
-    public function __construct(SystemUnit $unit)
+    /**
+     * Create a new event instance.
+     *
+     *  $unit
+     */
+    public function __construct( $unit)
     {
-        $this->unit = $unit;
+        $unit->load('room');
+        $this->unit = $unit->toArray();
     }
 
     public function broadcastOn()
@@ -25,10 +32,13 @@ class UnitUpdated implements ShouldBroadcastNow
         return new Channel('units');
     }
 
+    public function broadcastAs()
+    {
+        return 'UnitUpdated';
+    }
+
     public function broadcastWith()
     {
-        return [
-            'unit' => $this->unit->toArray(),
-        ];
+        return $this->unit;
     }
 }
