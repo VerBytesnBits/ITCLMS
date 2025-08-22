@@ -58,8 +58,9 @@ class UnitTable extends Component
         }
 
         $unit->delete();
-        event(new UnitDeleted($unit->id));
-        broadcast(new UnitDeleted($unit->id))->toOthers();
+        // event(new UnitDeleted($unit->id));
+        // broadcast(new UnitDeleted($unit->id))->toOthers();
+        broadcast(new UnitDeleted(['id' => $id]))->toOthers();
 
 
         session()->flash('success', 'System Unit deleted.');

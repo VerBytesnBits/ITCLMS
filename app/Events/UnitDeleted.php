@@ -4,6 +4,7 @@ namespace App\Events;
 
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
@@ -12,11 +13,17 @@ class UnitDeleted implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $id;
+    public int $unitId;
 
-    public function __construct($id)
+    /**
+     * Create a new event instance.
+     *
+     * @param array|int $unitData
+     */
+    public function __construct($unitData)
     {
-        $this->id = $id;
+        // The constructor expects an array with 'id' or directly the id
+        $this->unitId = is_array($unitData) ? $unitData['id'] : $unitData;
     }
 
     public function broadcastOn()
@@ -24,15 +31,13 @@ class UnitDeleted implements ShouldBroadcastNow
         return new Channel('units');
     }
 
-     public function broadcastAs()
+    public function broadcastAs()
     {
         return 'UnitDeleted';
     }
 
     public function broadcastWith()
     {
-        return [
-            'id' => $this->id,
-        ];
+        return ['id' => $this->unitId];
     }
 }

@@ -55,6 +55,24 @@ class UnitIndex extends Component
         $this->loadUnits(); // <-- initial load
     }
 
+    // public function mount()
+    // {
+    //     $this->unitRelations = PartsConfig::unitRelations();
+
+    //     foreach ($this->unitRelations as $relation) {
+    //         $this->selectedComponents[$relation] = true;
+    //     }
+
+    //     $this->loadRooms();
+    // }
+
+
+
+    #[On('echo:units,UnitDeleted')]
+    public function handleUnitDeleted($unitData)
+    {
+        $this->dispatch('$refresh');
+    }
 
     private function loadRooms()
     {
