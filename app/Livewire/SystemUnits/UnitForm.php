@@ -387,10 +387,10 @@ class UnitForm extends Component
                 'room_id' => $this->room_id
             ]);
             // broadcast(new UnitCreated($unit));
-            // event(new UnitCreated($unit));
-
-            broadcast(new UnitCreated($unit))->toOthers();
-            $this->dispatch('unit-saved')->to(UnitIndex::class);
+            event(new UnitCreated($unit));
+            
+            // broadcast(new UnitCreated($unit))->toOthers();
+            // $this->dispatch('unit-saved')->to(UnitIndex::class);
 
 
 
@@ -406,7 +406,7 @@ class UnitForm extends Component
             // event(new UnitUpdated($unit));
 
         }
-        $this->dispatch('closeModal');
+
         // Always store the current ID
         $this->unitId = $unit->id;
 

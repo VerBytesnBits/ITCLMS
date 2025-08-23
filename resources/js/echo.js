@@ -13,6 +13,7 @@ window.Echo = new Echo({
 window.Echo.channel("units")
     .listen(".UnitCreated", (e) => {
         console.log("✅ UnitCreated received", e);
+        // window.location.reload();
         Livewire.dispatch("refreshUnits"); // <-- Livewire component will react
     })
     .listen(".UnitUpdated", (e) => {

@@ -42,8 +42,8 @@ class UnitIndex extends Component
     public ?SystemUnit $viewUnit = null;
 
     public array $unitRelations;
+    public $units; // <--- add this
 
-    
     protected $rules = [
         'name' => 'required|string|max:255',
         'status' => 'required|string|in:Operational,Needs Repair,Non-Operational',
@@ -55,7 +55,7 @@ class UnitIndex extends Component
     {
         $this->unitRelations = PartsConfig::unitRelations();
         $this->loadRooms();
-        // $this->loadUnits(); // <-- initial load
+        $this->loadUnits(); // <-- initial load
 
     }
 
@@ -96,63 +96,76 @@ class UnitIndex extends Component
 
     }
 
-    // public function loadUnits()
-    // {
+    #[On('refreshUnits')]
+    public function refreshUnits()
+    {
 
-    //     $user = Auth::user();
+        $this->loadUnits();
+    }
 
-    //     $unitsQuery = match (true) {
-    //         $user->hasRole('lab_incharge') => SystemUnit::with('room')
-    //             ->whereHas('room', fn($q) => $q->where('lab_in_charge_id', $user->id)),
-    //         $user->hasRole('chairman') => SystemUnit::with('room'),
-    //         default => null,
-    //     };
-
-    //     if (!$unitsQuery) {
-    //         $this->units = collect();
-    //         return;
-    //     }
-
-    //     if ($filterRoomId = $this->getRoomIdForQuery()) {
-    //         $unitsQuery->where('room_id', $filterRoomId);
-    //     }
-
-    //     if ($this->filterStatus) {
-    //         $unitsQuery->where('status', $this->filterStatus);
-    //     }
-
-    //     $relations = match ($this->filterType) {
-    //         'component' => PartsConfig::componentTypes(),
-    //         'peripheral' => PartsConfig::peripheralTypes(),
-    //         default => array_merge(PartsConfig::componentTypes(), PartsConfig::peripheralTypes())
-    //     };
-
-    //     $this->units = $unitsQuery
-    //         ->with($relations)
-    //         ->orderBy('name', 'asc')
-    //         ->orderByRaw("CAST(SUBSTRING_INDEX(name, ' ', -1) AS UNSIGNED) asc")
-    //         ->get();
-    // }
-    public function getUnitsProperty()
+    public function loadUnits(): void
     {
         $user = Auth::user();
 
-        if (!$user) {
-            return collect();
+        $unitsQuery = match (true) {
+            $user->hasRole('lab_incharge') => SystemUnit::with('room')
+                ->whereHas('room', fn($q) => $q->where('lab_in_charge_id', $user->id)),
+
+            $user->hasRole('chairman') => SystemUnit::with('room'),
+
+            default => null,
+        };
+
+        if (!$unitsQuery) {
+            $this->units = collect();
+            return;
         }
 
-        if ($user->hasRole('lab_incharge')) {
-            $unitsQuery = SystemUnit::with('room')
-                ->whereHas('room', fn($q) => $q->where('lab_in_charge_id', $user->id));
-        } elseif ($user->hasRole('chairman')) {
-            $unitsQuery = SystemUnit::with('room');
-        } else {
-            return collect();
+        if ($filterRoomId = $this->getRoomIdForQuery()) {
+            $unitsQuery->where('room_id', $filterRoomId);
         }
 
+        if ($this->filterStatus) {
+            $unitsQuery->where('status', $this->filterStatus);
+        }
 
-        return $unitsQuery->latest()->get();
+        $relations = match ($this->filterType) {
+            'component' => PartsConfig::componentTypes(),
+            'peripheral' => PartsConfig::peripheralTypes(),
+            default => array_merge(
+                PartsConfig::componentTypes(),
+                PartsConfig::peripheralTypes()
+            )
+        };
+
+        $this->units = $unitsQuery
+            ->with($relations)
+            ->orderBy('name', 'asc')
+            ->orderByRaw("CAST(SUBSTRING_INDEX(name, ' ', -1) AS UNSIGNED) asc")
+            ->latest()
+            ->get();
     }
+
+    // public function getUnitsProperty()
+    // {
+    //     $user = Auth::user();
+
+    //     if (!$user) {
+    //         return collect();
+    //     }
+
+    //     if ($user->hasRole('lab_incharge')) {
+    //         $unitsQuery = SystemUnit::with('room')
+    //             ->whereHas('room', fn($q) => $q->where('lab_in_charge_id', $user->id));
+    //     } elseif ($user->hasRole('chairman')) {
+    //         $unitsQuery = SystemUnit::with('room');
+    //     } else {
+    //         return collect();
+    //     }
+
+
+    //     return $unitsQuery->latest()->get();
+    // }
 
 
     public function getCountsProperty()
