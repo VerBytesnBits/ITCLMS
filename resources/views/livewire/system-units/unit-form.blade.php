@@ -131,8 +131,10 @@
                         <div class="flex justify-between items-center mb-2">
                             <h3 class="font-semibold">Available {{ ucfirst(str_replace('_', ' ', $selectedType)) }}
                             </h3>
-                            <button wire:click="$set('formMode', true); $set('editingPartId', null)"
-                                class="bg-green-500 text-white px-2 py-1 rounded">+ Add</button>
+                            <button wire:click="startAdd" class="bg-green-500 text-white px-2 py-1 rounded">
+                                + Add
+                            </button>
+
                         </div>
 
                         @forelse ($list as $item)
@@ -201,7 +203,7 @@
 
         {{-- Save Button --}}
         <div class="mt-6 flex justify-end gap-2">
-            <button  wire:click="$dispatch('closeModal')"
+            <button wire:click="$dispatch('closeModal')"
                 class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md">
                 Cancel
             </button>

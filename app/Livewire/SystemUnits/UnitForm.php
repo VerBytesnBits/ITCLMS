@@ -386,7 +386,7 @@ class UnitForm extends Component
             ]);
             broadcast(new UnitCreated($unit))->toOthers();
             event(new UnitCreated($unit));
-            
+
 
 
 
@@ -436,6 +436,11 @@ class UnitForm extends Component
     }
 
 
+    public function startAdd()
+    {
+        $this->formMode = true;
+        $this->editingPartId = null;
+    }
 
     // ==============================
     // Render

@@ -18,7 +18,7 @@ use App\Events\UnitCreated;
 #[Layout('components.layouts.app', ['title' => 'Units'])]
 class UnitIndex extends Component
 {
-    use HandlesUnitEcho, HandlesUnitModals;
+    use HandlesUnitModals;
 
     #[Url(as: 'modal', except: null)]
     public ?string $modal = null;
@@ -98,11 +98,12 @@ class UnitIndex extends Component
     #[On('echo:units,UnitCreated')]
     #[On('echo:units,UnitUpdated')]
     #[On('echo:units,UnitDeleted')]
-    public function refreshUnits()
+    public function handleRealtimeEvents($payload)
     {
-        logger('Livewire heard UnitUpdated!');
-        $this->loadUnits(); // refresh data in memory
+        // Just reload the units whenever something changes
+        $this->loadUnits();
     }
+
     // #[On('unit-saved')]
     // #[On('unit-updated')]
     // #[On('echo:units,UnitCreated')]

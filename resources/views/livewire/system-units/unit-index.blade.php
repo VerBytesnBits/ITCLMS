@@ -9,7 +9,7 @@ use App\Support\PartsConfig;
             <input type="text" wire:model.debounce.300ms="search" placeholder="Search components/peripherals..."
                 class="border border-gray-300 rounded-md px-4 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500" />
         </div> --}}
-        <flux:input icon="magnifying-glass" wire:model.debounce.300ms="search" autocomplete="off"
+        <flux:input icon="magnifying-glass"  autocomplete="off"
             placeholder="Search unit/components/peripherals..." />
 
         {{-- Buttons Container --}}
@@ -83,11 +83,6 @@ use App\Support\PartsConfig;
     </div>
 
     <livewire:system-units.unit-table :$units />
-
-   
-
-
-
 
     {{-- Modals --}}
 
