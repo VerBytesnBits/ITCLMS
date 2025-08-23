@@ -57,6 +57,7 @@ class UnitIndex extends Component
         $this->unitRelations = PartsConfig::unitRelations();
         $this->loadRooms();
         $this->loadUnits(); // <-- initial load
+
     }
 
     // public function mount()
@@ -95,14 +96,14 @@ class UnitIndex extends Component
         return $this->filterRoomId !== '' ? (int) $this->filterRoomId : null;
 
     }
-    #[On('echo:units,UnitCreated')]
-    #[On('echo:units,UnitUpdated')]
-    #[On('echo:units,UnitDeleted')]
-    public function handleRealtimeEvents($payload)
-    {
-        // Just reload the units whenever something changes
-        $this->loadUnits();
-    }
+    // #[On('echo:units,UnitCreated')]
+    // #[On('echo:units,UnitUpdated')]
+    // #[On('echo:units,UnitDeleted')]
+    // public function handleRealtimeEvents($payload)
+    // {
+    //     // Just reload the units whenever something changes
+    //     $this->loadUnits();
+    // }
 
     // #[On('unit-saved')]
     // #[On('unit-updated')]
@@ -214,6 +215,12 @@ class UnitIndex extends Component
     //     $this->modal = null;
     //     session()->flash('success', 'System Unit updated successfully.');
     // }
+     #[On('unit-saved')]
+     #[On('refreshUnits')]
+    public function refreshUnits()
+    {
+       $this->mount();
+    }
 
 
     public function render()

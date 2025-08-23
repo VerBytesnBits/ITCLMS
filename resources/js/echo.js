@@ -12,17 +12,14 @@ window.Echo = new Echo({
 
 window.Echo.channel("units")
     .listen(".UnitCreated", (e) => {
-        console.log("UnitCreated received", e);
-        Livewire.dispatch("UnitCreated", e);
-        // window.location.reload();
+        console.log("✅ UnitCreated received", e);
+        Livewire.dispatch("refreshUnits"); // <-- Livewire component will react
     })
     .listen(".UnitUpdated", (e) => {
-        console.log("UnitUpdated received", e);
-        Livewire.dispatch("UnitUpdated", e);
-        // window.location.reload();
+        console.log("✅ UnitUpdated received", e);
+        Livewire.dispatch("refreshUnits");
     })
     .listen(".UnitDeleted", (e) => {
-        console.log("UnitDeleted received", e);
-        Livewire.dispatch("UnitDeleted", e);
-        // window.location.reload();
+        console.log("✅ UnitDeleted received", e);
+        Livewire.dispatch("refreshUnits");
     });

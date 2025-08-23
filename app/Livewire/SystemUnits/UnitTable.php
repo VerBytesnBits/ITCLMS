@@ -16,10 +16,10 @@ class UnitTable extends Component
 {
 
     public $units; // injected from parent (UnitIndex)
-    #[On('units-updated')]
-    public function reloadTable()
+    #[On('refreshUnits')]
+    public function refreshUnits()
     {
-        $this->dispatch('$refresh'); // forces rerender
+        // Just re-render, Livewire will fetch fresh data
     }
 
     public function openViewModal($id)
@@ -63,8 +63,9 @@ class UnitTable extends Component
         }
 
         $unit->delete();
-        event(new UnitDeleted($unit->id));
-        broadcast(new UnitDeleted($unit->id))->toOthers();
+        // event(new UnitDeleted($unit->id));
+        // broadcast(new UnitDeleted($unit->id))->toOthers();
+        broadcast(new UnitDeleted($id));
         // broadcast(new UnitDeleted(['id' => $id]))->toOthers();
 
 

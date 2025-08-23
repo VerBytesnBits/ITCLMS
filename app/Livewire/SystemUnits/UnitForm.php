@@ -356,6 +356,8 @@ class UnitForm extends Component
     // ==============================
     // Save Unit (Create or Update)
     // ==============================
+
+
     public function openCreateModal()
     {
         $this->reset([
@@ -384,9 +386,11 @@ class UnitForm extends Component
                 'status' => $this->status,
                 'room_id' => $this->room_id
             ]);
-            broadcast(new UnitCreated($unit))->toOthers();
-            event(new UnitCreated($unit));
+            // broadcast(new UnitCreated($unit));
+            // event(new UnitCreated($unit));
 
+            broadcast(new UnitCreated($unit))->toOthers();
+            $this->dispatch('unit-saved')->to(UnitIndex::class);
 
 
 
@@ -398,14 +402,11 @@ class UnitForm extends Component
                 'room_id' => $this->room_id
 
             ]);
-            broadcast(new UnitUpdated($unit))->toOthers();
-            event(new UnitUpdated($unit));
-
-
-
+            broadcast(new UnitUpdated($unit));
+            // event(new UnitUpdated($unit));
 
         }
-
+        $this->dispatch('closeModal');
         // Always store the current ID
         $this->unitId = $unit->id;
 

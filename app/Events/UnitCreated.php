@@ -3,21 +3,22 @@
 namespace App\Events;
 
 use Illuminate\Broadcasting\Channel;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
+use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 use App\Models\SystemUnit;
 
 
 class UnitCreated implements ShouldBroadcastNow
 {
-    use SerializesModels;
+    use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public $unit;
 
     public function __construct(SystemUnit $unit)
     {
-        $this->unit = $unit;
+        $this->unit = $unit->toArray();
     }
 
     public function broadcastOn()
@@ -28,6 +29,11 @@ class UnitCreated implements ShouldBroadcastNow
     public function broadcastAs()
     {
         return 'UnitCreated';
+    }
+    
+    public function broadcastWith()
+    {
+        return $this->unit;
     }
 }
 
