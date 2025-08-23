@@ -43,8 +43,7 @@ class UnitIndex extends Component
 
     public array $unitRelations;
 
-    public $units; // Collection of SystemUnit models
-
+    
     protected $rules = [
         'name' => 'required|string|max:255',
         'status' => 'required|string|in:Operational,Needs Repair,Non-Operational',
@@ -56,7 +55,7 @@ class UnitIndex extends Component
     {
         $this->unitRelations = PartsConfig::unitRelations();
         $this->loadRooms();
-        $this->loadUnits(); // <-- initial load
+        // $this->loadUnits(); // <-- initial load
 
     }
 
@@ -96,72 +95,65 @@ class UnitIndex extends Component
         return $this->filterRoomId !== '' ? (int) $this->filterRoomId : null;
 
     }
-    // #[On('echo:units,UnitCreated')]
-    // #[On('echo:units,UnitUpdated')]
-    // #[On('echo:units,UnitDeleted')]
-    // public function handleRealtimeEvents($payload)
-    // {
-    //     // Just reload the units whenever something changes
-    //     $this->loadUnits();
-    // }
 
-    // #[On('unit-saved')]
-    // #[On('unit-updated')]
-    // #[On('echo:units,UnitCreated')]
-    // #[On('echo:units,UnitUpdated')]
-    // #[On('echo:units,UnitDeleted')]
-    // public function refreshUnits()
+    // public function loadUnits()
     // {
-    //     $this->loadUnits(); // reload from DB
+
+    //     $user = Auth::user();
+
+    //     $unitsQuery = match (true) {
+    //         $user->hasRole('lab_incharge') => SystemUnit::with('room')
+    //             ->whereHas('room', fn($q) => $q->where('lab_in_charge_id', $user->id)),
+    //         $user->hasRole('chairman') => SystemUnit::with('room'),
+    //         default => null,
+    //     };
+
+    //     if (!$unitsQuery) {
+    //         $this->units = collect();
+    //         return;
+    //     }
+
+    //     if ($filterRoomId = $this->getRoomIdForQuery()) {
+    //         $unitsQuery->where('room_id', $filterRoomId);
+    //     }
+
+    //     if ($this->filterStatus) {
+    //         $unitsQuery->where('status', $this->filterStatus);
+    //     }
+
+    //     $relations = match ($this->filterType) {
+    //         'component' => PartsConfig::componentTypes(),
+    //         'peripheral' => PartsConfig::peripheralTypes(),
+    //         default => array_merge(PartsConfig::componentTypes(), PartsConfig::peripheralTypes())
+    //     };
+
+    //     $this->units = $unitsQuery
+    //         ->with($relations)
+    //         ->orderBy('name', 'asc')
+    //         ->orderByRaw("CAST(SUBSTRING_INDEX(name, ' ', -1) AS UNSIGNED) asc")
+    //         ->get();
     // }
-    // #[On('echo:units,UnitCreated')]
-    // public function handleRealtimeUnitCreated($unit)
-    // {
-    //     // Reload units when event is received
-    //     $this->loadUnits();
-    // }
-    // public function refreshList()
-    // {
-    //     $this->loadUnits();
-    //     $this->dispatch('units-updated'); // 🔔 notify the table
-    // }
-    public function loadUnits()
+    public function getUnitsProperty()
     {
-
         $user = Auth::user();
 
-        $unitsQuery = match (true) {
-            $user->hasRole('lab_incharge') => SystemUnit::with('room')
-                ->whereHas('room', fn($q) => $q->where('lab_in_charge_id', $user->id)),
-            $user->hasRole('chairman') => SystemUnit::with('room'),
-            default => null,
-        };
-
-        if (!$unitsQuery) {
-            $this->units = collect();
-            return;
+        if (!$user) {
+            return collect();
         }
 
-        if ($filterRoomId = $this->getRoomIdForQuery()) {
-            $unitsQuery->where('room_id', $filterRoomId);
+        if ($user->hasRole('lab_incharge')) {
+            $unitsQuery = SystemUnit::with('room')
+                ->whereHas('room', fn($q) => $q->where('lab_in_charge_id', $user->id));
+        } elseif ($user->hasRole('chairman')) {
+            $unitsQuery = SystemUnit::with('room');
+        } else {
+            return collect();
         }
 
-        if ($this->filterStatus) {
-            $unitsQuery->where('status', $this->filterStatus);
-        }
 
-        $relations = match ($this->filterType) {
-            'component' => PartsConfig::componentTypes(),
-            'peripheral' => PartsConfig::peripheralTypes(),
-            default => array_merge(PartsConfig::componentTypes(), PartsConfig::peripheralTypes())
-        };
-
-        $this->units = $unitsQuery
-            ->with($relations)
-            ->orderBy('name', 'asc')
-            ->orderByRaw("CAST(SUBSTRING_INDEX(name, ' ', -1) AS UNSIGNED) asc")
-            ->get();
+        return $unitsQuery->latest()->get();
     }
+
 
     public function getCountsProperty()
     {
@@ -172,55 +164,6 @@ class UnitIndex extends Component
         ];
     }
 
-    // public function createUnit()
-    // {
-    //     $this->validate();
-
-    //     if (Auth::user()->hasRole('lab_incharge') && !$this->rooms->pluck('id')->contains($this->room_id)) {
-    //         abort(403, 'Unauthorized room assignment.');
-    //     }
-
-    //     $unit = SystemUnit::with('room')->create([
-    //         'room_id' => $this->room_id,
-    //         'name' => $this->name,
-    //         'status' => $this->status,
-    //     ])->fresh(['room']);
-    //     event(new UnitCreated($unit));
-    //     // event(new \App\Events\UnitCreated($unit));
-
-
-    //     $this->modal = null;
-    //     session()->flash('success', 'System Unit created successfully.');
-    // }
-
-
-    // public function updateUnit()
-    // {
-    //     $this->validate();
-
-    //     if (Auth::user()->hasRole('lab_incharge') && !$this->rooms->pluck('id')->contains($this->room_id)) {
-    //         abort(403, 'Unauthorized room assignment.');
-    //     }
-
-    //     $unit = SystemUnit::findOrFail($this->id);
-    //     $unit->update([
-    //         'room_id' => $this->room_id,
-    //         'name' => $this->name,
-    //         'status' => $this->status,
-    //     ]);
-
-    //     $unit = $unit->fresh(['room']);
-    //     event(new \App\Events\UnitUpdated($unit));
-
-    //     $this->modal = null;
-    //     session()->flash('success', 'System Unit updated successfully.');
-    // }
-     #[On('unit-saved')]
-     #[On('refreshUnits')]
-    public function refreshUnits()
-    {
-       $this->mount();
-    }
 
 
     public function render()
