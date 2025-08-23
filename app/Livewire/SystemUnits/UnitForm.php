@@ -386,8 +386,10 @@ class UnitForm extends Component
             ]);
             broadcast(new UnitCreated($unit))->toOthers();
             event(new UnitCreated($unit));
-            $this->dispatch('unit-saved');
             
+
+
+
         } else {
             $unit = SystemUnit::findOrFail($this->unitId);
             $unit->update([
@@ -398,7 +400,7 @@ class UnitForm extends Component
             ]);
             broadcast(new UnitUpdated($unit))->toOthers();
             event(new UnitUpdated($unit));
-            $this->dispatch('unit-updated');
+
 
 
 

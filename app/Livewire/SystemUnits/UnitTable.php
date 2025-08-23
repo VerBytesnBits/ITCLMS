@@ -9,13 +9,18 @@ use Illuminate\Support\Facades\Auth;
 use App\Events\UnitUpdated;
 use App\Events\UnitDeleted;
 use Livewire\Attributes\On;
+use Livewire\Attributes\Reactive;
 use App\Livewire\SystemUnits\Traits\HandlesUnitEcho;
 
 class UnitTable extends Component
 {
 
     public $units; // injected from parent (UnitIndex)
-
+    #[On('units-updated')]
+    public function reloadTable()
+    {
+        $this->dispatch('$refresh'); // forces rerender
+    }
 
     public function openViewModal($id)
     {
@@ -58,9 +63,9 @@ class UnitTable extends Component
         }
 
         $unit->delete();
-        // event(new UnitDeleted($unit->id));
-        // broadcast(new UnitDeleted($unit->id))->toOthers();
-        broadcast(new UnitDeleted(['id' => $id]))->toOthers();
+        event(new UnitDeleted($unit->id));
+        broadcast(new UnitDeleted($unit->id))->toOthers();
+        // broadcast(new UnitDeleted(['id' => $id]))->toOthers();
 
 
         session()->flash('success', 'System Unit deleted.');

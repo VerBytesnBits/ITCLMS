@@ -48,5 +48,6 @@ trait HandlesUnitEcho
     public function handleUnitDeleted($payload)
     {
         $this->units = $this->units->reject(fn($u) => $u->id === $payload['id'])->values();
+    
     }
 }

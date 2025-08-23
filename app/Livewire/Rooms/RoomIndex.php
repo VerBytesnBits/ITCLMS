@@ -7,7 +7,8 @@ use Livewire\Attributes\Url;
 use Livewire\Attributes\On;
 use App\Models\Room;
 use Illuminate\Support\Facades\Auth;
-
+use Livewire\Attributes\Layout;
+#[Layout('components.layouts.app', ['title' => 'Rooms'])]
 class RoomIndex extends Component
 {
     #[Url(as: 'modal')]

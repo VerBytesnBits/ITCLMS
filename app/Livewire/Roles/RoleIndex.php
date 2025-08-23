@@ -6,7 +6,8 @@ use Livewire\Component;
 use Spatie\Permission\Models\Role;
 use Livewire\Attributes\Url;
 use Livewire\Attributes\On;
-
+use Livewire\Attributes\Layout;
+#[Layout('components.layouts.app', ['title' => 'Roles'])]
 class RoleIndex extends Component
 {
     #[Url(as: 'modal')]

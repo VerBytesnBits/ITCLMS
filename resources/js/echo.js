@@ -14,12 +14,15 @@ window.Echo.channel("units")
     .listen(".UnitCreated", (e) => {
         console.log("UnitCreated received", e);
         Livewire.dispatch("UnitCreated", e);
+        // window.location.reload();
     })
     .listen(".UnitUpdated", (e) => {
         console.log("UnitUpdated received", e);
         Livewire.dispatch("UnitUpdated", e);
+        // window.location.reload();
     })
     .listen(".UnitDeleted", (e) => {
         console.log("UnitDeleted received", e);
         Livewire.dispatch("UnitDeleted", e);
+        // window.location.reload();
     });

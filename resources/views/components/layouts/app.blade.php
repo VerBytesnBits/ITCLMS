@@ -4,6 +4,6 @@
 
         @include('components.alert')
 
-        {{ $slot ?? '' }}
+        {{ $slot }}
     </flux:main>
 </x-layouts.app.header>

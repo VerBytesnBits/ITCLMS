@@ -5,6 +5,8 @@ namespace App\Livewire\SystemUnits;
 use Livewire\Component;
 use Livewire\Attributes\Url;
 use Livewire\Attributes\On;
+use Livewire\Attributes\Layout;
+use Livewire\Attributes\Title;
 use Illuminate\Support\Facades\Auth;
 use App\Models\SystemUnit;
 use App\Models\Room;
@@ -13,6 +15,7 @@ use App\Livewire\SystemUnits\Traits\HandlesUnitEcho;
 use App\Livewire\SystemUnits\Traits\HandlesUnitModals;
 use App\Events\UnitCreated;
 
+#[Layout('components.layouts.app', ['title' => 'Units'])]
 class UnitIndex extends Component
 {
     use HandlesUnitEcho, HandlesUnitModals;
@@ -39,6 +42,7 @@ class UnitIndex extends Component
     public ?SystemUnit $viewUnit = null;
 
     public array $unitRelations;
+
     public $units; // Collection of SystemUnit models
 
     protected $rules = [
@@ -68,11 +72,11 @@ class UnitIndex extends Component
 
 
 
-    #[On('echo:units,UnitDeleted')]
-    public function handleUnitDeleted($unitData)
-    {
-        $this->dispatch('$refresh');
-    }
+    // #[On('echo:units,UnitDeleted')]
+    // public function handleUnitDeleted($unitData)
+    // {
+    //     $this->dispatch('$refresh');
+    // }
 
     private function loadRooms()
     {
@@ -91,14 +95,14 @@ class UnitIndex extends Component
         return $this->filterRoomId !== '' ? (int) $this->filterRoomId : null;
 
     }
-    // #[On('echo:units,UnitCreated')]
-    // #[On('echo:units,UnitUpdated')]
-    // #[On('echo:units,UnitDeleted')]
-    // public function refreshUnits()
-    // {
-    //     logger('Livewire heard UnitUpdated!');
-    //     $this->loadUnits(); // refresh data in memory
-    // }
+    #[On('echo:units,UnitCreated')]
+    #[On('echo:units,UnitUpdated')]
+    #[On('echo:units,UnitDeleted')]
+    public function refreshUnits()
+    {
+        logger('Livewire heard UnitUpdated!');
+        $this->loadUnits(); // refresh data in memory
+    }
     // #[On('unit-saved')]
     // #[On('unit-updated')]
     // #[On('echo:units,UnitCreated')]
@@ -108,13 +112,17 @@ class UnitIndex extends Component
     // {
     //     $this->loadUnits(); // reload from DB
     // }
-    #[On('echo:units,UnitCreated')]
-    public function handleRealtimeUnitCreated($unit)
-    {
-        // Reload units when event is received
-        $this->loadUnits();
-    }
-
+    // #[On('echo:units,UnitCreated')]
+    // public function handleRealtimeUnitCreated($unit)
+    // {
+    //     // Reload units when event is received
+    //     $this->loadUnits();
+    // }
+    // public function refreshList()
+    // {
+    //     $this->loadUnits();
+    //     $this->dispatch('units-updated'); // 🔔 notify the table
+    // }
     public function loadUnits()
     {
 
@@ -184,28 +192,27 @@ class UnitIndex extends Component
     // }
 
 
-    public function updateUnit()
-    {
-        $this->validate();
+    // public function updateUnit()
+    // {
+    //     $this->validate();
 
-        if (Auth::user()->hasRole('lab_incharge') && !$this->rooms->pluck('id')->contains($this->room_id)) {
-            abort(403, 'Unauthorized room assignment.');
-        }
+    //     if (Auth::user()->hasRole('lab_incharge') && !$this->rooms->pluck('id')->contains($this->room_id)) {
+    //         abort(403, 'Unauthorized room assignment.');
+    //     }
 
-        $unit = SystemUnit::findOrFail($this->id);
-        $unit->update([
-            'room_id' => $this->room_id,
-            'name' => $this->name,
-            'status' => $this->status,
-        ]);
+    //     $unit = SystemUnit::findOrFail($this->id);
+    //     $unit->update([
+    //         'room_id' => $this->room_id,
+    //         'name' => $this->name,
+    //         'status' => $this->status,
+    //     ]);
 
-        $unit = $unit->fresh(['room']);
-        event(new \App\Events\UnitUpdated($unit));
+    //     $unit = $unit->fresh(['room']);
+    //     event(new \App\Events\UnitUpdated($unit));
 
-        $this->modal = null;
-        session()->flash('success', 'System Unit updated successfully.');
-    }
-
+    //     $this->modal = null;
+    //     session()->flash('success', 'System Unit updated successfully.');
+    // }
 
 
     public function render()

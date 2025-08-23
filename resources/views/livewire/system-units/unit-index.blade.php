@@ -82,7 +82,7 @@ use App\Support\PartsConfig;
         </div>
     </div>
 
-    <livewire:system-units.unit-table :units="$units"/>
+    <livewire:system-units.unit-table :$units />
 
    
 
