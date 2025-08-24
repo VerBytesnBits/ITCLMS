@@ -387,10 +387,10 @@ class UnitForm extends Component
                 'room_id' => $this->room_id
             ]);
             // broadcast(new UnitCreated($unit));
-            event(new UnitCreated($unit));
-            
+            broadcast(new UnitCreated($unit));
+            // $this->dispatch('refreshUnits');
             // broadcast(new UnitCreated($unit))->toOthers();
-            // $this->dispatch('unit-saved')->to(UnitIndex::class);
+    
 
 
 
@@ -404,7 +404,7 @@ class UnitForm extends Component
             ]);
             broadcast(new UnitUpdated($unit));
             // event(new UnitUpdated($unit));
-
+           
         }
 
         // Always store the current ID
@@ -430,6 +430,7 @@ class UnitForm extends Component
             $this->dispatch('closeModal');
         } else {
             // Reset for a fresh create form
+           
             $this->resetExcept('rooms', 'componentTypes', 'peripheralTypes');
         }
 

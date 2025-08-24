@@ -17,7 +17,7 @@
 
         <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
             @foreach ($units as $unit)
-                <tr class="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors" wire:key="unit-{{ $unit->id }}">
 
                     {{-- Unit Name --}}
                     <td class="px-4 py-2 text-center font-medium">

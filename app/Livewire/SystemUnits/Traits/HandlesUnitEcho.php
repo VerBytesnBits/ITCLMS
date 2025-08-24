@@ -11,21 +11,8 @@ trait HandlesUnitEcho
     #[On('echo:units,UnitCreated')]
     public function handleUnitCreated($payload)
     {
-        $unitData = (object) $payload['unit'];
-
-        // Reconstruct dynamic parts
-        foreach (['components', 'peripherals'] as $group) {
-            $types = $group === 'components'
-                ? PartsConfig::componentTypes()
-                : PartsConfig::peripheralTypes();
-
-            foreach ($types as $type) {
-                $unitData->$type = []; // empty arrays for real-time rendering
-            }
-        }
-
-        // Append to units collection
-        $this->units->push($unitData);
+        // Prepend new unit to the list
+         $this->units->prepend((object) $payload['unit']);
     }
 
     #[On('echo:units,UnitUpdated')]
@@ -48,6 +35,6 @@ trait HandlesUnitEcho
     public function handleUnitDeleted($payload)
     {
         $this->units = $this->units->reject(fn($u) => $u->id === $payload['id'])->values();
-    
+
     }
 }

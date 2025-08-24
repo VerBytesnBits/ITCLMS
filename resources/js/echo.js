@@ -1,6 +1,6 @@
 import Echo from 'laravel-echo';
-
 import Pusher from 'pusher-js';
+
 window.Pusher = Pusher;
 
 window.Echo = new Echo({
@@ -10,11 +10,15 @@ window.Echo = new Echo({
     forceTLS: true
 });
 
-window.Echo.channel("units")
+window.Echo.channel('units')
+
     .listen(".UnitCreated", (e) => {
         console.log("✅ UnitCreated received", e);
+    
         // window.location.reload();
-        Livewire.dispatch("refreshUnits"); // <-- Livewire component will react
+        Livewire.dispatch("refreshUnits"); 
+        
+
     })
     .listen(".UnitUpdated", (e) => {
         console.log("✅ UnitUpdated received", e);

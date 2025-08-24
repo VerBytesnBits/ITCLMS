@@ -11,16 +11,83 @@ use App\Events\UnitDeleted;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Reactive;
 use App\Livewire\SystemUnits\Traits\HandlesUnitEcho;
-
+use Illuminate\Support\Collection;
+use App\Models\Room;
 class UnitTable extends Component
+
 {
 
-    public $units; // injected from parent (UnitIndex)
+     /** @var Collection */
+    public $units;
+    /** @var Collection */
+    public $rooms;
+
+    // filters used by loadUnits(); adjust types as you prefer
+    public string $filterRoomId = '';
+    public string $filterStatus = '';
+    public string $filterType = '';
+
+    public function mount(): void
+    {
+        $this->rooms = $this->loadRooms();
+        $this->units = $this->loadUnits();
+    }
+
+    private function loadRooms(): Collection
+    {
+        $user = Auth::user();
+
+        return match (true) {
+            !$user => collect(),
+            $user->hasRole('lab_incharge') => Room::where('lab_in_charge_id', $user->id)->orderBy('name')->get(),
+            $user->hasRole('chairman') => Room::orderBy('name')->get(),
+            default => collect(),
+        };
+    }
+
+    private function getRoomIdForQuery(): ?int
+    {
+        return $this->filterRoomId !== '' ? (int) $this->filterRoomId : null;
+    }
+
+    private function loadUnits(): Collection
+    {
+        $user = Auth::user();
+
+        $query = match (true) {
+            !$user => SystemUnit::query()->whereRaw('1 = 0'), // empty result if no user
+            $user->hasRole('lab_incharge') => SystemUnit::with('room')
+                ->whereHas('room', fn ($q) => $q->where('lab_in_charge_id', $user->id)),
+            $user->hasRole('chairman') => SystemUnit::with('room'),
+            default => SystemUnit::query()->whereRaw('1 = 0'),
+        };
+
+        if ($roomId = $this->getRoomIdForQuery()) {
+            $query->where('room_id', $roomId);
+        }
+
+        if ($this->filterStatus !== '') {
+            $query->where('status', $this->filterStatus);
+        }
+
+        $relations = match ($this->filterType) {
+            'component'  => PartsConfig::componentTypes(),
+            'peripheral' => PartsConfig::peripheralTypes(),
+            default      => array_merge(PartsConfig::componentTypes(), PartsConfig::peripheralTypes()),
+        };
+
+        return $query->with($relations)
+            ->orderBy('name', 'asc')
+            ->orderByRaw("CAST(SUBSTRING_INDEX(name, '-', -1) AS UNSIGNED) asc")
+            ->get();
+    }
+
     #[On('refreshUnits')]
     public function refreshUnits()
     {
-        // Just re-render, Livewire will fetch fresh data
+        $this->units = $this->loadUnits();
     }
+
 
     public function openViewModal($id)
     {
@@ -51,7 +118,7 @@ class UnitTable extends Component
         // detach parts
         foreach (PartsConfig::unitRelations() as $relation) {
             $items = $unit->$relation;
-            if ($items instanceof \Illuminate\Support\Collection) {
+            if ($items instanceof Collection) {
                 foreach ($items as $item) {
                     $item->system_unit_id = null;
                     $item->save();
@@ -74,6 +141,8 @@ class UnitTable extends Component
 
     public function render()
     {
-        return view('livewire.system-units.unit-table');
+        return view('livewire.system-units.unit-table', [
+            'units' => $this->units,
+        ]);
     }
 }
