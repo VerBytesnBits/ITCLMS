@@ -44,8 +44,7 @@ Route::middleware(['auth'])->group(function () {
 
     // Route::get('/system-units/{systemUnit}', SystemUnitShow::class)->name('system-units.show');
 
-    Route::get('/system-units/{unit}/processors/create', ProcessorCreate::class)
-        ->name('processors.create');
+  
 
     Route::redirect('settings', 'settings/profile');
     Route::get('settings/profile', Profile::class)->name('settings.profile');
