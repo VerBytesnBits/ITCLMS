@@ -23,27 +23,31 @@ class Login extends Component
 
     public bool $remember = false;
 
-    /**
-     * Handle an incoming authentication request.
-     */
+   
     public function login(): void
     {
-        $this->validate();
+        $this->validate([
+            'email' => 'required|email',
+            'password' => 'required',
+        ]);
 
-        $this->ensureIsNotRateLimited();
-
-        if (! Auth::attempt(['email' => $this->email, 'password' => $this->password], $this->remember)) {
-            RateLimiter::hit($this->throttleKey());
+        if (! Auth::attempt(['email' => $this->email, 'password' => $this->password])) {
+            // 🔴 Invalid login attempt
+            $this->dispatch('swal', toast: true, icon: 'error', title: 'Invalid Credentials!', timer: 3000);
 
             throw ValidationException::withMessages([
                 'email' => __('auth.failed'),
             ]);
         }
 
-        RateLimiter::clear($this->throttleKey());
-        Session::regenerate();
+        // ✅ Successful login
+        session()->flash('alert', [
+            'type' => 'success',
+            'message' => 'You have successfully logged in!',
+        ]);
 
-        $this->redirectIntended(default: route('dashboard', absolute: false), navigate: true);
+        $this->redirectIntended(route('dashboard'), navigate: true);
+        
     }
 
     /**
@@ -72,6 +76,6 @@ class Login extends Component
      */
     protected function throttleKey(): string
     {
-        return Str::transliterate(Str::lower($this->email).'|'.request()->ip());
+        return Str::transliterate(Str::lower($this->email) . '|' . request()->ip());
     }
 }

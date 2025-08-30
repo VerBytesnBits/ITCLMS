@@ -11,13 +11,27 @@ class DatabaseSeeder extends Seeder
     /**
      * Seed the application's database.
      */
+    // public function run(): void
+    // {
+    //    $this->call([
+    //     RolePermissionSeeder::class,
+    //    ]);
+    // }
     public function run(): void
-    {
-        // User::factory(10)->create();
+{
+    $this->call([
+        CpuCoolerSeeder::class,
+        MotherboardSeeder::class,
+        MemorySeeder::class,
+        GraphicsCardSeeder::class,
+        M2SsdSeeder::class,
+        SataSsdSeeder::class,
+        HardDiskDriveSeeder::class,
+        PowerSupplySeeder::class,
+        ComputerCaseSeeder::class,
+        ProcessorSeeder::class,
+        RolePermissionSeeder::class,
+    ]);
+}
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
-    }
 }
