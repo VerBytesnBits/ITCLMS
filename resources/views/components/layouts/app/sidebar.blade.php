@@ -59,7 +59,7 @@
         <flux:spacer />
 
 
-        <!-- Desktop User Menu -->
+        {{-- <!-- Desktop User Menu -->
         <flux:dropdown class="hidden lg:block" position="bottom" align="start">
             <flux:profile :name="auth()->user()->name" :initials="auth()->user()->initials()"
                 icon:trailing="chevrons-up-down" />
@@ -99,7 +99,7 @@
                     </flux:menu.item>
                 </form>
             </flux:menu>
-        </flux:dropdown>
+        </flux:dropdown> --}}
     </flux:sidebar>
 
     <!-- Mobile User Menu -->
