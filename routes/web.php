@@ -4,8 +4,9 @@ use App\Livewire\Settings\Appearance;
 use App\Livewire\Settings\Password;
 use App\Livewire\Settings\Profile;
 use Illuminate\Support\Facades\Route;
-use App\Livewire\Components\ComponentsIndex as components;
+// use App\Livewire\Components\ComponentsIndex as components;
 use App\Livewire\Peripherals\PeripheralIndex as peripherals;
+use App\Livewire\ComponentsPart\index as components;
 
 
 Route::get('/', function () {
@@ -38,6 +39,7 @@ Route::middleware(['auth'])->group(function () {
         ->name('units');
 
 
+    // Route::get('components', components::class)->name('components');
     Route::get('components', components::class)->name('components');
     Route::get('peripherals', peripherals::class)->name('peripherals');
 

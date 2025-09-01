@@ -15,4 +15,12 @@ class SystemUnit extends Model
     {
         return $this->belongsTo(Room::class);
     }
+    public function peripherals()
+    {
+        return $this->hasMany(Peripheral::class);
+    }
+      public function components()
+    {
+        return $this->hasMany(ComponentParts::class);
+    }
 }

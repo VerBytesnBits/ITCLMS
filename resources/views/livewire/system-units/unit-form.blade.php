@@ -56,7 +56,7 @@
                         <span class="text-red-500 text-sm">{{ $message }}</span>
                     @enderror
                 </div>
-
+                
                 <!-- Buttons -->
                 <div class="flex justify-end space-x-2 pt-4">
                     <button type="button" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"

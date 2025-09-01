@@ -28,7 +28,7 @@
 
                         <button class="px-2 py-1 bg-blue-600 text-white rounded"
                             wire:click="openAssignModal({{ $unit->id }})">
-                            Assign Peripherals
+                            Assign
                         </button>
 
 
@@ -54,7 +54,7 @@
     @endif
     <!-- Assign Modal -->
     @if ($showAssignModal && $assignUnitId)
-        <livewire:system-units.unit-assign-peripherals :unitId="$assignUnitId" />
+        <livewire:system-units.unit-assign-parts :unitId="$assignUnitId" />
     @endif
 
 </div>
