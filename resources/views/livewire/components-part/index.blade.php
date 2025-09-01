@@ -6,11 +6,9 @@
 
 
     <div class="flex justify-end mb-4">
-        <button wire:click="openCreateModal"
-            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow transition">
-            + Add Component
-        </button>
+        <flux:button variant="primary" color="blue" wire:click="openCreateModal"> + Add Component</flux:button>
     </div>
+
     <!-- Table -->
     <div
         class="overflow-x-auto bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl shadow">
@@ -34,7 +32,8 @@
             </thead>
             <tbody class="divide-y divide-gray-200">
                 @forelse($components as $component)
-                    <tr class="border-t border-gray-200 dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-800/50">
+                    <tr
+                        class="border-t border-gray-200 dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-800/50">
                         <td class="px-4 py-3">{{ $component->id }}</td>
                         <td class="px-4 py-3">{{ $component->serial_number }}</td>
                         <td class="px-4 py-3">{{ $component->brand }}</td>

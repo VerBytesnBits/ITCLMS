@@ -7,10 +7,9 @@
 
     {{-- Add Maintenance Button --}}
     <div class="flex justify-end mb-4">
-        <button wire:click="openModal" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-            + Add Maintenance
-        </button>
+        <flux:button variant="primary" color="blue" wire:click="openModal"> + Add Maintenance</flux:button>
     </div>
+
 
     {{-- Maintenance Table --}}
     <div

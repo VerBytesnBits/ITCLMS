@@ -3,11 +3,9 @@
         gradient-from-color="#6e2e87" gradient-to-color="#ab2e87" icon-color="text-purple-300" />
 
     <div class="flex justify-end mb-4">
-        <button wire:click="openCreateModal"
-            class="bg-blue-500 dark:bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-600 dark:hover:bg-blue-700 transition shadow">
-            Create Role
-        </button>
+        <flux:button variant="primary" color="blue" wire:click="openCreateModal"> + Add Role</flux:button>
     </div>
+
 
     <div
         class="overflow-x-auto bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl shadow">

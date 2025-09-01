@@ -1,6 +1,21 @@
-<div class="flex aspect-square size-8 items-center justify-center rounded-md bg-accent-content text-accent-foreground">
-    <x-app-logo-icon class="size-5 fill-current text-white dark:text-black" />
-</div>
-<div class="ms-1 grid flex-1 text-start text-sm">
-    <span class="mb-0.5 truncate leading-tight font-semibold">Laravel Starter Kit</span>
+<div class="flex items-center gap-3">
+    <!-- Icon -->
+    <div
+        class="flex aspect-square w-8 h-8 items-center justify-center rounded-md bg-accent-content text-accent-foreground">
+        <x-app-logo-icon class="w-5 h-5 fill-current text-white dark:text-black" />
+    </div>
+
+    <div class="w-1/2">
+        <div class="grid grid-rows-[auto_auto] text-left sm:text-left">
+            <h1
+                class="text-sm sm:text-base md:text-lg font-black uppercase tracking-[0.4em] sm:tracking-[0.8em] md:tracking-[0.6em]
+               text-black  dark:text-white  light-outline">
+                ITCLMS
+            </h1>
+            <!-- Hidden on desktop, shown on small screens -->
+            <p class="block  text-[10px] text-gray-500 dark:text-gray-400 leading-tight italic">
+                Information Technology Computer Laboratory Management System
+            </p>
+        </div>
+    </div>
 </div>

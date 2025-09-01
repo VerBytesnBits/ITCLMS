@@ -46,16 +46,6 @@ Route::middleware(['auth'])->group(function () {
 
 
 
-    
-
-
-
-
-    // Route::get('/units/{unit}', SystemUnitIndex::class)->name('system-units.index');
-
-    // Route::get('/system-units/{systemUnit}', SystemUnitShow::class)->name('system-units.show');
-
-
 
     Route::redirect('settings', 'settings/profile');
     Route::get('settings/profile', Profile::class)->name('settings.profile');
