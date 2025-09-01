@@ -73,12 +73,21 @@
 
                         <div>
                             <label class="block text-sm font-medium">Type</label>
-                            <input type="text" wire:model="type" class="w-full rounded border-gray-300"
-                                placeholder="Monitor, Keyboard, etc.">
+                            <select wire:model="type" class="w-full rounded border-gray-300">
+                                <option value="">-- Select Type --</option>
+                                <option value="Monitor">Monitor</option>
+                                <option value="Keyboard">Keyboard</option>
+                                <option value="Mouse">Mouse</option>
+                                <option value="Printer">Printer</option>
+                                <option value="Speaker">Speaker</option>
+                                <option value="Projector">Projector</option>
+                                <option value="Other">Other</option>
+                            </select>
                             @error('type')
                                 <span class="text-red-500 text-sm">{{ $message }}</span>
                             @enderror
                         </div>
+
 
                         <div class="grid grid-cols-2 gap-4">
                             <div>

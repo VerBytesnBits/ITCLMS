@@ -38,6 +38,7 @@
                         <td class="px-4 py-3">{{ optional($peripheral->room)->name }}</td>
                         <td class="px-4 py-3">{{ optional($peripheral->systemUnit)->name }}</td>
                         <td class="px-4 py-3 text-center space-x-2">
+                            
                             <button wire:click="openEditModal({{ $peripheral->id }})"
                                 class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded-lg shadow text-xs transition">
                                 Edit
