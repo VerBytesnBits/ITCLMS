@@ -4,55 +4,47 @@ namespace App\Livewire\Rooms;
 
 use Livewire\Component;
 use App\Models\Room;
-use App\Models\User;
-use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class RoomForm extends Component
 {
     public ?Room $room = null;
 
+    public $roomId;
     public $name = '';
     public $description = '';
     public $status = 'active';
-    public $lab_in_charge_id = null;
 
-    public $labInChargeOptions;
+    public $showModal = false;
 
-    public function mount($roomId = null)
+    protected $listeners = ['open-room-form' => 'open'];
+
+    public function open($roomId = null)
     {
-        $this->labInChargeOptions = User::role('lab_incharge')->pluck('name', 'id')->toArray();
+        $this->resetErrorBag();
+        $this->roomId = $roomId;
 
         if ($roomId) {
             $this->room = Room::findOrFail($roomId);
             $this->name = $this->room->name;
             $this->description = $this->room->description;
             $this->status = $this->room->status;
-            $this->lab_in_charge_id = $this->room->lab_in_charge_id;
+        } else {
+            $this->room = null;
+            $this->name = '';
+            $this->description = '';
+            $this->status = 'active';
         }
+
+        $this->dispatch('open-modal', modal: 'room-form');
     }
 
     protected function rules()
     {
         return [
-            'name' => ['required', 'min:3', Rule::unique('rooms', 'name')->ignore($this->room?->id)],
-            'description' => ['nullable', 'string'],
-            'status' => ['required', Rule::in(['active', 'inactive'])],
-            'lab_in_charge_id' => [
-                'nullable',
-                'exists:users,id',
-                function ($attribute, $value, $fail) {
-                    if ($value) {
-                        $alreadyAssigned = Room::where('lab_in_charge_id', $value)
-                            ->when($this->room, fn($query) => $query->where('id', '!=', $this->room->id))
-                            ->exists();
-
-                        if ($alreadyAssigned) {
-                            $fail('This user is already assigned as a Lab In-Charge to another room.');
-                        }
-                    }
-                },
-            ],
+            'name' => 'required|string|min:3|unique:rooms,name,' . $this->roomId,
+            'description' => 'nullable|string',
+            'status' => 'required|in:active,inactive',
         ];
     }
 
@@ -60,56 +52,25 @@ class RoomForm extends Component
     {
         try {
             $validated = $this->validate();
-            $isNew = false;
 
-            // Create or update the room
             if ($this->room) {
-                $oldLabInChargeId = $this->room->lab_in_charge_id; //  Track old
                 $this->room->update($validated);
+                $this->dispatch('swal', toast: true, icon: 'success', title: 'Room updated successfully', timer: 3000);
+                $this->dispatch('roomUpdated');
             } else {
-                $this->room = Room::create($validated);
-                $oldLabInChargeId = null;
-                $isNew = true;
+                Room::create($validated);
+                $this->dispatch('swal', toast: true, icon: 'success', title: 'Room created successfully', timer: 3000);
+                $this->dispatch('roomCreated');
             }
 
-            // Enforce 1-to-1 lab in charge rule
-            if ($this->lab_in_charge_id) {
-                // Unassign this lab in charge from any other room
-                Room::where('lab_in_charge_id', $this->lab_in_charge_id)
-                    ->where('id', '!=', $this->room->id)
-                    ->update(['lab_in_charge_id' => null]);
+            $this->dispatch('close-modal', modal: 'room-form');
 
-                // Update the room's lab in charge
-                $this->room->lab_in_charge_id = $this->lab_in_charge_id;
-                $this->room->save();
-
-                // Assign this user to the room
-                User::where('id', $this->lab_in_charge_id)
-                    ->update(['assigned_room_id' => $this->room->id]);
-            }
-
-            //  If lab in charge was changed, remove assigned_room_id from old user
-            if (
-                isset($oldLabInChargeId)
-                && $oldLabInChargeId !== $this->lab_in_charge_id
-            ) {
-                User::where('id', $oldLabInChargeId)
-                    ->update(['assigned_room_id' => null]);
-            }
-
-            $message = $isNew ? 'Room created successfully' : 'Room updated successfully';
-
-            $this->dispatch('swal', toast: true, icon: 'success', title: $message, timer: 3000);
-            $this->dispatch($isNew ? 'roomCreated' : 'roomUpdated');
-            $this->dispatch('closeModal');
         } catch (ValidationException $e) {
+            $this->setErrorBag($e->validator->errors());
             $errors = $e->validator->errors()->all();
             $this->dispatch('swal', toast: true, icon: 'error', title: implode(' ', $errors), timer: 3000);
-            $this->setErrorBag($e->validator->errors());
         }
     }
-
-
 
     public function render()
     {

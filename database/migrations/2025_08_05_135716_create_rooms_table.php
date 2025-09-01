@@ -14,8 +14,8 @@ return new class extends Migration
 
         Schema::create('rooms', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->foreignId('lab_in_charge_id')->nullable()->constrained('users')->nullOnDelete();
+            $table->string('name')->unique();
+            $table->text('description')->nullable();
             $table->string('status')->default('active');
             $table->timestamps();
         });

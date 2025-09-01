@@ -9,16 +9,28 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Room extends Model
 {
-    /** @use HasFactory<\Database\Factories\RoomFactory> */
-    use HasFactory;
-    protected $fillable = ['name', 'lab_in_charge_id', 'status'];
+    protected $fillable = ['name', 'status','description'];
 
-    public function labInCharge()
+    public function users()
     {
-        return $this->belongsTo(User::class, 'lab_in_charge_id');
+        return $this->belongsToMany(User::class, 'room_user')
+                    ->withPivot('role_in_room')
+                    ->withTimestamps();
     }
-     public function systemUnits()
+
+    public function labIncharges()
+    {
+        return $this->users()->wherePivot('role_in_room', 'lab_incharge');
+    }
+
+    public function technicians()
+    {
+        return $this->users()->wherePivot('role_in_room', 'lab_technician');
+    }
+
+    public function systemUnits()
     {
         return $this->hasMany(SystemUnit::class);
     }
 }
+

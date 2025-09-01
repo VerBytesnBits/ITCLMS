@@ -4,9 +4,9 @@ use App\Livewire\Settings\Appearance;
 use App\Livewire\Settings\Password;
 use App\Livewire\Settings\Profile;
 use Illuminate\Support\Facades\Route;
-use App\Livewire\SystemUnits\Index as SystemUnitIndex;
-use App\Livewire\SystemUnits\Show as SystemUnitShow;
-use App\Livewire\Processors\Create as ProcessorCreate;
+use App\Livewire\Components\ComponentsIndex as components;
+use App\Livewire\Peripherals\PeripheralIndex as peripherals;
+
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -38,13 +38,16 @@ Route::middleware(['auth'])->group(function () {
         ->name('units');
 
 
+    Route::get('components', components::class)->name('components');
+    Route::get('peripherals', peripherals::class)->name('peripherals');
+
 
 
     // Route::get('/units/{unit}', SystemUnitIndex::class)->name('system-units.index');
 
     // Route::get('/system-units/{systemUnit}', SystemUnitShow::class)->name('system-units.show');
 
-  
+
 
     Route::redirect('settings', 'settings/profile');
     Route::get('settings/profile', Profile::class)->name('settings.profile');

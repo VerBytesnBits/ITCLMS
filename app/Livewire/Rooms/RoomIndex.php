@@ -3,19 +3,17 @@
 namespace App\Livewire\Rooms;
 
 use Livewire\Component;
+use App\Models\Room;
 use Livewire\Attributes\Url;
 use Livewire\Attributes\On;
-use App\Models\Room;
-use App\Models\User;
-use Illuminate\Support\Facades\Auth;
 
 class RoomIndex extends Component
 {
     #[Url(as: 'modal')]
-    public ?string $modal = null;
+    public ?string $modal = null;   // controls which modal is open
 
     #[Url(as: 'id')]
-    public ?int $id = null;
+    public ?int $id = null;         // the selected room id
 
     public $rooms;
 
@@ -36,6 +34,18 @@ class RoomIndex extends Component
         $this->modal = 'edit';
     }
 
+    public function openAssignLabIncharge($roomId)
+    {
+        $this->id = $roomId;
+        $this->modal = 'assign-lab-incharge';
+    }
+
+    public function openAssignTechnician($roomId)
+    {
+        $this->id = $roomId;
+        $this->modal = 'assign-technician';
+    }
+
     #[On('closeModal')]
     public function closeModal()
     {
@@ -48,30 +58,18 @@ class RoomIndex extends Component
     #[On('roomDeleted')]
     public function refreshRooms()
     {
-        $user = Auth::user();
+        $this->rooms = Room::with('users')->orderBy('id', 'asc')->get();
+    }
 
-
-        if (!$user) {
-            $this->rooms = collect();
-            return;
-        }
-
-        if ($user->hasRole('lab_incharge')) {
-            $this->rooms = Room::with('labInCharge')
-                ->where('lab_in_charge_id', $user->id)
-                ->latest()
-                ->get();
-        } elseif ($user->hasRole('chairman')) {
-            $this->rooms = Room::with('labInCharge')->latest()->get();
-        } else {
-            $this->rooms = collect();
-        }
+    public function deleteRoom($id)
+    {
+        Room::findOrFail($id)->delete();
+        $this->dispatch('swal', toast: true, icon: 'success', title: 'Room deleted successfully', timer: 3000);
+        $this->dispatch('roomDeleted');
     }
 
     public function render()
     {
-        return view('livewire.rooms.room-index', [
-            'rooms' => $this->rooms, // use filtered $this->rooms
-        ]);
+        return view('livewire.rooms.room-index');
     }
 }

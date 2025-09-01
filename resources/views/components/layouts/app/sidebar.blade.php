@@ -17,40 +17,47 @@
             <flux:navlist.group :heading="__('Main Menu')" class="grid">
                 <flux:navlist.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')"
                     wire:navigate>{{ __('Dashboard') }}</flux:navlist.item>
-                <flux:navlist.item icon="computer-desktop" :href="route('dashboard')"
-                    :current="request()->routeIs('dashboard')" wire:navigate>{{ __('Computer Units') }}
+                <flux:navlist.item icon="computer-desktop" :href="route('units')"
+                    :current="request()->routeIs('units')" wire:navigate>{{ __('Computer Units') }}
                 </flux:navlist.item>
-                <flux:navlist.item icon="cpu-chip" :href="route('dashboard')" :current="request()->routeIs('dashboard')"
+                <flux:navlist.item icon="cpu-chip" :href="route('components')" :current="request()->routeIs('components')"
                     wire:navigate>{{ __('Components') }}</flux:navlist.item>
-                <flux:navlist.item icon="cube" :href="route('dashboard')" :current="request()->routeIs('dashboard')"
+                <flux:navlist.item icon="cube" :href="route('peripherals')" :current="request()->routeIs('peripherals')"
                     wire:navigate>{{ __('Peripherals') }}</flux:navlist.item>
-                <flux:navlist.item icon="qr-code" :href="route('dashboard')" :current="request()->routeIs('dashboard')"
+                <flux:navlist.item icon="qr-code" :href="'#'" :current="request()->routeIs('qr-code')"
                     wire:navigate>{{ __('QR Generator') }}</flux:navlist.item>
             </flux:navlist.group>
         </flux:navlist>
 
         <flux:navlist variant="outline">
             <flux:navlist.group :heading="__('Management')" class="grid">
-                <flux:navlist.item icon="user-group" :href="route('dashboard')"
-                    :current="request()->routeIs('dashboard')" wire:navigate>{{ __('Users') }}</flux:navlist.item>
-                <flux:navlist.item icon="wrench" :href="route('dashboard')"
-                    :current="request()->routeIs('dashboard')" wire:navigate>{{ __('Maintenance') }}
+                <flux:navlist.item icon="home" :href="route('rooms')"
+                    :current="request()->routeIs('rooms')" wire:navigate>{{ __('Rooms') }}</flux:navlist.item>
+                <flux:navlist.item icon="link-slash" :href="route('roles')"
+                    :current="request()->routeIs('roles')" wire:navigate>{{ __('Roles/Permissions') }}
                 </flux:navlist.item>
-                <flux:navlist.item icon="clock" :href="route('dashboard')"
-                    :current="request()->routeIs('dashboard')" wire:navigate>{{ __('Activity Logs') }}
+                <flux:navlist.item icon="user-group" :href="route('users')"
+                    :current="request()->routeIs('users')" wire:navigate>{{ __('Users') }}</flux:navlist.item>
+                <flux:navlist.item icon="wrench" :href="'#'"
+                    :current="request()->routeIs('maintenance')" wire:navigate>{{ __('Maintenance') }}
                 </flux:navlist.item>
-                <flux:navlist.item icon="document-chart-bar" :href="route('dashboard')"
-                    :current="request()->routeIs('dashboard')" wire:navigate>{{ __('Reports') }}</flux:navlist.item>
+                <flux:navlist.item icon="clock" :href="'#'"
+                    :current="request()->routeIs('activitylogs')" wire:navigate>{{ __('Activity Logs') }}
+                </flux:navlist.item>
+                <flux:navlist.item icon="document-chart-bar" :href="'#'"
+                    :current="request()->routeIs('reports')" wire:navigate>{{ __('Reports') }}</flux:navlist.item>
             </flux:navlist.group>
         </flux:navlist>
 
         <flux:navlist variant="outline">
             <flux:navlist.group :heading="__('System')" class="grid">
-                <flux:navlist.item icon="home" :href="route('settings.profile')" :current="request()->routeIs('settings.profile')" icon="cog" wire:navigate>
+                <flux:navlist.item icon="home" :href="route('settings.profile')"
+                    :current="request()->routeIs('settings.profile')" icon="cog" wire:navigate>
                     {{ __('Settings') }}</flux:navlist.item>
                 <form method="POST" action="{{ route('logout') }}" class="w-full">
                     @csrf
-                    <flux:navlist.item as="button" type="submit" icon="arrow-right-start-on-rectangle" class="w-full cursor-pointer">
+                    <flux:navlist.item as="button" type="submit" icon="arrow-right-start-on-rectangle"
+                        class="w-full cursor-pointer">
                         {{ __('Log Out') }}
                     </flux:navlist.item>
                 </form>

@@ -24,15 +24,17 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'assigned_room_id',
     ];
 
-
-    public function assignedRoom()
+    public function rooms()
     {
-        return $this->belongsTo(Room::class, 'assigned_room_id');
+        return $this->belongsToMany(Room::class, 'room_user')
+                    ->withPivot('role_in_room')
+                    ->withTimestamps();
     }
-    
+
+
+
 
 
     /**
