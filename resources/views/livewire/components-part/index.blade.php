@@ -1,36 +1,40 @@
-<div class="p-6">
+<div class="p-4 space-y-6">
     <!-- Header -->
-    <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-bold text-gray-800">Component Parts</h1>
+    <livewire:dashboard-heading title="Components" subtitle="Manage all component parts" icon="cpu-chip"
+        gradient-from-color="#10b981" gradient-to-color="#047857" icon-color="text-green-600" />
+
+
+
+    <div class="flex justify-end mb-4">
         <button wire:click="openCreateModal"
             class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow transition">
             + Add Component
         </button>
     </div>
-
     <!-- Table -->
-    <div class="overflow-x-auto bg-white shadow rounded-lg">
-        <table class="w-full text-sm text-left border-collapse">
-            <thead class="bg-gray-100 text-gray-700 uppercase text-xs tracking-wider">
+    <div
+        class="overflow-x-auto bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl shadow">
+        <table class="min-w-full text-sm text-left text-gray-700 dark:text-gray-200">
+            <thead class="bg-gray-100 dark:bg-zinc-800 text-xs uppercase">
                 <tr>
-                    <th class="px-4 py-3 border">#</th>
-                    <th class="px-4 py-3 border">Serial Number</th>
-                    <th class="px-4 py-3 border">Brand</th>
-                    <th class="px-4 py-3 border">Model</th>
-                    <th class="px-4 py-3 border">Capacity</th>
-                    <th class="px-4 py-3 border">Speed</th>
-                    <th class="px-4 py-3 border">Type</th>
-                    <th class="px-4 py-3 border">Part</th>
-                    <th class="px-4 py-3 border">Condition</th>
-                    <th class="px-4 py-3 border">Status</th>
-                    <th class="px-4 py-3 border">Warranty</th>
-                    <th class="px-4 py-3 border">System Unit</th>
-                    <th class="px-4 py-3 border text-center">Actions</th>
+                    <th class="px-4 py-3">#</th>
+                    <th class="px-4 py-3">Serial Number</th>
+                    <th class="px-4 py-3">Brand</th>
+                    <th class="px-4 py-3">Model</th>
+                    <th class="px-4 py-3">Capacity</th>
+                    <th class="px-4 py-3">Speed</th>
+                    <th class="px-4 py-3">Type</th>
+                    <th class="px-4 py-3">Part</th>
+                    <th class="px-4 py-3">Condition</th>
+                    <th class="px-4 py-3">Status</th>
+                    <th class="px-4 py-3">Warranty</th>
+                    <th class="px-4 py-3">System Unit</th>
+                    <th class="px-4 py-3 text-center">Actions</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-200">
                 @forelse($components as $component)
-                    <tr class="hover:bg-gray-50 transition">
+                    <tr class="border-t border-gray-200 dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-800/50">
                         <td class="px-4 py-3">{{ $component->id }}</td>
                         <td class="px-4 py-3">{{ $component->serial_number }}</td>
                         <td class="px-4 py-3">{{ $component->brand }}</td>

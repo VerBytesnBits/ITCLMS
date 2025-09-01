@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Route;
 // use App\Livewire\Components\ComponentsIndex as components;
 use App\Livewire\Peripherals\PeripheralIndex as peripherals;
 use App\Livewire\ComponentsPart\index as components;
-
+use App\Livewire\SystemUnits\MaintenanceIndex as maintenance;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -37,11 +37,17 @@ Route::middleware(['auth'])->group(function () {
     Route::view('units', 'units')
         // ->middleware('can:view.system-units')  // adjust the permission name accordingly
         ->name('units');
-
+    // Maintenance page
+    Route::get('maintenance', maintenance::class)->name('maintenance');
 
     // Route::get('components', components::class)->name('components');
     Route::get('components', components::class)->name('components');
     Route::get('peripherals', peripherals::class)->name('peripherals');
+
+
+
+    
+
 
 
 

@@ -13,7 +13,7 @@ class RoomForm extends Component
     public $roomId;
     public $name = '';
     public $description = '';
-    public $status = 'active';
+    public $status = 'Available';
 
     public $showModal = false;
 
@@ -33,7 +33,7 @@ class RoomForm extends Component
             $this->room = null;
             $this->name = '';
             $this->description = '';
-            $this->status = 'active';
+            $this->status = 'Available';
         }
 
         $this->dispatch('open-modal', modal: 'room-form');
@@ -44,7 +44,7 @@ class RoomForm extends Component
         return [
             'name' => 'required|string|min:3|unique:rooms,name,' . $this->roomId,
             'description' => 'nullable|string',
-            'status' => 'required|in:active,inactive',
+            'status' => 'required|in:Available,Unavailable',
         ];
     }
 

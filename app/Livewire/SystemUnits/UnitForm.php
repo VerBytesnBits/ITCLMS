@@ -16,6 +16,7 @@ class UnitForm extends Component
     public $name;
     public $serial_number;
     public $status = 'Available';
+    public $condition = 'Operational';
     public $room_id;
 
     protected $listeners = [
@@ -34,6 +35,7 @@ class UnitForm extends Component
                 Rule::unique('system_units', 'serial_number')->ignore($this->unitId),
             ],
             'status' => 'required|string',
+            'condition' => 'required|string',
             'room_id' => 'required|exists:rooms,id',
         ];
     }
@@ -42,8 +44,9 @@ class UnitForm extends Component
     public function create()
     {
         $this->resetValidation();
-        $this->reset(['unitId', 'name', 'serial_number', 'status', 'room_id']);
+        $this->reset(['unitId', 'name', 'serial_number', 'status','condition', 'room_id']);
         $this->status = 'Available';
+        $this->condition = 'Operational';
         $this->mode = 'create';
         $this->show = true;
     }
@@ -57,6 +60,7 @@ class UnitForm extends Component
         $this->name = $unit->name;
         $this->serial_number = $unit->serial_number;
         $this->status = $unit->status;
+        $this->condition = $unit->condition;
         $this->room_id = $unit->room_id;
 
         $this->mode = 'edit';
@@ -73,6 +77,7 @@ class UnitForm extends Component
                 'name' => $this->name,
                 'serial_number' => $this->serial_number,
                 'status' => $this->status,
+                'condition' => $this->condition,
                 'room_id' => $this->room_id,
             ]);
         } else {
@@ -81,6 +86,7 @@ class UnitForm extends Component
                 'name' => $this->name,
                 'serial_number' => $this->serial_number,
                 'status' => $this->status,
+                'condition' => $this->condition,
                 'room_id' => $this->room_id,
             ]);
         }

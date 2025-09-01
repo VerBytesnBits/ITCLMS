@@ -34,11 +34,22 @@
                     <label class="block text-sm font-medium">Status</label>
                     <select wire:model.defer="status" class="w-full rounded border-gray-300">
                         <option value="Available">Available</option>
-                        <option value="Operational">Operational</option>
+                        <option value="In use">In use</option>
                         <option value="Under Maintenance">Under Maintenance</option>
                         <option value="Defective">Defective</option>
                     </select>
                     @error('status')
+                        <span class="text-red-500 text-sm">{{ $message }}</span>
+                    @enderror
+                </div>
+                 <div>
+                    <label class="block text-sm font-medium">Condition</label>
+                    <select wire:model.defer="status" class="w-full rounded border-gray-300">
+                        <option value="Operational">Operational</option>
+                        <option value="Non-operational">Non-operational</option>
+                        <option value="Defective">Defective</option>
+                    </select>
+                    @error('condition')
                         <span class="text-red-500 text-sm">{{ $message }}</span>
                     @enderror
                 </div>

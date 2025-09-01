@@ -37,9 +37,9 @@
                     <label for="status" class="block text-sm font-medium text-gray-700 dark:text-gray-200">
                         Status
                     </label>
-                    <select wire:model.defer="status" id="status"
+                    <select wire:model="status" id="status"
                         class="w-full px-4 py-2 border rounded-md dark:bg-zinc-700 dark:text-white">
-                        <option value="available">Available</option>
+                        <option value="Available">Available</option>
                         <option value="occupied">Occupied</option>
                         <option value="maintenance">Maintenance</option>
                     </select>

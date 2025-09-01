@@ -1,33 +1,33 @@
-<div class="p-6">
+<div class="p-4 space-y-6">
     <!-- Header -->
-    <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-bold text-gray-800">Peripherals</h1>
-        <button wire:click="openCreateModal"
-            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow transition">
-            + Add Peripheral
-        </button>
+    <livewire:dashboard-heading title="Peripherals" subtitle="Manage all peripheral parts" icon="cube"
+        gradient-from-color="#ef4444" gradient-to-color="#e0812d" icon-color="text-red-500" />
+
+    <div class="flex justify-end items-center mb-6">
+        <flux:button variant="primary" color="blue" wire:click="openCreateModal"> + Add Peripheral</flux:button>
     </div>
 
     <!-- Table -->
-    <div class="overflow-x-auto bg-white shadow rounded-lg">
-        <table class="w-full text-sm text-left border-collapse">
-            <thead class="bg-gray-100 text-gray-700 uppercase text-xs tracking-wider">
+    <div
+        class="overflow-x-auto bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl shadow">
+        <table class="min-w-full text-sm text-left text-gray-700 dark:text-gray-200">
+            <thead class="bg-gray-100 dark:bg-zinc-800 text-xs uppercase">
                 <tr>
-                    <th class="px-4 py-3 border">#</th>
-                    <th class="px-4 py-3 border">Serial Number</th>
-                    <th class="px-4 py-3 border">Brand</th>
-                    <th class="px-4 py-3 border">Model</th>
-                    <th class="px-4 py-3 border">Type</th>
-                    <th class="px-4 py-3 border">Condition</th>
-                    <th class="px-4 py-3 border">Status</th>
-                    <th class="px-4 py-3 border">Room</th>
-                    <th class="px-4 py-3 border">System Unit</th>
-                    <th class="px-4 py-3 border text-center">Actions</th>
+                    <th class="px-4 py-3">#</th>
+                    <th class="px-4 py-3">Serial Number</th>
+                    <th class="px-4 py-3">Brand</th>
+                    <th class="px-4 py-3">Model</th>
+                    <th class="px-4 py-3">Type</th>
+                    <th class="px-4 py-3">Condition</th>
+                    <th class="px-4 py-3">Status</th>
+                    <th class="px-4 py-3">Room</th>
+                    <th class="px-4 py-3">System Unit</th>
+                    <th class="px-4 py-3 text-center">Actions</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-200">
                 @forelse($peripherals as $peripheral)
-                    <tr class="hover:bg-gray-50 transition">
+                    <tr class="border-t border-gray-200 dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-800/50">
                         <td class="px-4 py-3">{{ $peripheral->id }}</td>
                         <td class="px-4 py-3">{{ $peripheral->serial_number }}</td>
                         <td class="px-4 py-3">{{ $peripheral->brand }}</td>
@@ -38,7 +38,7 @@
                         <td class="px-4 py-3">{{ optional($peripheral->room)->name }}</td>
                         <td class="px-4 py-3">{{ optional($peripheral->systemUnit)->name }}</td>
                         <td class="px-4 py-3 text-center space-x-2">
-                            
+
                             <button wire:click="openEditModal({{ $peripheral->id }})"
                                 class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded-lg shadow text-xs transition">
                                 Edit

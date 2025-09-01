@@ -11,7 +11,7 @@
                 <div class="p-6">
                     <form wire:submit.prevent="save" class="space-y-4">
                         
-                        <!-- System Unit -->
+                        {{-- <!-- System Unit -->
                         <div>
                             <label class="block text-sm font-medium">System Unit</label>
                             <select wire:model="system_unit_id" class="w-full rounded border-gray-300">
@@ -21,7 +21,7 @@
                                 @endforeach
                             </select>
                             @error('system_unit_id') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
-                        </div>
+                        </div> --}}
 
                         <!-- Serial Number -->
                         <div>

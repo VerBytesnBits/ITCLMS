@@ -1,11 +1,8 @@
 <div class="p-4 space-y-6">
-    <div class="relative w-full px-4 py-2">
-        <flux:heading size="xl" level="1">{{ __('Roles') }}</flux:heading>
-        <flux:subheading size="lg" class="mb-6">{{ __('Manage all roles') }}</flux:subheading>
-        <flux:separator variant="subtle" />
-    </div>
+    <livewire:dashboard-heading title="Roles/Permission" subtitle="Manage all roles/permission" icon="link-slash"
+        gradient-from-color="#6e2e87" gradient-to-color="#ab2e87" icon-color="text-purple-300" />
 
-    <div class="flex justify-start">
+    <div class="flex justify-end mb-4">
         <button wire:click="openCreateModal"
             class="bg-blue-500 dark:bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-600 dark:hover:bg-blue-700 transition shadow">
             Create Role

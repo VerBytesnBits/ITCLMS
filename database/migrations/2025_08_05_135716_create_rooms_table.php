@@ -16,7 +16,7 @@ return new class extends Migration
             $table->id();
             $table->string('name')->unique();
             $table->text('description')->nullable();
-            $table->string('status')->default('active');
+            $table->string('status')->default('Available');
             $table->timestamps();
         });
     }
