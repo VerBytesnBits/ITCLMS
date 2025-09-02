@@ -14,6 +14,7 @@
             <thead class="bg-gray-100 dark:bg-zinc-800 text-xs uppercase">
                 <tr>
                     <th class="px-4 py-3">#</th>
+                    <th class="px-4 py-3">Unit</th>
                     <th class="px-4 py-3">Serial Number</th>
                     <th class="px-4 py-3">Brand</th>
                     <th class="px-4 py-3">Model</th>
@@ -21,7 +22,7 @@
                     <th class="px-4 py-3">Condition</th>
                     <th class="px-4 py-3">Status</th>
                     {{-- <th class="px-4 py-3">Room</th> --}}
-                    <th class="px-4 py-3">System Unit</th>
+                    
                     <th class="px-4 py-3 text-center">Actions</th>
                 </tr>
             </thead>
@@ -29,6 +30,7 @@
                 @forelse($peripherals as $peripheral)
                     <tr class="border-t border-gray-200 dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-800/50">
                         <td class="px-4 py-3">{{ $peripheral->id }}</td>
+                        <td class="px-4 py-3">{{ optional($peripheral->systemUnit)->name ?? '—'}}</td>
                         <td class="px-4 py-3">{{ $peripheral->serial_number }}</td>
                         <td class="px-4 py-3">{{ $peripheral->brand }}</td>
                         <td class="px-4 py-3">{{ $peripheral->model }}</td>
@@ -36,7 +38,7 @@
                         <td class="px-4 py-3">{{ $peripheral->condition }}</td>
                         <td class="px-4 py-3">{{ $peripheral->status }}</td>
                         {{-- <td class="px-4 py-3">{{ optional($peripheral->room)->name }}</td> --}}
-                        <td class="px-4 py-3">{{ optional($peripheral->systemUnit)->name ?? '—'}}</td>
+                        
                         <td class="px-4 py-3 text-center space-x-2">
 
                             <button wire:click="openEditModal({{ $peripheral->id }})"

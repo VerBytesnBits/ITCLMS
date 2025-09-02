@@ -16,16 +16,21 @@
 
         <flux:navlist variant="outline">
             <flux:navlist.group :heading="__('Main Menu')" class="grid">
-                <flux:navlist.item icon="layout-grid" :href="route('dashboard')" :current="request()->routeIs('dashboard')"
-                    wire:navigate>{{ __('Dashboard') }}</flux:navlist.item>
+                <flux:navlist.item icon="layout-grid" :href="route('dashboard')"
+                    :current="request()->routeIs('dashboard')" wire:navigate>{{ __('Dashboard') }}</flux:navlist.item>
                 <flux:navlist.item icon="computer-desktop" :href="route('units')" :current="request()->routeIs('units')"
                     wire:navigate>{{ __('Computer Units') }}
                 </flux:navlist.item>
-                <flux:navlist.item icon="cpu-chip" :href="route('components')"
-                    :current="request()->routeIs('components')" wire:navigate>{{ __('Components') }}</flux:navlist.item>
-                <flux:navlist.item icon="cube" :href="route('peripherals')"
-                    :current="request()->routeIs('peripherals')" wire:navigate>{{ __('Peripherals') }}
-                </flux:navlist.item>
+                
+                <flux:navlist.group expandable heading="Inventory" class="hidden lg:grid">
+                    <flux:navlist.item icon="cpu-chip" :href="route('components')"
+                        :current="request()->routeIs('components')" wire:navigate>{{ __('Components') }}
+                    </flux:navlist.item>
+                    <flux:navlist.item icon="cube" :href="route('peripherals')"
+                        :current="request()->routeIs('peripherals')" wire:navigate>{{ __('Peripherals') }}
+                    </flux:navlist.item>
+                </flux:navlist.group>
+
                 <flux:navlist.item icon="qr-code" :href="'#'" :current="request()->routeIs('qr-code')"
                     wire:navigate>{{ __('QR Generator') }}</flux:navlist.item>
             </flux:navlist.group>

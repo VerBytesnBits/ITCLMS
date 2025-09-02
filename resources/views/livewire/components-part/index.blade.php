@@ -16,6 +16,7 @@
             <thead class="bg-gray-100 dark:bg-zinc-800 text-xs uppercase">
                 <tr>
                     <th class="px-4 py-3">#</th>
+                    <th class="px-4 py-3">Unit</th>
                     <th class="px-4 py-3">Serial Number</th>
                     <th class="px-4 py-3">Brand</th>
                     <th class="px-4 py-3">Model</th>
@@ -26,7 +27,7 @@
                     <th class="px-4 py-3">Condition</th>
                     <th class="px-4 py-3">Status</th>
                     <th class="px-4 py-3">Warranty</th>
-                    <th class="px-4 py-3">System Unit</th>
+
                     <th class="px-4 py-3 text-center">Actions</th>
                 </tr>
             </thead>
@@ -35,19 +36,20 @@
                     <tr
                         class="border-t border-gray-200 dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-800/50">
                         <td class="px-4 py-3">{{ $component->id }}</td>
+                        <td class="px-4 py-3">{{ optional($component->systemUnit)->name ?? '—' }}</td>
                         <td class="px-4 py-3">{{ $component->serial_number }}</td>
                         <td class="px-4 py-3">{{ $component->brand }}</td>
                         <td class="px-4 py-3">{{ $component->model }}</td>
                         <td class="px-4 py-3">{{ $component->capacity ?? '—' }} </td>
                         <td class="px-4 py-3">{{ $component->speed ?? '—' }}</td>
-                        <td class="px-4 py-3">{{ $component->type ?? '—'}}</td>
+                        <td class="px-4 py-3">{{ $component->type ?? '—' }}</td>
                         <td class="px-4 py-3">{{ $component->part }}</td>
                         <td class="px-4 py-3">{{ $component->condition }}</td>
                         <td class="px-4 py-3">{{ $component->status }}</td>
                         <td class="px-4 py-3">
                             {{ $component->warranty ? \Carbon\Carbon::parse($component->warranty)->format('M d, Y') : '—' }}
                         </td>
-                        <td class="px-4 py-3">{{ optional($component->systemUnit)->name ?? '—'  }}</td>
+
                         <td class="px-4 py-3 text-center space-x-2">
                             <button wire:click="openEditModal({{ $component->id }})"
                                 class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded-lg shadow text-xs transition">
