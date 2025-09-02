@@ -38,16 +38,16 @@
                         <td class="px-4 py-3">{{ $component->serial_number }}</td>
                         <td class="px-4 py-3">{{ $component->brand }}</td>
                         <td class="px-4 py-3">{{ $component->model }}</td>
-                        <td class="px-4 py-3">{{ $component->capacity }}</td>
-                        <td class="px-4 py-3">{{ $component->speed }}</td>
-                        <td class="px-4 py-3">{{ $component->type }}</td>
+                        <td class="px-4 py-3">{{ $component->capacity ?? '—' }} </td>
+                        <td class="px-4 py-3">{{ $component->speed ?? '—' }}</td>
+                        <td class="px-4 py-3">{{ $component->type ?? '—'}}</td>
                         <td class="px-4 py-3">{{ $component->part }}</td>
                         <td class="px-4 py-3">{{ $component->condition }}</td>
                         <td class="px-4 py-3">{{ $component->status }}</td>
                         <td class="px-4 py-3">
                             {{ $component->warranty ? \Carbon\Carbon::parse($component->warranty)->format('M d, Y') : '—' }}
                         </td>
-                        <td class="px-4 py-3">{{ optional($component->systemUnit)->name }}</td>
+                        <td class="px-4 py-3">{{ optional($component->systemUnit)->name ?? '—'  }}</td>
                         <td class="px-4 py-3 text-center space-x-2">
                             <button wire:click="openEditModal({{ $component->id }})"
                                 class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded-lg shadow text-xs transition">

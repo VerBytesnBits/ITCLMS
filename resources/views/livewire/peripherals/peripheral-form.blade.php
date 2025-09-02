@@ -10,7 +10,7 @@
 
                 <div class="p-6">
                     <form wire:submit.prevent="save" class="space-y-4">
-                        <div>
+                        {{-- <div>
                             <label class="block text-sm font-medium">System Unit</label>
                             <select wire:model="system_unit_id" class="w-full rounded border-gray-300">
                                 <option value="">-- None --</option>
@@ -35,7 +35,7 @@
                             @error('room_id')
                                 <span class="text-red-500 text-sm">{{ $message }}</span>
                             @enderror
-                        </div>
+                        </div> --}}
 
                         <div>
                             <label class="block text-sm font-medium">Serial Number</label>
@@ -74,7 +74,7 @@
                         <div>
                             <label class="block text-sm font-medium">Type</label>
                             <select wire:model="type" class="w-full rounded border-gray-300">
-                                <option value="">-- Select Type --</option>
+                                <option value=""> Select Type </option>
                                 <option value="Monitor">Monitor</option>
                                 <option value="Keyboard">Keyboard</option>
                                 <option value="Mouse">Mouse</option>

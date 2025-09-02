@@ -12,13 +12,24 @@ return new class extends Migration {
     {
         Schema::create('maintenances', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('system_unit_id')->constrained()->onDelete('cascade');
-            $table->foreignId('user_id')->nullable()->constrained()->onDelete('set null'); // who performed
+
+            // Polymorphic relationship
+            $table->morphs('maintainable');
+            // This will create: maintainable_id, maintainable_type
+
+            $table->foreignId('user_id')->nullable()->constrained()->onDelete('set null'); // technician
             $table->string('type')->nullable(); // e.g., Repair, Replacement
             $table->text('description')->nullable();
             $table->enum('status', ['Pending', 'In Progress', 'Completed'])->default('Pending');
+            $table->timestamp('started_at')->nullable();
+            $table->timestamp('completed_at')->nullable();
+            $table->foreignId('created_by')->nullable()->constrained('users');
+            $table->foreignId('started_by')->nullable()->constrained('users');
+            $table->foreignId('completed_by')->nullable()->constrained('users');
+
             $table->timestamps();
         });
+
 
     }
 

@@ -32,4 +32,10 @@ class Peripheral extends Model
     {
         return $this->belongsTo(Room::class);
     }
+
+    public function maintenances()
+    {
+        return $this->morphMany(Maintenance::class, 'maintainable');
+    }
+
 }

@@ -9,7 +9,7 @@ class SystemUnit extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'serial_number', 'status','condition', 'room_id'];
+    protected $fillable = ['name', 'serial_number', 'status', 'condition', 'room_id'];
 
     public function room()
     {
@@ -24,9 +24,12 @@ class SystemUnit extends Model
         return $this->hasMany(ComponentParts::class);
     }
 
+   
+
     public function maintenances()
     {
-        return $this->hasMany(Maintenance::class);
+        return $this->morphMany(Maintenance::class, 'maintainable');
     }
+
 
 }

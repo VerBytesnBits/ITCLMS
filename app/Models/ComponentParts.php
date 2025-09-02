@@ -25,9 +25,15 @@ class ComponentParts extends Model
         return $this->belongsTo(SystemUnit::class);
     }
 
-     public function room()
+    public function room()
     {
         return $this->belongsTo(Room::class);
     }
+
+    public function maintenances()
+    {
+        return $this->morphMany(Maintenance::class, 'maintainable');
+    }
+
 
 }

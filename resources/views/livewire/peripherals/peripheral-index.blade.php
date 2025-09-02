@@ -20,7 +20,7 @@
                     <th class="px-4 py-3">Type</th>
                     <th class="px-4 py-3">Condition</th>
                     <th class="px-4 py-3">Status</th>
-                    <th class="px-4 py-3">Room</th>
+                    {{-- <th class="px-4 py-3">Room</th> --}}
                     <th class="px-4 py-3">System Unit</th>
                     <th class="px-4 py-3 text-center">Actions</th>
                 </tr>
@@ -35,8 +35,8 @@
                         <td class="px-4 py-3">{{ $peripheral->type }}</td>
                         <td class="px-4 py-3">{{ $peripheral->condition }}</td>
                         <td class="px-4 py-3">{{ $peripheral->status }}</td>
-                        <td class="px-4 py-3">{{ optional($peripheral->room)->name }}</td>
-                        <td class="px-4 py-3">{{ optional($peripheral->systemUnit)->name }}</td>
+                        {{-- <td class="px-4 py-3">{{ optional($peripheral->room)->name }}</td> --}}
+                        <td class="px-4 py-3">{{ optional($peripheral->systemUnit)->name ?? '—'}}</td>
                         <td class="px-4 py-3 text-center space-x-2">
 
                             <button wire:click="openEditModal({{ $peripheral->id }})"

@@ -5,130 +5,212 @@ namespace App\Livewire\SystemUnits;
 use Livewire\Component;
 use App\Models\Maintenance;
 use App\Models\SystemUnit;
+use App\Models\Peripheral;
+use App\Models\ComponentParts;
 use Illuminate\Support\Facades\Auth;
 
 class MaintenanceIndex extends Component
 {
     public $maintenances;
-    public $systemUnits;
+    public $assets;
 
-    public $selectedUnit = null;
-    public $type;
-    public $description;
-    public $status = 'Pending';
-
-    public $showModal = false;
-
-    protected $listeners = ['refreshMaintenances' => 'loadMaintenances'];
+    // modal / form fields
+    public bool $showModal = false;
+    public string $selectedAsset = ''; // formatted: "Class|id"
+    public string $type = 'repair';
+    public string $description = '';
 
     public function mount()
     {
-        $this->systemUnits = SystemUnit::all();
         $this->loadMaintenances();
+        $this->loadAssets();
     }
 
     public function loadMaintenances()
     {
-        $this->maintenances = Maintenance::with('unit', 'user')
-            ->orderBy('created_at', 'desc')
+        $this->maintenances = Maintenance::with(['maintainable', 'creator', 'starter', 'completer'])
+            ->latest()
             ->get();
     }
 
-    public function openModal($unitId = null)
+    public function loadAssets()
     {
-        $this->selectedUnit = $unitId;
-        $this->type = null;
-        $this->description = null;
-        $this->status = 'Pending';
+        $assets = collect();
+
+        // IDs of assets already reported
+        $reportedAssets = Maintenance::whereIn('status', ['Pending', 'In Progress'])
+            ->get(['maintainable_type', 'maintainable_id'])
+            ->map(fn($m) => $m->maintainable_type . '|' . $m->maintainable_id)
+            ->toArray();
+
+        // helper for pushing assets
+        $pushAsset = function ($class, $id, $label) use (&$assets, $reportedAssets) {
+            $key = $class . '|' . $id;
+            if (!in_array($key, $reportedAssets)) {
+                $assets->push(['key' => $key, 'label' => $label]);
+            }
+        };
+
+        // System Units
+        SystemUnit::select('id', 'name')->orderBy('name')->get()
+            ->each(fn($m) => $pushAsset(SystemUnit::class, $m->id, "Unit: {$m->name}"));
+
+        // Peripherals
+        Peripheral::select('id', 'type', 'serial_number')->orderBy('type')->get()
+            ->each(fn($m) => $pushAsset(Peripheral::class, $m->id, "Peripheral: {$m->type} ({$m->serial_number})"));
+
+        // Component Parts
+        ComponentParts::select('id', 'part', 'serial_number')->orderBy('part')->get()
+            ->each(fn($m) => $pushAsset(ComponentParts::class, $m->id, "Component: {$m->part} ({$m->serial_number})"));
+
+        $this->assets = $assets;
+    }
+
+    public function openModal()
+    {
+        $this->resetForm();
         $this->showModal = true;
+    }
+
+    protected function rules()
+    {
+        return [
+            'selectedAsset' => 'required|string',
+            'type' => 'required|in:repair,replacement,defective',
+            'description' => 'required|string|max:2000',
+        ];
+    }
+
+    protected function resetForm()
+    {
+        $this->selectedAsset = '';
+        $this->type = 'repair';
+        $this->description = '';
     }
 
     public function save()
     {
-        $this->validate([
-            'selectedUnit' => 'required|exists:system_units,id',
-            'type' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'status' => 'required|in:Pending,In Progress,Completed',
-        ]);
+        $this->validate();
 
-        Maintenance::create([
-            'system_unit_id' => $this->selectedUnit,
-            'user_id' => Auth::id(),
+        [$class, $id] = explode('|', $this->selectedAsset);
+
+        // Default values
+        $status = 'Pending';
+        $completedAt = null;
+        $completedBy = null;
+
+        // If defective or replacement, auto-complete
+        if (in_array($this->type, ['defective', 'replacement'])) {
+            $status = 'Completed';
+            $completedAt = now();
+            $completedBy = Auth::id();
+        }
+
+        $maintenance = Maintenance::create([
+            'maintainable_type' => $class,
+            'maintainable_id' => $id,
             'type' => $this->type,
             'description' => $this->description,
-            'status' => $this->status,
+            'created_by' => Auth::id(),
+            'status' => $status,
+            'completed_at' => $completedAt,
+            'completed_by' => $completedBy,
         ]);
 
-        // If maintenance is repair or replacement, update unit status to Under Maintenance
-        if (in_array(strtolower($this->type), ['repair', 'replacement'])) {
-            $unit = SystemUnit::find($this->selectedUnit);
-            $unit->status = 'Under Maintenance';
-            $unit->condition = 'Non-operational';
-            $unit->save();
+        // Handle defective/replacement assets
+        if (in_array($this->type, ['defective', 'replacement'])) {
+            $this->markAssetDefective($maintenance->maintainable);
         }
 
         $this->showModal = false;
         $this->loadMaintenances();
+        $this->loadAssets();
 
-        $this->dispatch('swal', [
-            'toast' => true,
-            'icon' => 'success',
-            'title' => 'Maintenance record added!',
-            'timer' => 3000
-        ]);
+        $this->dispatch('saved');
     }
 
-    // **Start Maintenance**
-    public function startMaintenance($maintenanceId)
+    private function markAssetDefective($asset): void
     {
-        $maintenance = Maintenance::find($maintenanceId);
-        if ($maintenance && $maintenance->status === 'Pending') {
-            $maintenance->status = 'In Progress';
-            $maintenance->save();
+        if ($asset) {
+            if ($asset->getAttribute('status') !== null) {
+                $asset->status = 'Defective';
+            }
+            if ($asset->getAttribute('condition') !== null) {
+                $asset->condition = 'Poor';
+            }
 
-            // Update unit status
-            $unit = $maintenance->unit;
-            $unit->status = 'Under Maintenance';
-            $unit->condition = 'Non-operational';
-            $unit->save();
+            // unassign logic if asset belongs to a system unit
+            if (method_exists($asset, 'systemUnit')) {
+                $asset->system_unit_id = null;
+            }
 
-            $this->loadMaintenances();
-            $this->dispatch('swal', [
-                'toast' => true,
-                'icon' => 'info',
-                'title' => 'Maintenance started!',
-                'timer' => 3000
-            ]);
+            $asset->save();
         }
     }
 
-    // **Complete Maintenance**
-    public function completeMaintenance($maintenanceId)
+
+    public function startMaintenance(int $id)
+    {
+        $m = Maintenance::findOrFail($id);
+
+        if (!$m->started_at) {
+            $m->update([
+                'started_at' => now(),
+                'started_by' => Auth::id(),
+                'status' => 'In Progress',
+            ]);
+        }
+
+        $this->loadMaintenances();
+    }
+
+    public function completeMaintenance($maintenanceId, $successful = true)
     {
         $maintenance = Maintenance::find($maintenanceId);
+
         if ($maintenance && $maintenance->status === 'In Progress') {
             $maintenance->status = 'Completed';
+            $maintenance->completed_at = now();
+            $maintenance->completed_by = auth()->id();
             $maintenance->save();
 
-            // Update unit status back to Operational if repaired
-            $unit = $maintenance->unit;
-            $unit->status = 'Available';
-            $unit->condition = 'Operational';
-            $unit->save();
+            $asset = $maintenance->maintainable;
+
+            if ($asset) {
+                if ($successful) {
+                    // Mark repaired
+                    $asset->status = 'Available';
+                    $asset->condition = 'Operational';
+                } else {
+                    // Mark defective
+                    $asset->status = 'Defective';
+                    $asset->condition = 'Poor';
+                    if (method_exists($asset, 'systemUnit')) {
+                        $asset->system_unit_id = null; // unassign
+                    }
+                }
+                $asset->save();
+            }
 
             $this->loadMaintenances();
-            $this->dispatch('swal', [
-                'toast' => true,
-                'icon' => 'success',
-                'title' => 'Maintenance completed!',
-                'timer' => 3000
-            ]);
+            $this->dispatch('saved');
+        }
+    }
+
+
+    private function updateAssetStatus($asset, string $status): void
+    {
+        if ($asset && $asset->getAttribute('status') !== null) {
+            $asset->status = $status;
+            $asset->save();
         }
     }
 
     public function render()
     {
-        return view('livewire.system-units.maintenance-index');
+        return view('livewire.system-units.maintenance-index', [
+            'maintenances' => $this->maintenances,
+            'assets' => $this->assets,
+        ]);
     }
 }

@@ -16,7 +16,7 @@
 
         <flux:navlist variant="outline">
             <flux:navlist.group :heading="__('Main Menu')" class="grid">
-                <flux:navlist.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')"
+                <flux:navlist.item icon="layout-grid" :href="route('dashboard')" :current="request()->routeIs('dashboard')"
                     wire:navigate>{{ __('Dashboard') }}</flux:navlist.item>
                 <flux:navlist.item icon="computer-desktop" :href="route('units')" :current="request()->routeIs('units')"
                     wire:navigate>{{ __('Computer Units') }}
@@ -69,7 +69,7 @@
     </flux:sidebar>
 
     <!-- Mobile User Menu -->
-    <flux:header class=" p-4 bg-white dark:bg-gray-900 shadow-md flex justify-between items-center w-full">
+    <flux:header sticky class=" p-4 bg-white dark:bg-gray-900 shadow-md flex justify-between items-center w-full">
         {{-- <header class="p-4 bg-white dark:bg-gray-900 shadow-md flex justify-between items-center w-full"> --}}
         <flux:sidebar.toggle class="lg:hidden" icon="bars-3" inset="left" />
 
