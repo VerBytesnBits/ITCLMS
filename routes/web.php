@@ -8,6 +8,11 @@ use Illuminate\Support\Facades\Route;
 use App\Livewire\Peripherals\PeripheralIndex as peripherals;
 use App\Livewire\ComponentsPart\index as components;
 use App\Livewire\SystemUnits\MaintenanceIndex as maintenance;
+use App\Livewire\QrManager;
+use App\Livewire\ActivityLogViewer as activitylogs;
+use App\Livewire\Tracking\Show;
+
+use App\Livewire\Reports\Index as ReportsIndex;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -45,7 +50,13 @@ Route::middleware(['auth'])->group(function () {
     Route::get('peripherals', peripherals::class)->name('peripherals');
 
 
+    Route::get('/qr-manager', QrManager::class)->name('qr-manager');
 
+    Route::get('/tracking/{type}/{serial}', Show::class)->name('tracking.show');
+
+    Route::get('activitylogs', activitylogs::class)->name('activitylogs');
+
+    Route::get('reports', ReportsIndex::class)->name('reports');
 
     Route::redirect('settings', 'settings/profile');
     Route::get('settings/profile', Profile::class)->name('settings.profile');

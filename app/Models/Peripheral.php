@@ -2,14 +2,16 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 
 class Peripheral extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity;
 
-    protected $fillable = [
+     protected $fillable = [
         'system_unit_id',
         'room_id',
         'name',
@@ -23,7 +25,15 @@ class Peripheral extends Model
         'warranty',
     ];
 
-    public function systemUnit()
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['name', 'serial_number', 'status', 'condition', 'system_unit_id'])
+           
+            ->useLogName('peripheral');
+    }
+
+        public function systemUnit()
     {
         return $this->belongsTo(SystemUnit::class);
     }
@@ -39,3 +49,7 @@ class Peripheral extends Model
     }
 
 }
+
+
+
+

@@ -8,14 +8,14 @@
     <div class="w-1/2">
         <div class="grid grid-rows-[auto_auto] text-left sm:text-left">
             <h1
-                class="text-sm sm:text-base md:text-lg font-black uppercase tracking-[0.4em] sm:tracking-[0.8em] md:tracking-[0.6em]
+                class="text-2xl font-black uppercase tracking-[0.4em] sm:tracking-[0.8em] md:tracking-[0.6em]
                text-black  dark:text-white  light-outline">
                 ITCLMS
             </h1>
             <!-- Hidden on desktop, shown on small screens -->
-            <p class="block  text-[10px] text-gray-500 dark:text-gray-400 leading-tight italic">
+            {{-- <p class="block  text-[10px] text-gray-500 dark:text-gray-400 leading-tight italic">
                 Information Technology Computer Laboratory Management System
-            </p>
+            </p> --}}
         </div>
     </div>
 </div>

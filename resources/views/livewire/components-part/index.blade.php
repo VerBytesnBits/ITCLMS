@@ -20,13 +20,10 @@
                     <th class="px-4 py-3">Serial Number</th>
                     <th class="px-4 py-3">Brand</th>
                     <th class="px-4 py-3">Model</th>
-                    <th class="px-4 py-3">Capacity</th>
-                    <th class="px-4 py-3">Speed</th>
-                    <th class="px-4 py-3">Type</th>
                     <th class="px-4 py-3">Part</th>
                     <th class="px-4 py-3">Condition</th>
                     <th class="px-4 py-3">Status</th>
-                    <th class="px-4 py-3">Warranty</th>
+                    {{-- <th class="px-4 py-3">Warranty</th> --}}
 
                     <th class="px-4 py-3 text-center">Actions</th>
                 </tr>
@@ -40,17 +37,49 @@
                         <td class="px-4 py-3">{{ $component->serial_number }}</td>
                         <td class="px-4 py-3">{{ $component->brand }}</td>
                         <td class="px-4 py-3">{{ $component->model }}</td>
-                        <td class="px-4 py-3">{{ $component->capacity ?? '—' }} </td>
-                        <td class="px-4 py-3">{{ $component->speed ?? '—' }}</td>
-                        <td class="px-4 py-3">{{ $component->type ?? '—' }}</td>
                         <td class="px-4 py-3">{{ $component->part }}</td>
-                        <td class="px-4 py-3">{{ $component->condition }}</td>
-                        <td class="px-4 py-3">{{ $component->status }}</td>
                         <td class="px-4 py-3">
-                            {{ $component->warranty ? \Carbon\Carbon::parse($component->warranty)->format('M d, Y') : '—' }}
+                            @php
+                                $conditionColors = [
+                                    'Excellent' => 'bg-green-100 text-green-700',
+                                    'Good' => 'bg-blue-100 text-blue-700',
+                                    'Fair' => 'bg-yellow-100 text-yellow-700',
+                                    'Poor' => 'bg-red-100 text-red-700',
+                                ];
+                            @endphp
+
+                            <span
+                                class="px-2 py-1 text-xs font-semibold rounded-full {{ $conditionColors[$component->condition] ?? 'bg-gray-100 text-gray-700' }}">
+                                {{ $component->condition }}
+                            </span>
                         </td>
 
+                        <td class="px-4 py-3">
+                            @php
+                                $statusColors = [
+                                    'Available' => 'bg-green-100 text-green-700',
+                                    'Operational' => 'bg-blue-100 text-blue-700',
+                                    'Under Maintenance' => 'bg-yellow-100 text-yellow-700',
+                                    'Defective' => 'bg-red-100 text-red-700',
+                                ];
+                            @endphp
+
+                            <span
+                                class="px-2 py-1 text-xs font-semibold rounded-full {{ $statusColors[$component->status] ?? 'bg-gray-100 text-gray-700' }}">
+                                {{ $component->status }}
+                            </span>
+                        </td>
+
+                        {{-- <td class="px-4 py-3">
+                            {{ $component->warranty ? \Carbon\Carbon::parse($component->warranty)->format('M d, Y') : '—' }}
+                        </td> --}}
+
                         <td class="px-4 py-3 text-center space-x-2">
+                            <button wire:click="openViewModal({{ $component->id }})"
+                                class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg shadow text-xs transition">
+                                View
+                            </button>
+
                             <button wire:click="openEditModal({{ $component->id }})"
                                 class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded-lg shadow text-xs transition">
                                 Edit
@@ -60,6 +89,7 @@
                                 Delete
                             </button>
                         </td>
+
                     </tr>
                 @empty
                     <tr>
@@ -70,8 +100,16 @@
         </table>
     </div>
 
-    <!-- Modal -->
-    @if ($modal)
+    @if ($modal === 'create')
         <livewire:components-part.form :id="$id" :mode="$modal" />
     @endif
+
+    @if ($modal === 'edit')
+        <livewire:components-part.form :id="$id" :mode="$modal" />
+    @endif
+
+    @if ($modal === 'view')
+        <livewire:components-part.view :id="$id" />
+    @endif
+
 </div>

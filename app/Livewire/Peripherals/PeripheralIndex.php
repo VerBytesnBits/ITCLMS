@@ -22,6 +22,13 @@ class PeripheralIndex extends Component
         $this->refreshPeripherals();
     }
 
+    public function openViewModal($id)
+    {
+        $this->id = $id;
+        $this->modal = 'view';
+    }
+
+
     public function openCreateModal()
     {
         $this->id = null;

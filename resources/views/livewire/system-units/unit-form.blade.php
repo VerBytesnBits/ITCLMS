@@ -20,17 +20,17 @@
                 </div>
 
                 <!-- Serial Number -->
-                {{-- <div>
+                <div>
                     <label class="block text-sm font-medium">Serial Number</label>
                     <input type="text" wire:model.defer="serial_number" class="w-full rounded border-gray-300"
                         placeholder="Optional">
                     @error('serial_number')
                         <span class="text-red-500 text-sm">{{ $message }}</span>
                     @enderror
-                </div> --}}
+                </div>
 
                 <!-- Status -->
-                <div>
+                {{-- <div>
                     <label class="block text-sm font-medium">Status</label>
                     <select wire:model.defer="status" class="w-full rounded border-gray-300">
                         <option value="Available">Available</option>
@@ -41,7 +41,7 @@
                     @error('status')
                         <span class="text-red-500 text-sm">{{ $message }}</span>
                     @enderror
-                </div>
+                </div> --}}
                  <div>
                     <label class="block text-sm font-medium">Condition</label>
                     <select wire:model.defer="status" class="w-full rounded border-gray-300">

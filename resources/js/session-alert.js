@@ -7,12 +7,10 @@ window.addEventListener('swal', e => {
     const options = e.detail || {};
     if (options.toast) {
         Swal.fire({
-            toast: true,
             icon: options.icon || 'info',
             title: options.title || '',
             timer: options.timer || 3000,
-            position: options.position || 'bottom-end',
-            showConfirmButton: false,
+            showConfirmButton: true,
             timerProgressBar: true,
         });
     } else {

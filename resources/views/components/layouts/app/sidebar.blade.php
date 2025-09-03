@@ -7,7 +7,7 @@
 
 <body class="min-h-screen bg-white dark:bg-zinc-800">
 
-    <flux:sidebar sticky stashable class="border-e border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900">
+    <flux:sidebar sticky stashable class="border-e border-zinc-200 bg-white dark:border-zinc-700 dark:bg-gray-900 shadow-md">
         <flux:sidebar.toggle class="lg:hidden" icon="x-mark" />
 
         <a href="{{ route('dashboard') }}" class="me-5 flex items-center space-x-2 rtl:space-x-reverse" wire:navigate>
@@ -31,7 +31,7 @@
                     </flux:navlist.item>
                 </flux:navlist.group>
 
-                <flux:navlist.item icon="qr-code" :href="'#'" :current="request()->routeIs('qr-code')"
+                <flux:navlist.item icon="qr-code" :href="route('qr-manager')" :current="request()->routeIs('qr-manager')"
                     wire:navigate>{{ __('QR Generator') }}</flux:navlist.item>
             </flux:navlist.group>
         </flux:navlist>
@@ -45,13 +45,13 @@
                 </flux:navlist.item>
                 <flux:navlist.item icon="user-group" :href="route('users')" :current="request()->routeIs('users')"
                     wire:navigate>{{ __('Users') }}</flux:navlist.item>
-                <flux:navlist.item icon="wrench" :href="route('maintenance')"
+                {{-- <flux:navlist.item icon="wrench" :href="route('maintenance')"
                     :current="request()->routeIs('maintenance')" wire:navigate>{{ __('Maintenance') }}
-                </flux:navlist.item>
-                <flux:navlist.item icon="clock" :href="'#'" :current="request()->routeIs('activitylogs')"
+                </flux:navlist.item> --}}
+                <flux:navlist.item icon="clock" :href="route('activitylogs')" :current="request()->routeIs('activitylogs')"
                     wire:navigate>{{ __('Activity Logs') }}
                 </flux:navlist.item>
-                <flux:navlist.item icon="document-chart-bar" :href="'#'"
+                <flux:navlist.item icon="document-chart-bar" :href="route('reports')"
                     :current="request()->routeIs('reports')" wire:navigate>{{ __('Reports') }}</flux:navlist.item>
             </flux:navlist.group>
         </flux:navlist>
