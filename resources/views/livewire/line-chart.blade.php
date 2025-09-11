@@ -5,6 +5,7 @@
         title: @js($title),
     })"
     x-init="init()"
+    wire:ignore
     class="w-full rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-700 dark:bg-zinc-900"
     style="height: 320px;"
 >
@@ -21,8 +22,14 @@
                 title: cfg.title ?? 'Line Chart',
 
                 init() {
-                    const ctx = this.$refs.canvas.getContext('2d');
+                    // Restore from localStorage if exists
+                    const stored = JSON.parse(localStorage.getItem(this.title + '-chart-data'));
+                    if (stored) {
+                        this.labels = stored.labels ?? this.labels;
+                        this.values = stored.values ?? this.values;
+                    }
 
+                    const ctx = this.$refs.canvas.getContext('2d');
                     const gradient = ctx.createLinearGradient(0, 0, 0, 300);
                     gradient.addColorStop(0, 'rgba(99, 102, 241, 0.25)');
                     gradient.addColorStop(1, 'rgba(99, 102, 241, 0)');
@@ -52,26 +59,31 @@
                                 tooltip: { enabled: true },
                             },
                             scales: {
-                                x: {
-                                    grid: { display: false }
-                                },
-                                y: {
-                                    beginAtZero: true,
-                                    grid: { drawBorder: false }
-                                }
+                                x: { grid: { display: false } },
+                                y: { beginAtZero: true, grid: { drawBorder: false } }
                             }
                         }
                     });
 
+                    // Watchers to update chart + persist data
                     this.$watch('labels', (val) => {
                         this.chart.data.labels = val;
                         this.chart.update();
+                        this.saveState();
                     });
 
                     this.$watch('values', (val) => {
                         this.chart.data.datasets[0].data = val;
                         this.chart.update();
+                        this.saveState();
                     });
+                },
+
+                saveState() {
+                    localStorage.setItem(this.title + '-chart-data', JSON.stringify({
+                        labels: this.labels,
+                        values: this.values,
+                    }));
                 },
 
                 destroy() {

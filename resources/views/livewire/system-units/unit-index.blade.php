@@ -21,12 +21,17 @@
                     <th class="px-6 py-4">#</th>
                     <th class="px-6 py-4">Name</th>
                     <th class="px-6 py-4">Room</th>
-                    {{-- <th class="px-6 py-4">Status</th> --}}
-                    <th class="px-6 py-4">Condition</th>
+                    <th class="px-6 py-4">Status</th>
+                    {{-- <th class="px-6 py-4">Condition</th> --}}
                     <th class="px-6 py-4 text-right">Actions</th>
                 </tr>
             </thead>
             <tbody>
+                @php
+                    use App\Support\StatusConfig;
+                    //$conditionColors = StatusConfig::conditions();
+                    $statusColors = StatusConfig::statuses();
+                @endphp
                 @forelse($units as $unit)
                     <tr
                         class="border-t border-gray-200 dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-800/50">
@@ -34,40 +39,22 @@
                         <td class="px-6 py-4 font-medium text-zinc-800 dark:text-white">{{ $unit->name }}</td>
                         <td class="px-6 py-4">{{ $unit->room?->name ?? 'N/A' }}</td>
 
-                        {{-- <!-- Status Badge -->
+                         <!-- Status Badge -->
                         <td class="px-6 py-4">
-                            @php
-                                $statusColors = [
-                                    'Available' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-                                    'Under Maintenance' =>
-                                        'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
-                                    'Defective' => 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
-                                    'Operational' => 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
-                                ];
-                            @endphp
                             <span
                                 class="px-2 py-1 text-xs rounded-full font-semibold {{ $statusColors[$unit->status] ?? 'bg-gray-100 dark:bg-gray-800 dark:text-gray-200 text-gray-800' }}">
                                 {{ $unit->status }}
                             </span>
-                        </td> --}}
+                        </td> 
 
                         <!-- Condition Badge -->
-                        <td class="px-6 py-4">
-                            @php
-                                $conditionColors = [
-                                    'Operational' =>
-                                        'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+                        {{-- <td class="px-6 py-4">
 
-                                    'defective' =>
-                                        'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
-                                    'Non-operational' => 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
-                                ];
-                            @endphp
                             <span
                                 class="px-2 py-1 text-xs rounded-full font-semibold {{ $conditionColors[$unit->condition] ?? 'bg-gray-100 dark:bg-gray-800 dark:text-gray-200 text-gray-800' }}">
                                 {{ $unit->condition }}
                             </span>
-                        </td>
+                        </td> --}}
 
                         <!-- Actions -->
                         <td class="px-6 py-4 text-right space-x-3">

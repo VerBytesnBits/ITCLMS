@@ -7,7 +7,8 @@
 
 <body class="min-h-screen bg-white dark:bg-zinc-800">
 
-    <flux:sidebar sticky stashable class="border-e border-zinc-200 bg-white dark:border-zinc-700 dark:bg-gray-900 shadow-md">
+    <flux:sidebar sticky stashable
+        class="border-e border-zinc-200 bg-white dark:bg-gray-900  dark:border-zinc-700 shadow-inner">
         <flux:sidebar.toggle class="lg:hidden" icon="x-mark" />
 
         <a href="{{ route('dashboard') }}" class="me-5 flex items-center space-x-2 rtl:space-x-reverse" wire:navigate>
@@ -21,8 +22,8 @@
                 <flux:navlist.item icon="computer-desktop" :href="route('units')" :current="request()->routeIs('units')"
                     wire:navigate>{{ __('Computer Units') }}
                 </flux:navlist.item>
-                
-                <flux:navlist.group expandable heading="Inventory" class="hidden lg:grid">
+
+                <flux:navlist.group expandable heading="Inventory" class=" lg:grid">
                     <flux:navlist.item icon="cpu-chip" :href="route('components')"
                         :current="request()->routeIs('components')" wire:navigate>{{ __('Components') }}
                     </flux:navlist.item>
@@ -30,9 +31,18 @@
                         :current="request()->routeIs('peripherals')" wire:navigate>{{ __('Peripherals') }}
                     </flux:navlist.item>
                 </flux:navlist.group>
-
-                <flux:navlist.item icon="qr-code" :href="route('qr-manager')" :current="request()->routeIs('qr-manager')"
-                    wire:navigate>{{ __('QR Generator') }}</flux:navlist.item>
+                {{-- <flux:navlist.item icon="cpu-chip" :href="route('inventoryoverview')"
+                    :current="request()->routeIs('inventoryoverview')" wire:navigate>{{ __('Inventory Overview') }}
+                </flux:navlist.item> --}}
+                {{-- <flux:navlist.item icon="cpu-chip" :href="route('components')"
+                    :current="request()->routeIs('components')" wire:navigate>{{ __('Components') }}
+                </flux:navlist.item>
+                <flux:navlist.item icon="cube" :href="route('peripherals')"
+                    :current="request()->routeIs('peripherals')" wire:navigate>{{ __('Peripherals') }}
+                </flux:navlist.item> --}}
+                <flux:navlist.item icon="qr-code" :href="route('qr-manager')"
+                    :current="request()->routeIs('qr-manager')" wire:navigate>{{ __('QR Generator') }}
+                </flux:navlist.item>
             </flux:navlist.group>
         </flux:navlist>
 
@@ -48,8 +58,8 @@
                 {{-- <flux:navlist.item icon="wrench" :href="route('maintenance')"
                     :current="request()->routeIs('maintenance')" wire:navigate>{{ __('Maintenance') }}
                 </flux:navlist.item> --}}
-                <flux:navlist.item icon="clock" :href="route('activitylogs')" :current="request()->routeIs('activitylogs')"
-                    wire:navigate>{{ __('Activity Logs') }}
+                <flux:navlist.item icon="clock" :href="route('activitylogs')"
+                    :current="request()->routeIs('activitylogs')" wire:navigate>{{ __('Activity Logs') }}
                 </flux:navlist.item>
                 <flux:navlist.item icon="document-chart-bar" :href="route('reports')"
                     :current="request()->routeIs('reports')" wire:navigate>{{ __('Reports') }}</flux:navlist.item>
@@ -72,6 +82,7 @@
         </flux:navlist>
         <flux:spacer />
     </flux:sidebar>
+
 
     <!-- Mobile User Menu -->
     <flux:header sticky class=" p-4 bg-white dark:bg-gray-900 shadow-md flex justify-between items-center w-full">

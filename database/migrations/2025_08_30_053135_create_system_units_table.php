@@ -15,8 +15,7 @@ return new class extends Migration {
             $table->id();
             $table->string('name');
             $table->string('serial_number')->unique()->nullable();
-            $table->enum('status', ['Available', 'In Use', 'Under Maintenance', 'Defective'])->default('Available');
-            $table->enum('condition', ['Operational','Non-operational','Defective'])->default('Operational');
+            $table->enum('status', ['Operational','Non-operational','Needs Repair'])->default('Operational');
             $table->foreignId('room_id')->constrained()->cascadeOnDelete();
             $table->timestamps();
         });

@@ -43,15 +43,12 @@
                     @enderror
                 </div> --}}
                  <div>
-                    <label class="block text-sm font-medium">Condition</label>
+                    <label class="block text-sm font-medium">Status</label>
                     <select wire:model.defer="status" class="w-full rounded border-gray-300">
                         <option value="Operational">Operational</option>
                         <option value="Non-operational">Non-operational</option>
-                        <option value="Defective">Defective</option>
+                        <option value="Needs Repair">Needs Repair</option>
                     </select>
-                    @error('condition')
-                        <span class="text-red-500 text-sm">{{ $message }}</span>
-                    @enderror
                 </div>
 
                 <!-- Room -->
@@ -76,7 +73,7 @@
                     </button>
 
                     <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-                        {{ $mode === 'create' ? 'Save Unit' : 'Update Unit' }}
+                        {{ $mode === 'create' ? 'Add Unit' : 'Update Unit' }}
                     </button>
                 </div>
             </form>

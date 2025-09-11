@@ -64,7 +64,7 @@
 
                         {{-- Actions --}}
                         <div class="flex justify-end space-x-2 mt-4">
-                            <flux:button variant="primary" color="red" wire:click="$dispatch('closeModal')">
+                            <flux:button variant="filled" wire:click="$dispatch('closeModal')">
                                 Cancel
                             </flux:button>
                             <flux:button variant="primary" type="submit">

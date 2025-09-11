@@ -1,9 +1,10 @@
 <div
-    class="relative w-full h-28 px-6 bg-white dark:bg-gray-900 rounded-2xl shadow-md hover:shadow-lg flex items-center gap-4 overflow-hidden">
+    class="relative w-full h-17 px-6 bg-white dark:bg-gray-900 rounded-2xl shadow-md hover:shadow-lg flex items-center gap-4 overflow-hidden">
 
     <!-- Left Gradient Bar -->
-    <div class="absolute left-0 top-0 bottom-0 w-3 rounded-l-2xl"
-        style="background: linear-gradient(to bottom, {{ $gradientFromColor }}, {{ $gradientToColor }});">
+    <!-- Gradient bar at the bottom -->
+    <div class="absolute left-0 right-0 bottom-0 h-1 rounded-b-2xl"
+        style="background: linear-gradient(to right, {{ $gradientFromColor }}, {{ $gradientToColor }});">
     </div>
 
     <!-- Icon -->

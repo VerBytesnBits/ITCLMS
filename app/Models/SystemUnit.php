@@ -11,13 +11,13 @@ class SystemUnit extends Model
 {
     use HasFactory, LogsActivity;
 
-    protected $fillable = ['name', 'serial_number', 'status', 'condition', 'room_id'];
+    protected $fillable = ['name', 'serial_number', 'status', 'room_id'];
 
     // This is now required
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logOnly(['name', 'serial_number', 'status', 'condition', 'room_id'])
+            ->logOnly(['name', 'serial_number', 'status', 'room_id'])
             ->logOnlyDirty()
             ->useLogName('system_unit');
     }

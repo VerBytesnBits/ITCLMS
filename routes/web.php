@@ -46,6 +46,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('maintenance', maintenance::class)->name('maintenance');
 
     // Route::get('components', components::class)->name('components');
+    // Route::get('inventoryoverview', \App\Livewire\Inventory\Overview::class)
+    //     ->name('inventoryoverview');
+
     Route::get('components', components::class)->name('components');
     Route::get('peripherals', peripherals::class)->name('peripherals');
 

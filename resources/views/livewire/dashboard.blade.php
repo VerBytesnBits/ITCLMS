@@ -5,29 +5,46 @@
         <!-- Units -->
         <div
             class="p-6 bg-white/70 dark:bg-gray-900 backdrop-blur-lg rounded-2xl shadow-lg hover:shadow-2xl transition transform hover:-translate-y-1">
-            <h2 class="text-lg font-bold mb-4">All Units</h2>
-            <p class="text-green-600 dark:text-green-400 font-semibold">
-                Operational: {{ $stats['units']['Operational'] }}
-            </p>
-            <p class="text-red-600 dark:text-red-400 font-semibold">
-                Defective: {{ $stats['units']['defective'] }}
-            </p>
+
+            <livewire:reports.operational-chart />
         </div>
 
         <!-- Parts -->
-        <div
-            class="p-6 bg-white/70 dark:bg-gray-900 backdrop-blur-lg rounded-2xl shadow-lg hover:shadow-2xl transition transform hover:-translate-y-1">
-            <h2 class="text-lg font-bold mb-4">Components/Peripherals Inventory</h2>
-            <p class="text-blue-600 dark:text-blue-400 font-semibold">
-                Available: {{ $stats['parts']['available'] }}
-            </p>
-            <p class="text-orange-600 dark:text-orange-400 font-semibold">
-                In Use: {{ $stats['parts']['In use'] }}
-            </p>
-            <p class="text-red-600 dark:text-red-400 font-semibold">
-                Defective: {{ $stats['parts']['defective'] }}
-            </p>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            <!-- Components Card -->
+            <div class="p-4 bg-white dark:bg-zinc-900 rounded-lg shadow">
+                <h3 class="font-bold mb-2">Components</h3>
+                <p>Available: {{ round($operationalPercentage, 2) }}%</p>
+
+                @if ($componentsBelowThreshold->count())
+                    <h4 class="mt-2 font-semibold">Below Threshold</h4>
+                    <ul class="list-disc ml-4">
+                        @foreach ($componentsBelowThreshold as $component)
+                            <li>{{ $component->part }} — low stock</li>
+                        @endforeach
+                    </ul>
+                @endif
+            </div>
+
+            <!-- Peripherals Card -->
+            <div class="p-4 bg-white dark:bg-zinc-900 rounded-lg shadow">
+                <h3 class="font-bold mb-2">Peripherals</h3>
+                <p>Available: {{ round($peripheralPercentage, 2) }}%</p>
+
+                @if ($peripheralsBelowThreshold->count())
+                    <h4 class="mt-2 font-semibold">Below Threshold</h4>
+                    <ul class="list-disc ml-4">
+                        @foreach ($peripheralsBelowThreshold as $peripheral)
+                            <li>{{ $peripheral->type }} — low stock</li>
+                        @endforeach
+                    </ul>
+                @endif
+            </div>
+
         </div>
+
+
     </div>
     <!-- Quick Actions -->
     <div class="flex flex-wrap gap-4 pt-8">
@@ -39,7 +56,7 @@
             class="px-5 py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl shadow-lg transition">
             Go to Component
         </a>
-         <a href="peripherals"
+        <a href="peripherals"
             class="px-5 py-3 bg-orange-600 hover:bg-orange-700 text-white rounded-xl shadow-lg transition">
             Go to Peripherals
         </a>
@@ -53,7 +70,7 @@
         <!-- Defective Units Trend -->
         <div class="p-6 bg-white dark:bg-gray-900 rounded-2xl shadow-xl hover:shadow-2xl transition">
             <h2 class="text-lg font-bold mb-4">Defective Units (This Year)</h2>
-            <livewire:defective-units-chart />
+            {{-- <livewire:defective-units-chart /> --}}
 
         </div>
 
@@ -65,7 +82,7 @@
                 $values = [5, 7, 6, 10, 8, 12, 9];
             @endphp --}}
 
-            <livewire:line-chart />
+            {{-- <livewire:line-chart /> --}}
 
 
         </div>

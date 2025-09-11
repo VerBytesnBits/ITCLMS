@@ -24,8 +24,8 @@
             @endif
         </div>
 
-        <!-- Remember Me -->
-        <flux:checkbox wire:model="remember" :label="__('Remember me')" />
+        {{-- <!-- Remember Me -->
+        <flux:checkbox wire:model="remember" :label="__('Remember me')" /> --}}
 
         <div class="flex items-center justify-end">
             <flux:button variant="primary" type="submit" class="w-full">{{ __('Log in') }}</flux:button>
@@ -34,19 +34,44 @@
 
     @if (Route::has('register'))
         <div class="space-x-1 rtl:space-x-reverse text-center text-sm text-zinc-600 dark:text-zinc-400">
-            <span>{{ __('Don\'t have an account?') }}</span>
+            <span class="text-gray-400/60">{{ __('Don\'t have an account?') }}</span>
             <flux:link :href="route('register')" wire:navigate>{{ __('Sign up') }}</flux:link>
         </div>
     @endif
     {{-- to display the alert --}}
-    <div x-data="{ show: true }" x-init="@if (session('alert')) Swal.fire({
+    {{-- <div x-data="{ show: false }" x-init="@if (session('alert')) show = true; Swal.fire({
+        toast: true,
+        position:'{{ session('alert')['position'] }}',
+        icon: '{{ session('alert')['type'] }}',
+        title: '{{ session('alert')['title'] }}',
+        showConfirmButton: true,
+        timer: 3000,
+        timerProgressBar: true,
+        willClose: () => show = false
+    }); @endif">
+       
+    </div> --}}
+    <div 
+    x-data="{ show: false }"
+    x-init="
+        @if (session('alert'))
+            show = true;
+            Swal.fire({
                 toast: true,
-                position: 'bottom-end',
-                icon: '{{ session('alert')['type'] }}',
-                title: '{{ session('alert')['message'] }}',
-                showConfirmButton: false,
-                timer: 3000,
+                position: '{{ session('alert')['position'] ?? 'top-end' }}',
+                icon: '{{ session('alert')['type'] ?? 'info' }}',
+                title: '{{ session('alert')['title'] ?? '' }}',
+                text: '{{ session('alert')['text'] ?? '' }}',
+                background: '{{ session('alert')['background'] ?? '#fff' }}',
+                color: '{{ session('alert')['color'] ?? '#000' }}',
+                iconHtml: `{!! session('alert')['iconHtml'] ?? '' !!}`,
+                showConfirmButton: {{ session('alert')['confirmButton'] ?? 'false' }},
+                timer: {{ session('alert')['timer'] ?? 3000 }},
                 timerProgressBar: true,
-            }); @endif"></div>
+                willClose: () => show = false
+            });
+        @endif
+    "
+></div>
 
 </div>

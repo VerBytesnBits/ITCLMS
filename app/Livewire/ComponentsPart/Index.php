@@ -3,24 +3,105 @@
 namespace App\Livewire\ComponentsPart;
 
 use Livewire\Component;
+use Livewire\WithPagination;
 use App\Models\ComponentParts;
+use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Url;
 use Livewire\Attributes\On;
+use App\Traits\HasInventorySummary;
 
 class Index extends Component
 {
+    use WithPagination,  HasInventorySummary;
+
     #[Url(as: 'modal')]
     public ?string $modal = null;
 
     #[Url(as: 'id')]
     public ?int $id = null;
 
-    public $components;
+    #[Url(as: 'q')]
+    public string $query = ''; // For search/filtering
 
-    public function mount()
+    #[Url(as: 'tab')]
+    public ?string $tab = null; // default tab
+
+    public int $perPage = 10; // Items per page
+    public string $sortColumn = 'available';
+    public string $sortDirection = 'asc';
+    public $lowStockThreshold = 5;
+
+
+    /**
+     * Summary grouped by part
+     */
+    // public function getComponentSummaryProperty()
+    // {
+    //     $summary = ComponentParts::select(
+    //         'part',
+    //         DB::raw("CONCAT(
+    //             COALESCE(brand,''), ' ',
+    //             COALESCE(model,''), ' ',
+    //             COALESCE(speed,''), ' ',
+    //             COALESCE(capacity,''), ' ',
+    //             COALESCE(type,'')) as description"),
+    //         DB::raw('COUNT(*) as total'),
+    //         DB::raw("SUM(CASE WHEN status = 'Available' THEN 1 ELSE 0 END) as available"),
+    //         DB::raw("SUM(CASE WHEN status = 'In Use' THEN 1 ELSE 0 END) as in_use"),
+    //         DB::raw("SUM(CASE WHEN status = 'Defective' THEN 1 ELSE 0 END) as defective"),
+    //         DB::raw("SUM(CASE WHEN status = 'Under Maintenance' THEN 1 ELSE 0 END) as maintenance"),
+    //         DB::raw("SUM(CASE WHEN status = 'Junk' THEN 1 ELSE 0 END) as junk"),
+    //         DB::raw("SUM(CASE WHEN status = 'Salvaged' THEN 1 ELSE 0 END) as salvage")
+    //     )
+    //         ->groupBy('part', 'description')
+    //         ->orderBy('part')
+    //         ->get();
+
+    //     // Sorting logic
+    //     if ($this->sortColumn && $this->sortDirection) {
+    //         $summary = $summary->sortBy(function ($item) {
+    //             return $item->{$this->sortColumn};
+    //         });
+
+    //         if ($this->sortDirection === 'desc') {
+    //             $summary = $summary->reverse();
+    //         }
+    //     }
+
+    //     return $summary->groupBy('part')->toArray();
+    // }
+
+   
+
+    public function getComponentSummaryProperty()
     {
-        $this->refreshComponents();
+        return $this->getInventorySummary(
+            ComponentParts::class,
+            'part',
+            ['brand', 'model', 'speed', 'capacity', 'type'],
+            $this->sortColumn,
+            $this->sortDirection
+        );
     }
+
+
+
+    public function updatedTab()
+    {
+        $this->resetPage(); // reset pagination when switching tabs
+    }
+
+    public function sortBy($column)
+    {
+        if ($this->sortColumn === $column) {
+            $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            $this->sortColumn = $column;
+            $this->sortDirection = 'asc';
+        }
+        $this->resetPage();
+    }
+
     public function openViewModal($id)
     {
         $this->id = $id;
@@ -49,21 +130,38 @@ class Index extends Component
     #[On('componentCreated')]
     #[On('componentUpdated')]
     #[On('componentDeleted')]
-    public function refreshComponents()
+    public function handleComponentChange()
     {
-        $this->components = ComponentParts::with(['systemUnit', 'room'])->get();
+        $this->resetPage();
     }
 
     public function deleteComponent($id)
     {
         ComponentParts::findOrFail($id)->delete();
-
         $this->dispatch('swal', toast: true, icon: 'success', title: 'Component deleted successfully', timer: 3000);
         $this->dispatch('componentDeleted');
     }
 
     public function render()
     {
-        return view('livewire.components-part.index');
+        $components = ComponentParts::with(['systemUnit', 'room'])
+            ->when($this->tab && $this->tab !== 'All', function ($query) {
+                $query->where('part', $this->tab);
+            })
+
+            ->when($this->query, function ($query) {
+                $query->where(function ($q) {
+                    $q->where('serial_number', 'like', '%' . $this->query . '%')
+                        ->orWhere('brand', 'like', '%' . $this->query . '%')
+                        ->orWhere('model', 'like', '%' . $this->query . '%');
+                });
+            })
+            ->paginate($this->perPage);
+
+        return view('livewire.components-part.index', [
+            'components' => $components,
+            'summary' => $this->componentSummary,
+        ]);
     }
+
 }

@@ -21,11 +21,11 @@
         <flux:input wire:model="password_confirmation" :label="__('Confirm password')" type="password" required
             autocomplete="new-password" :placeholder="__('Confirm password')" viewable />
 
-        <flux:select label="Register as" wire:model="role" required>
+        {{-- <flux:select label="Register as" wire:model="role" required>
             <option value="">-- Select Role --</option>
             <option value="lab_incharge">Lab In-Charge</option>
             <option value="lab_technician">Lab Technician</option>
-        </flux:select>
+        </flux:select> --}}
 
 
         <div class="flex items-center justify-end">
@@ -36,7 +36,7 @@
     </form>
 
     <div class="space-x-1 rtl:space-x-reverse text-center text-sm text-zinc-600 dark:text-zinc-400">
-        <span>{{ __('Already have an account?') }}</span>
+        <span class="text-gray-400/60">{{ __('Already have an account?') }}</span>
         <flux:link :href="route('login')" wire:navigate>{{ __('Log in') }}</flux:link>
     </div>
 </div>

@@ -13,7 +13,7 @@ return new class extends Migration {
         Schema::create('peripherals', function (Blueprint $table) {
             $table->id();
             $table->foreignId('system_unit_id')->nullable()->constrained()->onDelete('cascade');
-            $table->foreignId('room_id')->nullable()->constrained()->nullOnDelete(); // optional link
+            $table->foreignId('room_id')->nullable()->constrained()->cascadeOnDelete(); // optional link
             $table->string('serial_number')->unique();
             $table->string('brand')->nullable();
             $table->string('model')->nullable();

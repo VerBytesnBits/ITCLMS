@@ -5,6 +5,7 @@
         title: @js($title),
     })"
     x-init="init()"
+    wire:ignore
     class="w-full rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-700 dark:bg-zinc-900"
     style="height: 320px;"
 >
@@ -21,6 +22,13 @@
                 title: cfg.title ?? 'Bar Chart',
 
                 init() {
+                    // Restore from localStorage if saved
+                    const stored = JSON.parse(localStorage.getItem(this.title + '-chart-data'));
+                    if (stored) {
+                        this.labels = stored.labels ?? this.labels;
+                        this.values = stored.values ?? this.values;
+                    }
+
                     const ctx = this.$refs.canvas.getContext('2d');
 
                     this.chart = new window.Chart(ctx, {
@@ -55,6 +63,26 @@
                             }
                         }
                     });
+
+                    // Watch for changes and persist them
+                    this.$watch('labels', (val) => {
+                        this.chart.data.labels = val;
+                        this.chart.update();
+                        this.saveState();
+                    });
+
+                    this.$watch('values', (val) => {
+                        this.chart.data.datasets[0].data = val;
+                        this.chart.update();
+                        this.saveState();
+                    });
+                },
+
+                saveState() {
+                    localStorage.setItem(this.title + '-chart-data', JSON.stringify({
+                        labels: this.labels,
+                        values: this.values,
+                    }));
                 },
 
                 destroy() {

@@ -8,6 +8,7 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+
 /* Re-assign Flux's gray of choice... */
 @theme {
     --color-zinc-50: var(--color-slate-50);
@@ -24,29 +25,63 @@
 }
 
 @theme {
-    --color-accent: var(--color-blue-500);
-    --color-accent-content: var(--color-blue-600);
-    --color-accent-foreground: var(--color-white);
+    --color-accent: var(--color-yellow-400);
+    --color-accent-content: var(--color-yellow-600);
+    --color-accent-foreground: var(--color-yellow-950);
 }
 
 @layer theme {
     .dark {
-        --color-accent: var(--color-blue-500);
-        --color-accent-content: var(--color-blue-400);
-        --color-accent-foreground: var(--color-white);
+        --color-accent: var(--color-yellow-400);
+        --color-accent-content: var(--color-yellow-400);
+        --color-accent-foreground: var(--color-yellow-950);
     }
 }
 
-@layer base {
+  @layer base {
 
-    *,
-    ::after,
-    ::before,
-    ::backdrop,
-    ::file-selector-button {
-        border-color: var(--color-gray-200, currentColor);
-    }
+      *,
+      ::after,
+      ::before,
+      ::backdrop,
+      ::file-selector-button {
+          border-color: var(--color-gray-200, currentColor);
+      }
+
+   
+
+  }
+
+ 
+/* Glass effect for all nav items */
+/* [data-flux-navlist-item] {
+    background-color: rgb(253, 252, 252); 
+    color: black;
+    backdrop-filter: blur(8px); 
+    transition: background-color 0.2s, color 0.2s;
+    margin-bottom: 5px;
+} */
+
+/* Hover effect */
+[data-flux-navlist-item]:hover {
+    background-color: rgba(133, 133, 133, 0.233); /* optional */
+   
+    border: 2px solid rgb(253, 252, 252); /* width, style, color */
 }
+
+
+/* Active/current state (pressed effect) */
+[data-flux-navlist-item][data-current="data-current"] {
+    background-color: rgba(24, 233, 153, 0.404);
+    color: rgb(0, 0, 0);
+    font-weight: 600;
+    /* box-shadow: inset 0 0 6px rgba(0,0,0,0.2); */
+     /* pressed effect */
+    /* border: 2px solid rgb(253, 252, 252); */
+}
+
+
+
 
 [data-flux-field]:not(ui-radio, ui-checkbox) {
     @apply grid gap-2;
@@ -86,4 +121,6 @@ html {
     animation: fade-in-scale 0.2s ease-out;
   }
 }
+
+
 
