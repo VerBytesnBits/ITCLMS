@@ -61,7 +61,7 @@
             <select wire:model.live="statusFilter"
                 class="px-3 py-2 border rounded-lg text-sm shadow-sm
                    focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500
-                   dark:bg-zinc-800 dark:border-zinc-700 dark:text-gray-200">   
+                   dark:bg-zinc-800 dark:border-zinc-700 dark:text-gray-200">
                 <option value="">All Status</option>
                 @foreach (array_keys($statusColors) as $status)
                     <option value="{{ $status }}">{{ $status }}</option>
@@ -120,7 +120,7 @@
                             <!-- Actions -->
                             <div x-data="{ open: false }" class="relative inline-flex w-full sm:w-auto">
                                 <!-- View -->
-                                <button wire:click="openViewModal({{ $unit->id }})"
+                                <button wire:click="view({{ $unit->id }})"
                                     class="inline-flex items-center justify-center px-3 py-2 text-xs md:text-sm font-medium border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-zinc-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 rounded-l-md flex-1 sm:flex-none">
                                     <flux:icon.eye />
                                 </button>
@@ -148,17 +148,23 @@
                                         class="z-50 mt-1 w-30 rounded-md shadow-lg bg-white dark:bg-zinc-800 ring-1 ring-black ring-opacity-5">
                                         <div class="py-1">
                                             <button wire:click="openAssignModal({{ $unit->id }})"
-                                                class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-zinc-700">Assign</button>
-                                            <button wire:click="edit({{ $unit->id }})"
+                                                @click="open = false"
+                                                class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-zinc-700">
+                                                Assign
+                                            </button>
+
+                                            <button wire:click="edit({{ $unit->id }})" @click="open = false"
                                                 class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-zinc-700">
                                                 <flux:icon.pencil class="h-4 w-4" />
                                                 <span>Edit</span>
                                             </button>
-                                            <button wire:click="delete({{ $unit->id }})"
+
+                                            <button wire:click="delete({{ $unit->id }})" @click="open = false"
                                                 class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-700">
                                                 <flux:icon.trash class="h-4 w-4" />
                                                 <span>Delete</span>
                                             </button>
+
                                         </div>
                                     </div>
                                 </template>
@@ -178,10 +184,15 @@
 
     <!-- Modals -->
     @if ($showModal)
-        <livewire:system-units.unit-form :unit-id="$selectedUnit?->id" :mode="$modalMode" />
+        <livewire:system-units.unit-form :unitId="$selectedUnit?->id" :mode="$modalMode" />
     @endif
 
     @if ($showAssignModal && $assignUnitId)
         <livewire:system-units.unit-assign-parts :unitId="$assignUnitId" />
     @endif
+
+    @if ($modalMode === 'view' && $unitId)
+        <livewire:system-units.unit-view :unitId="$unitId" wire:key="unit-view-{{ $unitId }}" />
+    @endif
+
 </div>

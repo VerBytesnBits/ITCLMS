@@ -106,8 +106,11 @@ class UnitAssignParts extends Component
     public function assignComponent($part, $componentId)
     {
         $component = ComponentParts::find($componentId);
-        if ($component) {
+        $unit = SystemUnit::find($this->unitId); // get the unit
+
+        if ($component && $unit) {
             $component->system_unit_id = $this->unitId;
+            $component->room_id = $unit->room_id; // inherit the room from the unit
             $component->status = 'In Use';
             $component->save();
 
@@ -115,19 +118,25 @@ class UnitAssignParts extends Component
         }
     }
 
+
     public function unassignComponent($part)
     {
         $componentId = $this->selectedComponents[$part] ?? null;
+
         if ($componentId) {
             $component = ComponentParts::find($componentId);
+
             if ($component) {
                 $component->system_unit_id = null;
-                $component->status = 'available';
+                $component->room_id = null;
+                $component->status = 'Available';
                 $component->save();
             }
+
             $this->selectedComponents[$part] = null;
         }
     }
+
 
     public function render()
     {

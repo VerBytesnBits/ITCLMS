@@ -43,6 +43,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('units', units::class)
         // ->middleware('can:view.system-units')  // adjust the permission name accordingly
         ->name('units');
+    
     // Maintenance page
     Route::get('maintenance', maintenance::class)->name('maintenance');
 

@@ -7,10 +7,12 @@ use App\Models\SystemUnit;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Url;
 
 #[Layout('components.layouts.app', ['title' => 'Units'])]
 class UnitIndex extends Component
 {
+    
     public $units = [];
     public $rooms = [];
     public $search = '';
@@ -18,9 +20,12 @@ class UnitIndex extends Component
     public $statusFilter = '';
     public $selectedUnit = null;
 
-    // Modal controls
+
     public $showModal = false;      // create/edit
-    public $modalMode = null;       // 'create' or 'edit'
+    #[Url(as: 'modal')]
+    public ?string $modalMode = null;       // 'create' or 'edit'
+    #[Url(as: 'id')]
+    public ?int $unitId;
     public $showAssignModal = false; // assign peripheral
     public $assignUnitId = null;     // unit id for assign modal
 
@@ -29,6 +34,7 @@ class UnitIndex extends Component
         'unit-deleted' => 'loadUnits',
         'closeModal' => 'closeModal',
         'closeAssignModal' => 'closeAssignModal',
+
     ];
 
     public function mount()
@@ -85,11 +91,17 @@ class UnitIndex extends Component
         $this->showModal = true;
     }
 
+
+
+
     public function view($id)
     {
-        $this->id = $id;
+        $this->unitId = $id;
         $this->modalMode = 'view';
+
     }
+
+
 
     public function edit(SystemUnit $unit)
     {
@@ -109,6 +121,8 @@ class UnitIndex extends Component
     {
         $this->showModal = false;
         $this->selectedUnit = null;
+        $this->modalMode = null;
+        $this->unitId = null;
     }
 
     // Assign peripherals modal
@@ -116,6 +130,7 @@ class UnitIndex extends Component
     {
         $this->assignUnitId = $unitId;
         $this->showAssignModal = true;
+        $this->modalMode = 'assign';
     }
 
     #[On('closeAssignModal')]

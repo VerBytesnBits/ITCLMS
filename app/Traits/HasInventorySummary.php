@@ -36,9 +36,9 @@ trait HasInventorySummary
             DB::raw("SUM(CASE WHEN status = 'Junk' THEN 1 ELSE 0 END) as junk"),
             DB::raw("SUM(CASE WHEN status = 'Salvaged' THEN 1 ELSE 0 END) as salvage")
         )
-        ->groupBy($groupColumn, 'description')
-        ->orderBy($groupColumn)
-        ->get();
+            ->groupBy($groupColumn, 'description')
+            ->orderBy($groupColumn)
+            ->get();
 
         // Sorting
         if ($sortColumn && $sortDirection) {
@@ -53,4 +53,24 @@ trait HasInventorySummary
 
         return $summary->groupBy($groupColumn)->toArray();
     }
+
+
+    public function getInventoryDetails(
+        string $modelClass,
+        string $groupColumn,
+        array $descriptionColumns
+    ) {
+        // Build CONCAT expression for description
+        $concatExpr = implode(", ' ', ", array_map(fn($col) => "COALESCE($col,'')", $descriptionColumns));
+
+        return $modelClass::select(
+            $groupColumn,
+            DB::raw("CONCAT($concatExpr) as description"),
+            'status'
+        )
+            ->orderBy($groupColumn)
+            ->get()
+            ->groupBy($groupColumn);
+    }
+
 }

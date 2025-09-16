@@ -18,6 +18,7 @@ class StatusConfig
         return [
             'Available' => 'bg-green-100 text-green-700',
             'Operational' => 'bg-green-100 text-green-700',
+            'In Use' => 'bg-blue-100 text-blue-700',
             'Under Maintenance' => 'bg-yellow-100 text-yellow-700',
             'Needs Repair' => 'bg-yellow-100 text-yellow-700',
             'Non-operational' => 'bg-red-100 text-red-700',

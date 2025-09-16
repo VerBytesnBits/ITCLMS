@@ -72,7 +72,7 @@
 
 /* Active/current state (pressed effect) */
 [data-flux-navlist-item][data-current="data-current"] {
-    background-color: rgba(3, 226, 52, 0.342);
+    background-color: rgba(72, 255, 111, 0.486);
     color: rgb(0, 0, 0);
     font-weight: 600;
     /* box-shadow: inset 0 0 6px rgba(0,0,0,0.2); */
