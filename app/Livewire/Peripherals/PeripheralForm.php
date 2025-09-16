@@ -6,12 +6,14 @@ use Livewire\Component;
 use App\Models\Peripheral;
 use App\Models\SystemUnit;
 use App\Models\Room;
+use Carbon\Carbon;
+use Illuminate\Support\Str;
 
 class PeripheralForm extends Component
 {
     public ?Peripheral $peripheral = null;
 
-    public $peripheralId = null; // 🔹 store ID
+    public $peripheralId = null;
     public $system_unit_id;
     public $room_id;
     public $serial_number;
@@ -21,9 +23,26 @@ class PeripheralForm extends Component
     public $type;
     public $condition = 'Good';
     public $status = 'Available';
-    public $warranty;
+    public $purchase_date;
+    public $warranty_period_months;
+    public $retirement_action;
+    public $retirement_notes;
+    public $retired_at;
 
     public $modalMode = 'create';
+    public $multiple = false;   // add-many mode
+    public $quantity = 1;       // how many to add
+
+    //uncommon fields
+    public $screen_size;   // Monitor
+    public $switch_type;   // Keyboard
+    public $dpi;           // Mouse
+    public $printer_type;  // Printer
+    public $wattage;       // Speaker
+    public $lumens;        // Projector
+    public $resolution;    // Webcam
+    public $capacity_va;   // AVR & UPS
+
 
     protected function rules()
     {
@@ -37,8 +56,46 @@ class PeripheralForm extends Component
             'type' => ['required', 'string'],
             'condition' => ['required', 'in:Excellent,Good,Fair,Poor'],
             'status' => ['required', 'in:Available,In Use,Defective,Under Maintenance'],
-            'warranty' => ['nullable', 'date'],
+            'purchase_date' => ['nullable', 'date'],
+            'warranty_period_months' => ['nullable', 'integer', 'min:0'],
+            'retirement_action' => ['nullable', 'string'],
+            'retirement_notes' => ['nullable', 'string'],
+            'retired_at' => ['nullable', 'date'],
+
+            // Dynamic fields
+            'screen_size' => ['nullable', 'string'],
+            'switch_type' => ['nullable', 'string'],
+            'dpi' => ['nullable', 'string'],
+            'printer_type' => ['nullable', 'string'],
+            'wattage' => ['nullable', 'string'],
+            'lumens' => ['nullable', 'string'],
+            'resolution' => ['nullable', 'string'],
+            'capacity_va' => ['nullable', 'string'],
+           
         ];
+    }
+
+    /**
+     * Centralize form data mapping
+     */
+    protected function formData(): array
+    {
+        return $this->only([
+            'system_unit_id',
+            'room_id',
+            'serial_number',
+            'brand',
+            'model',
+            'color',
+            'type',
+            'condition',
+            'status',
+            'purchase_date',
+            'warranty_period_months',
+            'retirement_action',
+            'retirement_notes',
+            'retired_at',
+        ]);
     }
 
     public function mount($id = null)
@@ -48,57 +105,80 @@ class PeripheralForm extends Component
             $this->peripheralId = $this->peripheral->id;
             $this->modalMode = 'edit';
 
-            $this->fill($this->peripheral->only([
-                'system_unit_id',
-                'room_id',
-                'serial_number',
-                'brand',
-                'model',
-                'color',
-                'type',
-                'condition',
-                'status',
-                'warranty',
-            ]));
+            $this->fill($this->peripheral->only(array_keys($this->formData())));
+
+            $this->purchase_date = $this->peripheral->purchase_date
+                ? Carbon::parse($this->peripheral->purchase_date)->format('Y-m-d')
+                : null;
+
+            $this->retired_at = $this->peripheral->retired_at
+                ? Carbon::parse($this->peripheral->retired_at)->format('Y-m-d H:i:s')
+                : null;
         }
+    }
+
+    public function updatedType($value)
+    {
+        if ($this->modalMode === 'create' && !$this->multiple) {
+            $this->serial_number = $this->generateSerial($value);
+        } else {
+            $this->serial_number = null;
+        }
+    }
+
+    public function updatedMultiple($value)
+    {
+        if ($value) {
+            $this->serial_number = null;
+        } elseif ($this->type) {
+            $this->serial_number = $this->generateSerial($this->type);
+        }
+    }
+
+    private function generateSerial(string $prefix): string
+    {
+        do {
+            $serial = strtoupper(Str::slug($prefix, '')) . '-' . strtoupper(Str::random(5)) . rand(1000, 9999);
+        } while (Peripheral::where('serial_number', $serial)->exists());
+
+        return $serial;
     }
 
     public function save()
     {
-        $this->validate();
-
-        if ($this->modalMode === 'create') {
-            Peripheral::create($this->only([
-                'system_unit_id',
-                'room_id',
-                'serial_number',
-                'brand',
-                'model',
-                'color',
-                'type',
-                'condition',
-                'status',
-                'warranty',
-            ]));
-            $this->dispatch('peripheralCreated');
-            $this->dispatch('swal', toast: true, icon: 'success', title: 'Peripheral created!', timer: 3000);
-        } else {
-            $this->peripheral->update($this->only([
-                'system_unit_id',
-                'room_id',
-                'serial_number',
-                'brand',
-                'model',
-                'color',
-                'type',
-                'condition',
-                'status',
-                'warranty',
-            ]));
-            $this->dispatch('peripheralUpdated');
-            $this->dispatch('swal', toast: true, icon: 'success', title: 'Peripheral updated!', timer: 3000);
+        if ($this->modalMode === 'create' && $this->multiple) {
+            $this->serial_number = $this->generateSerial($this->type);
         }
 
+        $this->validate();
+
+        $data = $this->formData();
+
+        if (!empty($data['warranty_period_months'])) {
+            $data['warranty_period_months'] = (int) $data['warranty_period_months'];
+        }
+
+        if ($this->modalMode === 'create') {
+            $count = $this->multiple ? $this->quantity : 1;
+
+            for ($i = 0; $i < $count; $i++) {
+                $data['serial_number'] = $this->multiple
+                    ? $this->generateSerial($this->type)
+                    : $this->serial_number;
+
+                Peripheral::create($data);
+            }
+
+            $title = $count > 1 ? "{$count} Peripherals created!" : "Peripheral created!";
+            $event = 'peripheralCreated';
+        } else {
+            $this->peripheral->update($data);
+            $title = 'Peripheral updated!';
+            $event = 'peripheralUpdated';
+        }
+
+        $this->dispatch($event);
+        $this->dispatch('swal', toast: true, icon: 'success', title: $title, timer: 3000);
         $this->dispatch('closeModal');
     }
 

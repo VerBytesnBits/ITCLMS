@@ -6,10 +6,16 @@ use Livewire\Component;
 use App\Models\SystemUnit;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\On;
+use Livewire\Attributes\Layout;
 
+#[Layout('components.layouts.app', ['title' => 'Units'])]
 class UnitIndex extends Component
 {
     public $units = [];
+    public $rooms = [];
+    public $search = '';
+    public $roomFilter = '';
+    public $statusFilter = '';
     public $selectedUnit = null;
 
     // Modal controls
@@ -27,6 +33,7 @@ class UnitIndex extends Component
 
     public function mount()
     {
+        $this->rooms = \App\Models\Room::orderBy('name')->get();
         $this->loadUnits();
     }
 
@@ -45,12 +52,43 @@ class UnitIndex extends Component
         }
     }
 
+
+    public function getUnitsProperty()
+    {
+        return SystemUnit::query()
+            ->with('room')
+            ->when(
+                $this->search,
+                fn($q) =>
+                $q->where('name', 'like', "%{$this->search}%")
+                    ->orWhereHas('room', fn($r) => $r->where('name', 'like', "%{$this->search}%"))
+            )
+            ->when(
+                $this->roomFilter,
+                fn($q) =>
+                $q->where('room_id', $this->roomFilter)
+            )
+            ->when(
+                $this->statusFilter,
+                fn($q) =>
+                $q->where('status', $this->statusFilter)
+            )
+            ->latest()
+            ->get();
+    }
+
     // Create/Edit modals
     public function create()
     {
         $this->selectedUnit = null;
         $this->modalMode = 'create';
         $this->showModal = true;
+    }
+
+    public function view($id)
+    {
+        $this->id = $id;
+        $this->modalMode = 'view';
     }
 
     public function edit(SystemUnit $unit)

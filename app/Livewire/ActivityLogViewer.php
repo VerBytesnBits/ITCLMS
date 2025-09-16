@@ -6,6 +6,9 @@ use Livewire\Component;
 use Livewire\WithPagination;
 use Spatie\Activitylog\Models\Activity;
 
+use Livewire\Attributes\Layout;
+
+#[Layout('components.layouts.app', ['title' => 'ActivityLogs'])]
 class ActivityLogViewer extends Component
 {
     use WithPagination;

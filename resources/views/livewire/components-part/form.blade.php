@@ -25,7 +25,7 @@
                             </flux:select>
                         @else
                             <flux:select label="Part" wire:model.live="part">
-                                <option value="">Select Component Category</option>
+                                <option value="">Select Category Type</option>
                                 <option value="CPU">CPU</option>
                                 <option value="Motherboard">Motherboard</option>
                                 <option value="RAM">RAM</option>

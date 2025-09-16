@@ -19,10 +19,35 @@ return new class extends Migration {
             $table->string('model')->nullable();
             $table->string('color')->nullable();
             $table->string('type'); // e.g. Monitor, Keyboard, Mouse, Printer
+           
+            // Lifecycle status
             $table->enum('condition', ['Excellent', 'Good', 'Fair', 'Poor'])->default('Good');
-            $table->enum('status', ['Available', 'In Use', 'Defective', 'Under Maintenance'])->default('Available');
-            $table->date('warranty')->nullable();
-            $table->timestamps();
+            $table->enum('status', [
+                'Available',
+                'In Use',
+                'Under Maintenance',
+                'Defective',
+                'Junk',
+                'Disposed',
+                'Salvaged',
+                'Decommission',
+                'Archive',
+
+            ])->default('Available');
+
+            // Purchase & warranty
+            $table->date('purchase_date')->nullable();
+            $table->integer('warranty_period_months')->nullable();   // ex: 12 months
+            $table->date('warranty_expires_at')->nullable();         // auto-calculated
+
+            // Retirement / disposal
+            $table->string('retirement_action')->nullable(); // decommission, dispose, salvage, archive
+            $table->text('retirement_notes')->nullable();
+            $table->timestamp('retired_at')->nullable();
+
+            // Laravel built-ins
+            $table->softDeletes();  // deleted_at
+            $table->timestamps();   // created_at, updated_at
         });
 
     }

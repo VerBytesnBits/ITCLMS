@@ -8,7 +8,9 @@ use App\Models\SystemUnit;
 use App\Models\ComponentParts;
 use App\Models\Peripheral;
 use App\Models\QrGeneration;
+use Livewire\Attributes\Layout;
 
+#[Layout('components.layouts.app', ['title' => 'Qr'])]
 class QrManager extends Component
 {
     public string $type = 'unit';

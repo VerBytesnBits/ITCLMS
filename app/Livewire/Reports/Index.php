@@ -12,6 +12,9 @@ use Spatie\Activitylog\Models\Activity;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\ReportExport;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Livewire\Attributes\Layout;
+
+#[Layout('components.layouts.app', ['title' => 'Reports'])]
 class Index extends Component
 {
     use WithPagination;

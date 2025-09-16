@@ -13,22 +13,22 @@
                 $wire.set('tab', null); // reset tab when collapsed
             }
         }
-    }" class="border rounded-lg shadow-sm bg-white dark:bg-zinc-800 mt-4 mb-4">
+    }" class="border rounded-lg  bg-white dark:bg-zinc-800 mt-4 mb-4 shadow-lg">
 
 
         <div class="flex items-center justify-between p-4 border-b">
             {{-- <h2 class="text-lg font-semibold">Total Components</h2>  --}}
-            <flux:heading class="flex items-center gap-2 !text-2xl  ">
+            <flux:heading class="flex items-center gap-2 !text-2xl text-zinc-500 ">
                 Total Components
                 <flux:tooltip hoverable>
-                    <flux:button icon="information-circle" size="sm" variant="ghost" />
+                    <flux:button icon="information-circle" size="sm" variant="subtle" />
                     <flux:tooltip.content class="max-w-[20rem] space-y-2">
-                         <p>Click (View Component Analytics) to expand detailed summary of component inventory.</p>
+                        <p>Click (View Component Analytics) to expand detailed summary of component inventory.</p>
                     </flux:tooltip.content>
                 </flux:tooltip>
 
                 <flux:tooltip hoverable>
-                    <flux:button icon="printer" size="sm" variant="ghost" />
+                    <flux:button icon="printer" size="sm" variant="subtle" />
                     <flux:tooltip.content class="max-w-[20rem] space-y-2">
                         <p>Print Component Reports</p>
                     </flux:tooltip.content>
@@ -38,15 +38,16 @@
                 {{ collect($this->componentSummary)->flatten(1)->sum('total') }} </span>
         </div>
         <button @click="toggle()"
-            class="w-full text-left px-4 py-2 text-sm text-blue-600 hover:underline flex items-center justify-between">
-            <span x-text="open ? 'Hide Component Analytics' : 'View Component Analytics'"></span>
+            class="w-full text-left px-4 py-2 text-sm text-green-500 hover:underline flex items-center justify-between">
+            <span x-text="open ? 'Hide Component Statistics' : 'View Component Statistics'"></span>
             <svg :class="{ 'rotate-180': open }" class="w-4 h-4 transition-transform" xmlns="http://www.w3.org/2000/svg"
                 fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
             </svg>
         </button>
-        <div x-show="open" x-transition class="overflow-x-auto p-4 border-t bg-gradient-to-r from-yellow-100 to-yellow-50 shadow-inner" x-data="stockTooltip()"
-            x-init="init()">
+        <div x-show="open" x-transition
+            class="overflow-x-auto p-4 border-t bg-gradient-to-r from-yellow-100 to-yellow-50 shadow-inner "
+            x-data="stockTooltip()" x-init="init()">
             {{-- <h3 class="text-md font-semibold mb-2">Component Inventory</h3> --}}
             <!-- Tabs -->
             <div class="mb-4 border-b border-gray-200 dark:border-zinc-700">
@@ -235,12 +236,12 @@
     <!-- Add Component Button -->
     <div class="flex flex-col md:flex-row md:justify-between gap-4 mb-4">
         <div class="flex-1">
-            <flux:input type="text" placeholder="Search..." wire:model.live.debounce.300ms="query"
-                icon="magnifying-glass" kbd="⌘K" />
+            <flux:input type="text" placeholder="Search..." wire:model.live="search" icon="magnifying-glass"
+                kbd="⌘K" />
         </div>
 
         <div>
-            <flux:button variant="primary" color="blue" wire:click="openCreateModal">
+            <flux:button variant="primary" color="green" wire:click="openCreateModal">
                 + Add Component
             </flux:button>
         </div>
@@ -250,13 +251,13 @@
 
     <!-- Table -->
     <div
-        class="overflow-x-auto bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl shadow">
+        class="overflow-x-auto bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl shadow-lg">
 
         <table class="min-w-full text-sm text-left text-gray-700 dark:text-gray-200">
             <thead class="bg-gray-200 dark:bg-zinc-800 text-xs uppercase">
                 <tr>
                     {{-- <th class="px-4 py-3">#</th> --}}
-                    <th class="px-4 py-3">Unit</th>
+                    {{-- <th class="px-4 py-3">Unit</th> --}}
                     <th class="px-4 py-3">Serial Number</th>
                     {{-- <th class="px-4 py-3">Brand</th>
                     <th class="px-4 py-3">Model</th> --}}
@@ -274,22 +275,12 @@
                 @endphp
 
                 @forelse($components as $component)
-                    <tr
+                    <tr wire:key="component-row-{{ $component->id }}"
                         class="border-t border-gray-200 dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-800/50 odd:bg-white even:bg-gray-200 dark:odd:bg-zinc-800 dark:even:bg-zinc-700">
-                        {{-- <td class="px-4 py-3">{{ $component->id }}</td> --}}
-                        <td class="px-4 py-3">{{ optional($component->systemUnit)->name ?? '—' }}</td>
+
+                        {{-- <td class="px-4 py-3">{{ optional($component->systemUnit)->name ?? '—' }}</td> --}}
                         <td class="px-4 py-3">{{ $component->serial_number }}</td>
-                        {{-- <td class="px-4 py-3">{{ $component->brand ?? '—' }}</td>
-                        <td class="px-4 py-3">{{ $component->model ?? '—' }}</td> --}}
                         <td class="px-4 py-3">{{ $component->part }}</td>
-
-                        {{-- <td class="px-4 py-3">
-                            <span
-                                class="px-2 py-1 text-xs font-semibold rounded-full {{ $conditionColors[$component->condition] ?? 'bg-gray-100 text-gray-700' }}">
-                                {{ $component->condition }}
-                            </span>
-                        </td> --}}
-
                         <td class="px-4 py-3">
                             <span
                                 class="px-2 py-1 text-xs font-semibold rounded-full {{ $statusColors[$component->status] ?? 'bg-gray-100 text-gray-700' }}">
@@ -303,19 +294,19 @@
                                 <!-- Main Action -->
                                 <button wire:click="openViewModal({{ $component->id }})"
                                     class="inline-flex items-center justify-center px-3 py-2 text-xs md:text-sm font-medium
-                                    border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800
-                                    text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-zinc-700
-                                    focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2
-                                    rounded-l-md flex-1 sm:flex-none">
+                    border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800
+                    text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-zinc-700
+                    focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2
+                    rounded-l-md flex-1 sm:flex-none">
                                     <flux:icon.eye />
                                 </button>
 
                                 <!-- Dropdown Toggle -->
                                 <button @click="open = !open" x-ref="toggleBtn" type="button"
                                     class="inline-flex items-center justify-center px-2 py-2 border border-gray-300 dark:border-zinc-700
-                                        bg-white dark:bg-zinc-800 text-gray-500 hover:bg-gray-50 dark:hover:bg-zinc-700
-                                        focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2
-                                        rounded-r-md border-l-0 flex-1 sm:flex-none">
+                        bg-white dark:bg-zinc-800 text-gray-500 hover:bg-gray-50 dark:hover:bg-zinc-700
+                        focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2
+                        rounded-r-md border-l-0 flex-1 sm:flex-none">
                                     <svg class="h-4 w-4 md:h-5 md:w-5" xmlns="http://www.w3.org/2000/svg"
                                         fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -348,13 +339,13 @@
                                                 <span>Delete</span>
                                             </button>
 
+                                            <!-- Child Livewire component -->
                                             <livewire:manage-item :model-class="App\Models\ComponentParts::class" :item-id="$component->id"
-                                                key="manage-item-{{ $component->id }}" />
+                                                :key="'manage-item-' . $component->id" />
                                         </div>
                                     </div>
                                 </template>
                             </div>
-
                         </td>
                     </tr>
                 @empty
@@ -362,6 +353,7 @@
                         <td colspan="9" class="text-center py-6 text-gray-500">No components found.</td>
                     </tr>
                 @endforelse
+
             </tbody>
         </table>
 

@@ -8,8 +8,10 @@ use App\Models\Peripheral;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Url;
 use Livewire\Attributes\On;
+use Livewire\Attributes\Layout;
 use App\Traits\HasInventorySummary;
 
+#[Layout('components.layouts.app', ['title' => 'Peripheral'])]
 class PeripheralIndex extends Component
 {
     use WithPagination, HasInventorySummary;

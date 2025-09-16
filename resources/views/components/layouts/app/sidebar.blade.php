@@ -8,13 +8,13 @@
 <body class="min-h-screen bg-white dark:bg-zinc-800">
 
     <flux:sidebar sticky stashable
-        class="border-e border-zinc-200 bg-white dark:bg-gray-900  dark:border-zinc-700 shadow-inner">
+        class="border-e border-zinc-200 bg-gray-100 dark:bg-gray-900  dark:border-zinc-700 drop-shadow-lg">
         <flux:sidebar.toggle class="lg:hidden" icon="x-mark" />
-
-        <a href="{{ route('dashboard') }}" class="me-5 flex items-center space-x-2 rtl:space-x-reverse" wire:navigate>
+        {{-- class="me-5 flex items-center space-x-2 rtl:space-x-reverse" --}}
+        <a href="{{ route('dashboard') }}"  wire:navigate>
             <x-app-logo />
         </a>
-
+      
         <flux:navlist variant="outline">
             <flux:navlist.group :heading="__('Main Menu')" class="grid">
                 <flux:navlist.item icon="layout-grid" :href="route('dashboard')"
@@ -45,7 +45,7 @@
                 </flux:navlist.item>
             </flux:navlist.group>
         </flux:navlist>
-
+        {{-- <flux:menu.separator /> --}}
         <flux:navlist variant="outline">
             <flux:navlist.group :heading="__('Management')" class="grid">
                 <flux:navlist.item icon="home" :href="route('rooms')" :current="request()->routeIs('rooms')"
@@ -65,7 +65,7 @@
                     :current="request()->routeIs('reports')" wire:navigate>{{ __('Reports') }}</flux:navlist.item>
             </flux:navlist.group>
         </flux:navlist>
-
+        <flux:menu.separator />
         <flux:navlist variant="outline">
             <flux:navlist.group :heading="__('System')" class="grid">
                 <flux:navlist.item icon="home" :href="route('settings.profile')"

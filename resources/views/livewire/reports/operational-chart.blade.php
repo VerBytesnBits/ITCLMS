@@ -11,7 +11,7 @@
         console.log('Operational:', operational);
         console.log('Non-Operational:', nonOperational);
 
-        // ✅ Destroy existing chart to prevent conflicts
+        
         if (this.chart) {
             this.chart.destroy();
         }
@@ -19,15 +19,15 @@
         this.chart = new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: labels, // ✅ axis labels
+                labels: labels, 
                 datasets: [
                     {
-                        label: 'Operational', // ✅ legend label
+                        label: 'Operational', 
                         data: operational,
                         backgroundColor: 'rgba(34,197,94,0.8)',
                     },
                     {
-                        label: 'Non-Operational', // ✅ legend label
+                        label: 'Non-Operational', 
                         data: nonOperational,
                         backgroundColor: 'rgba(239,68,68,0.8)',
                     },
@@ -40,7 +40,7 @@
                     legend: { 
                         display: true,
                         labels: { 
-                            color: '#000', // ⚠️ try black first (white on white bg is invisible)
+                            color: '#000',
                         }
                     },
                     title: {

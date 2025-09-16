@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Route;
 use App\Livewire\Peripherals\PeripheralIndex as peripherals;
 use App\Livewire\ComponentsPart\index as components;
 use App\Livewire\SystemUnits\MaintenanceIndex as maintenance;
+use App\Livewire\SystemUnits\UnitIndex as units;
 use App\Livewire\QrManager;
 use App\Livewire\ActivityLogViewer as activitylogs;
 use App\Livewire\Tracking\Show;
@@ -39,21 +40,17 @@ Route::middleware(['auth'])->group(function () {
         ->middleware('can:view.laboratories')
         ->name('rooms');
 
-    Route::view('units', 'units')
+    Route::get('units', units::class)
         // ->middleware('can:view.system-units')  // adjust the permission name accordingly
         ->name('units');
     // Maintenance page
     Route::get('maintenance', maintenance::class)->name('maintenance');
 
-    // Route::get('components', components::class)->name('components');
-    // Route::get('inventoryoverview', \App\Livewire\Inventory\Overview::class)
-    //     ->name('inventoryoverview');
-
     Route::get('components', components::class)->name('components');
     Route::get('peripherals', peripherals::class)->name('peripherals');
 
 
-    Route::get('/qr-manager', QrManager::class)->name('qr-manager');
+    Route::get('qr', QrManager::class)->name('qr-manager');
 
     Route::get('/tracking/{type}/{serial}', Show::class)->name('tracking.show');
 

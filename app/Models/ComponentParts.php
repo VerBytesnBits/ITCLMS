@@ -35,7 +35,7 @@ class ComponentParts extends Model
         'purchase_date' => 'date',
         'warranty_expires_at' => 'date',
         'retired_at' => 'datetime',
-        'warranty_period_months' => 'integer', // 👈 correct field
+        'warranty_period_months' => 'integer', 
     ];
 
 

@@ -8,11 +8,13 @@ use App\Models\ComponentParts;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Url;
 use Livewire\Attributes\On;
+use Livewire\Attributes\Layout;
 use App\Traits\HasInventorySummary;
 
+#[Layout('components.layouts.app', ['title' => 'Components'])]
 class Index extends Component
 {
-    use WithPagination,  HasInventorySummary;
+    use WithPagination, HasInventorySummary;
 
     #[Url(as: 'modal')]
     public ?string $modal = null;
@@ -21,7 +23,7 @@ class Index extends Component
     public ?int $id = null;
 
     #[Url(as: 'q')]
-    public string $query = ''; // For search/filtering
+    public string $search = ''; // For search/filtering
 
     #[Url(as: 'tab')]
     public ?string $tab = null; // default tab
@@ -71,7 +73,7 @@ class Index extends Component
     //     return $summary->groupBy('part')->toArray();
     // }
 
-   
+
 
     public function getComponentSummaryProperty()
     {
@@ -85,6 +87,11 @@ class Index extends Component
     }
 
 
+    public function updatedSearch()
+    {
+       
+        $this->resetPage(); // Also reset pagination
+    }
 
     public function updatedTab()
     {
@@ -145,15 +152,15 @@ class Index extends Component
     public function render()
     {
         $components = ComponentParts::with(['systemUnit', 'room'])
-            ->when($this->tab && $this->tab !== 'All', function ($query) {
-                $query->where('part', $this->tab);
+            ->when($this->tab && $this->tab !== 'All', function ($search) {
+                $search->where('part', $this->tab);
             })
 
-            ->when($this->query, function ($query) {
-                $query->where(function ($q) {
-                    $q->where('serial_number', 'like', '%' . $this->query . '%')
-                        ->orWhere('brand', 'like', '%' . $this->query . '%')
-                        ->orWhere('model', 'like', '%' . $this->query . '%');
+            ->when($this->search, function ($search) {
+                $search->where(function ($q) {
+                    $q->where('serial_number', 'like', '%' . $this->search . '%')
+                        ->orWhere('part', 'like', '%' . $this->search . '%')
+                        ->orWhere('model', 'like', '%' . $this->search . '%');
                 });
             })
             ->paginate($this->perPage);

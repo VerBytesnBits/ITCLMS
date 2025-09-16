@@ -1,7 +1,7 @@
-<div class="p-4 space-y-6 min-h-screen">
-    <livewire:dashboard-heading title="Dashboard Overview" subtitle="" icon="layout-grid" gradient-from-color="#CE4A3E"
+<div>
+    <livewire:dashboard-heading title="Dashboard" subtitle="" icon="layout-grid" gradient-from-color="#CE4A3E"
         gradient-to-color="#C2CE3E" icon-color="text-orange-500" />
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-4">
         <!-- Units -->
         <div
             class="p-6 bg-white/70 dark:bg-gray-900 backdrop-blur-lg rounded-2xl shadow-lg hover:shadow-2xl transition transform hover:-translate-y-1">
@@ -13,77 +13,106 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
             <!-- Components Card -->
-            <div class="p-4 bg-white dark:bg-zinc-900 rounded-lg shadow">
-                <h3 class="font-bold mb-2">Components</h3>
-                <p>Available: {{ round($operationalPercentage, 2) }}%</p>
+            <div
+                class="p-6 bg-gradient-to-r from-emerald-500 to-blue-500 rounded-xl shadow-lg hover:shadow-2xl transition transform hover:-translate-y-1">
+                <h3 class="font-bold mb-6 text-lg text-white">Components</h3>
 
-                @if ($componentsBelowThreshold->count())
-                    <h4 class="mt-2 font-semibold">Below Threshold</h4>
-                    <ul class="list-disc ml-4">
-                        @foreach ($componentsBelowThreshold as $component)
-                            <li>{{ $component->part }} — low stock</li>
-                        @endforeach
-                    </ul>
+                <!-- Circular Progress -->
+                <div class="flex items-center justify-center">
+                    <div class="relative w-40 h-40">
+                        <svg class="w-full h-full transform -rotate-90">
+                            <!-- Background circle -->
+                            <circle cx="50%" cy="50%" r="70" stroke="currentColor" class="text-white/30"
+                                stroke-width="12" fill="transparent" />
+
+                            <!-- Progress circle (white) -->
+                            <circle cx="50%" cy="50%" r="70" stroke="white" stroke-width="12"
+                                stroke-linecap="round" fill="transparent" stroke-dasharray="439.8"
+                                stroke-dashoffset="{{ 439.8 - (439.8 * $operationalPercentage) / 100 }}"
+                                class="transition-all duration-700 ease-out" />
+                        </svg>
+
+                        <!-- Percentage text inside -->
+                        <div class="absolute inset-0 flex flex-col items-center justify-center">
+                            <span class="text-3xl font-extrabold text-white">
+                                {{ round($operationalPercentage, 0) }}%
+                            </span>
+                            <span class="text-sm font-medium text-white/80">
+                                Available
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Below Threshold -->
+
+
+                {{-- Low Stock Components --}}
+                @if ($componentsBelowThreshold)
+                    <flux:callout variant="warning" icon="exclamation-circle"
+                        heading="{{ $componentsBelowThreshold }} Low Stock Alerts" />
+                @endif
+
+                {{-- Out of Stock Components --}}
+                @if ($componentsOutOfStock)
+                    <flux:callout variant="danger" icon="x-circle"
+                        heading="{{ $componentsOutOfStock }} Out of Stock Alerts" />
                 @endif
             </div>
 
             <!-- Peripherals Card -->
-            <div class="p-4 bg-white dark:bg-zinc-900 rounded-lg shadow">
-                <h3 class="font-bold mb-2">Peripherals</h3>
-                <p>Available: {{ round($peripheralPercentage, 2) }}%</p>
+            <div
+                class="p-6 bg-gradient-to-r from-amber-500 to-red-500 rounded-xl shadow-lg hover:shadow-2xl transition transform hover:-translate-y-1">
+                <h3 class="font-bold mb-6 text-lg text-white">Peripherals</h3>
 
-                @if ($peripheralsBelowThreshold->count())
-                    <h4 class="mt-2 font-semibold">Below Threshold</h4>
-                    <ul class="list-disc ml-4">
-                        @foreach ($peripheralsBelowThreshold as $peripheral)
-                            <li>{{ $peripheral->type }} — low stock</li>
-                        @endforeach
-                    </ul>
+                <!-- Circular Progress -->
+                <div class="flex items-center justify-center">
+                    <div class="relative w-40 h-40">
+                        <svg class="w-full h-full transform -rotate-90">
+                            <!-- Background circle -->
+                            <circle cx="50%" cy="50%" r="70" stroke="currentColor" class="text-white/30"
+                                stroke-width="12" fill="transparent" />
+
+                            <!-- Progress circle (white) -->
+                            <circle cx="50%" cy="50%" r="70" stroke="white" stroke-width="12"
+                                stroke-linecap="round" fill="transparent" stroke-dasharray="439.8"
+                                stroke-dashoffset="{{ 439.8 - (439.8 * $peripheralPercentage) / 100 }}"
+                                class="transition-all duration-700 ease-out" />
+                        </svg>
+
+                        <!-- Percentage text inside -->
+                        <div class="absolute inset-0 flex flex-col items-center justify-center">
+                            <span class="text-3xl font-extrabold text-white">
+                                {{ round($peripheralPercentage, 0) }}%
+                            </span>
+                            <span class="text-sm font-medium text-white/80">
+                                Available
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Below Threshold -->
+                {{-- Low Stock --}}
+                @if ($peripheralsBelowThreshold)
+                    <flux:callout variant="warning" icon="exclamation-circle"
+                        heading="{{ $peripheralsBelowThreshold }} Low Stock Alerts" />
+                @endif
+
+                @if ($peripheralsOutOfStock)
+                    <flux:callout variant="danger" icon="x-circle"
+                        heading="{{ $peripheralsOutOfStock }} Out of Stock Alerts" />
                 @endif
             </div>
-
         </div>
-
-
     </div>
-    <!-- Quick Actions -->
-    <div class="flex flex-wrap gap-4 pt-8">
-        <h1 class="px-5 py-3 font-bold">Quick Actions:</h1>
-        <a href="units" class="px-5 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-lg transition">
-            Go to Unit
-        </a>
-        <a href="components"
-            class="px-5 py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl shadow-lg transition">
-            Go to Component
-        </a>
-        <a href="peripherals"
-            class="px-5 py-3 bg-orange-600 hover:bg-orange-700 text-white rounded-xl shadow-lg transition">
-            Go to Peripherals
-        </a>
-        <a href="dashboard"
-            class="px-5 py-3 bg-yellow-500 hover:bg-yellow-600 text-white rounded-xl shadow-lg transition">
-            Refresh
-        </a>
-    </div>
+
     <!-- Charts -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+    <div class="grid grid-cols-1 gap-8">
         <!-- Defective Units Trend -->
-        <div class="p-6 bg-white dark:bg-gray-900 rounded-2xl shadow-xl hover:shadow-2xl transition">
-            <h2 class="text-lg font-bold mb-4">Defective Units (This Year)</h2>
+        <div
+            class="p-6 bg-white dark:bg-gray-900 rounded-2xl shadow-xl hover:shadow-2xl transition transform hover:-translate-y-1">
+            <h1 class="text-lg font-bold mb-4">Recent Activity</h1>
             {{-- <livewire:defective-units-chart /> --}}
-
-        </div>
-
-        <!-- Maintenance Trend -->
-        <div class="p-6 bg-white dark:bg-gray-900 rounded-2xl shadow-xl hover:shadow-2xl transition">
-            <h2 class="text-lg font-bold mb-4"> Reports (Academic Year)</h2>
-            {{-- @php
-                $labels = ['Aug 28', 'Aug 29', 'Aug 30', 'Aug 31', 'Sep 01', 'Sep 02', 'Sep 03'];
-                $values = [5, 7, 6, 10, 8, 12, 9];
-            @endphp --}}
-
-            {{-- <livewire:line-chart /> --}}
-
 
         </div>
     </div>
