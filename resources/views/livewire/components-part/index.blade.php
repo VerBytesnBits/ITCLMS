@@ -26,16 +26,8 @@
                         <p>Click (View Component Analytics) to expand detailed summary of component inventory.</p>
                     </flux:tooltip.content>
                 </flux:tooltip>
-
-                <flux:tooltip hoverable>
-                    {{-- <livewire:components-part.component-summary-report /> --}}
-                    <flux:button icon="printer" size="sm" variant="subtle" wire:click="$emit('previewPrint')" />
-
-
-                    <flux:tooltip.content class="max-w-[20rem] space-y-2">
-                        <p>Print Component Reports</p>
-                    </flux:tooltip.content>
-                </flux:tooltip>
+                {{-- gerating component summary report --}}
+                <livewire:components-part.component-summary-report />
             </flux:heading>
             <span class="text-xl font-bold text-gray-700">
                 {{ collect($this->componentSummary)->flatten(1)->sum('total') }} </span>

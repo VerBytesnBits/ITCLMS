@@ -7,25 +7,33 @@ use App\Models\User;
 
 class AssignLabIncharge extends Component
 {
-    public ?Room $room = null;  // Make nullable
-    public $user_id;
+    public ?Room $room = null;
+    public array $user_ids = []; // <-- use array for multiple selection
 
-    // Use mount to initialize the room
     public function mount($roomId)
     {
         $this->room = Room::findOrFail($roomId);
+
+        // Pre-fill already assigned lab in-charges if any
+        $this->user_ids = $this->room->users()
+            ->wherePivot('role_in_room', 'lab_incharge')
+            ->pluck('users.id')
+            ->toArray();
     }
 
     public function save()
     {
         $this->validate([
-            'user_id' => 'required|exists:users,id',
+            'user_ids' => 'required|array',
+            'user_ids.*' => 'exists:users,id',
         ]);
 
-        // Assign the lab in-charge
-        $this->room->users()->syncWithoutDetaching([
-            $this->user_id => ['role_in_room' => 'lab_incharge']
-        ]);
+        // Sync all selected lab in-charges for this room
+        $syncData = collect($this->user_ids)->mapWithKeys(fn($id) => [
+            $id => ['role_in_room' => 'lab_incharge']
+        ])->toArray();
+
+        $this->room->users()->syncWithoutDetaching($syncData);
 
         $this->dispatch('closeModal');
         $this->dispatch('roomUpdated'); // refresh parent

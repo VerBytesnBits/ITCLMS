@@ -22,8 +22,20 @@
                     <tr
                         class="border-t border-gray-200 dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-800/50">
                         <td class="px-6 py-4 font-medium text-zinc-800 dark:text-white">
-                            {{ $role->name }}
-                            <div class="text-xs text-gray-400">#{{ $role->id }}</div>
+
+                            <span
+                                class="px-2 py-1 rounded-full text-xs font-medium 
+                       {{ match ($role->name) {
+                           'chairman' => 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300',
+                           'lab_incharge' => 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300',
+                           'lab_technician' => 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
+                           default => 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300',
+                       } }}">
+                                {{ ucwords(str_replace('_', ' ', $role->name)) }}
+                            </span>
+
+
+                            {{-- <div class="text-xs text-gray-400">#{{ $role->id }}</div> --}}
                         </td>
 
                         <td class="px-6 py-4" x-data="{ showAll: false }">

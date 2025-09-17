@@ -4,7 +4,7 @@
             class="bg-white dark:bg-zinc-800 p-6 rounded-2xl shadow-2xl w-full max-w-xl 
               animate-[fade-in-scale_0.2s_ease-out]">
             <h2 class="text-2xl font-bold mb-6 text-center text-zinc-800 dark:text-white">
-                {{ $roomId ? 'Update Room' : 'Create Room' }}
+                {{ $roomId ? 'Update Room' : 'Add Room' }}
             </h2>
 
             <form wire:submit.prevent="save" class="space-y-5">
@@ -21,7 +21,7 @@
                 </div>
 
                 <!-- Description -->
-                <div>
+                {{-- <div>
                     <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-200">
                         Description
                     </label>
@@ -30,7 +30,7 @@
                     @error('description')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
-                </div>
+                </div> --}}
 
                 <!-- Status -->
                 <div>
@@ -56,7 +56,7 @@
                     </button>
                     <button type="submit"
                         class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">
-                        {{ $roomId ? 'Update' : 'Save' }}
+                        {{ $roomId ? 'Update' : 'Add' }}
                     </button>
                 </div>
             </form>

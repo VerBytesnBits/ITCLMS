@@ -9,23 +9,31 @@
         icon="computer-desktop" gradient-from-color="#3b82f6" gradient-to-color="#7c3aed" icon-color="text-blue-500" />
 
     <!-- Top Bar (Add + Filters + Search) -->
-    <div class="flex flex-col lg:flex-row justify-between gap-6">
+    <div class="flex flex-col lg:flex-row justify-between gap-6 items-start lg:items-center">
         <!-- Left: Legends / Stats -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full lg:w-auto">
-            <div class="flex items-center justify-between p-4 bg-green-100 dark:bg-green-800/40 rounded-xl shadow">
-                <div class="flex items-center gap-2">
-                    <span class="w-3 h-3 rounded-full bg-green-500"></span>
+            <!-- Operational -->
+            <div
+                class="flex items-center justify-between p-5 rounded-2xl shadow-sm 
+                    bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/40 
+                    hover:shadow-md transition">
+                <div class="flex items-center justify-between gap-3">
+                    <span class="w-3 h-3 rounded-full bg-green-500 animate-pulse"></span>
                     <span class="text-sm font-medium text-gray-700 dark:text-gray-200">Operational</span>
-                    <span class="text-lg font-bold text-green-700 dark:text-green-300">3</span>
+                    <span class="text-xl font-bold text-green-700 dark:text-green-300">3</span>
                 </div>
 
             </div>
 
-            <div class="flex items-center justify-between p-4 bg-red-100 dark:bg-red-800/40 rounded-xl shadow">
-                <div class="flex items-center gap-2">
+            <!-- Non-Operational -->
+            <div
+                class="flex items-center justify-between p-5 rounded-2xl shadow-sm 
+                    bg-gradient-to-r from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/40 
+                    hover:shadow-md transition">
+                <div class="flex items-center justify-between gap-3">
                     <span class="w-3 h-3 rounded-full bg-red-500"></span>
                     <span class="text-sm font-medium text-gray-700 dark:text-gray-200">Non-Operational</span>
-                    <span class="text-lg font-bold text-red-700 dark:text-red-300">2</span>
+                    <span class="text-xl font-bold text-red-700 dark:text-red-300">2</span>
                 </div>
 
             </div>
@@ -36,10 +44,10 @@
             <!-- Search -->
             <div class="relative w-full sm:w-64">
                 <input type="text" wire:model.live="search" placeholder="Search units..."
-                    class="w-full px-3 py-2 pl-9 border rounded-lg text-sm shadow-sm
-                       focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500
+                    class="w-full px-4 py-2 pl-10 rounded-xl border border-gray-200 
+                       text-sm shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500
                        dark:bg-zinc-800 dark:border-zinc-700 dark:text-gray-200" />
-                <svg class="w-4 h-4 absolute left-3 top-2.5 text-gray-400" xmlns="http://www.w3.org/2000/svg"
+                <svg class="w-5 h-5 absolute left-3 top-2.5 text-gray-400" xmlns="http://www.w3.org/2000/svg"
                     fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M21 21l-4.35-4.35M16.65 16.65A7.5 7.5 0 1111.5 4.5a7.5 7.5 0 015.15 12.15z" />
@@ -48,7 +56,7 @@
 
             <!-- Room Filter -->
             <select wire:model.live="roomFilter"
-                class="px-3 py-2 border rounded-lg text-sm shadow-sm
+                class="px-4 py-2 rounded-xl border border-gray-200 text-sm shadow-sm
                    focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500
                    dark:bg-zinc-800 dark:border-zinc-700 dark:text-gray-200">
                 <option value="">All Rooms</option>
@@ -59,7 +67,7 @@
 
             <!-- Status Filter -->
             <select wire:model.live="statusFilter"
-                class="px-3 py-2 border rounded-lg text-sm shadow-sm
+                class="px-4 py-2 rounded-xl border border-gray-200 text-sm shadow-sm
                    focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500
                    dark:bg-zinc-800 dark:border-zinc-700 dark:text-gray-200">
                 <option value="">All Status</option>
@@ -69,11 +77,13 @@
             </select>
 
             <!-- Add Unit Button -->
-            <flux:button variant="primary" color="green" wire:click="create" class="w-full sm:w-auto">
+            <flux:button variant="primary" color="green" wire:click="create"
+                class="w-full sm:w-auto rounded-xl shadow-md hover:shadow-lg transition">
                 + Add Unit
             </flux:button>
         </div>
     </div>
+
 
 
     <!-- Units Table Card -->
@@ -150,7 +160,7 @@
                                             <button wire:click="openAssignModal({{ $unit->id }})"
                                                 @click="open = false"
                                                 class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-zinc-700">
-                                                Assign
+                                                  <flux:icon.puzzle class="h-4 w-4" />Assign
                                             </button>
 
                                             <button wire:click="edit({{ $unit->id }})" @click="open = false"

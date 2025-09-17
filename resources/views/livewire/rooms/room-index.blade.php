@@ -1,105 +1,112 @@
-<div class="p-4 space-y-6">
+<div>
 
-    <livewire:dashboard-heading title="Rooms" subtitle="Manage all laboratories/rooms" icon="home"
-        gradient-from-color="#7d4173" gradient-to-color="#cc6166" icon-color="text-red-300" />
+    <livewire:dashboard-heading 
+        title="Rooms" 
+        subtitle="Manage all laboratories/rooms" 
+        icon="home"
+        gradient-from-color="#7d4173" 
+        gradient-to-color="#cc6166" 
+        icon-color="text-red-300" 
+    />
 
-    <div class="flex justify-end items-center mb-4">
-        <flux:button variant="primary" color="blue" wire:click="openCreateModal"> + Create Room</flux:button>
+    <div class="flex justify-end items-center mb-6">
+        <flux:button variant="primary" color="green" wire:click="openCreateModal" 
+            class="px-5 py-2 rounded-full shadow-md hover:shadow-lg transition">
+            + Add Room
+        </flux:button>
     </div>
 
-    <!-- Table -->
-    <div
-        class="overflow-x-auto bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl shadow">
-        <table class="min-w-full text-sm text-left text-gray-700 dark:text-gray-200">
-            <thead class="bg-gray-100 dark:bg-zinc-800 text-xs uppercase">
-                <tr>
-                    <th class="px-6 py-3">Name</th>
-                    <th class="px-6 py-3">Status</th>
-                    <th class="px-6 py-3">Lab In-Charge</th>
-                    <th class="px-6 py-3">Technicians</th>
-                    <th class="px-6 py-3 text-right">Actions</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-200 dark:divide-zinc-700">
-                @foreach ($rooms as $room)
-                    <tr class="hover:bg-gray-50 dark:hover:bg-zinc-800 transition">
-                        <!-- Name -->
-                        <td class="px-6 py-4 font-medium text-gray-900 dark:text-gray-100">
-                            {{ $room->name }}
-                        </td>
+    <!-- Modern Card Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        @foreach ($rooms as $room)
+            <div
+                class="relative bg-white/70 dark:bg-zinc-900/70 backdrop-blur-md border border-gray-200/40 dark:border-zinc-700/40 rounded-2xl shadow-md hover:shadow-xl transition transform hover:-translate-y-1 p-6 flex flex-col">
+                
+                <!-- Header -->
+                <div class="flex justify-between items-start">
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 tracking-tight">
+                        {{ $room->name }}
+                    </h3>
+                    @php
+                        $statusColors = [
+                            'Available' =>
+                                'bg-green-100/80 text-green-700 dark:bg-green-900/40 dark:text-green-300',
+                            'In Use' =>
+                                'bg-blue-100/80 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
+                            'Maintenance' =>
+                                'bg-yellow-100/80 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300',
+                            'Closed' =>
+                                'bg-red-100/80 text-red-700 dark:bg-red-900/40 dark:text-red-300',
+                        ];
+                    @endphp
+                    <span
+                        class="px-3 py-1 rounded-full text-xs font-medium {{ $statusColors[$room->status] ?? 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300' }}">
+                        {{ $room->status ?? '—' }}
+                    </span>
+                </div>
 
-                        <!-- Status -->
-                        <td class="px-6 py-4">
-                            @php
-                                $statusColors = [
-                                    'Available' =>
-                                        'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300',
-                                    'In Use' => 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
-                                    'Maintenance' =>
-                                        'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300',
-                                    'Closed' => 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300',
-                                ];
-                            @endphp
+                <!-- Lab In-Charge -->
+                <div class="mt-5">
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                        <flux:icon.user class="w-4 h-4" /> Lab In-Charge
+                    </p>
+                    <div class="mt-2 flex flex-wrap gap-2">
+                        @forelse($room->users->where('pivot.role_in_room', 'lab_incharge') as $incharge)
                             <span
-                                class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium {{ $statusColors[$room->status] ?? 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300' }}">
-                                {{ $room->status ?? '—' }}
+                                class="px-3 py-1 rounded-lg text-xs font-medium bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300">
+                                {{ $incharge->name }}
                             </span>
-                        </td>
+                        @empty
+                            <span class="text-gray-400 text-sm">—</span>
+                        @endforelse
+                    </div>
+                </div>
 
-                        <!-- Lab In-Charge -->
-                        <td class="px-6 py-4 text-gray-700 dark:text-gray-300">
-                            @forelse($room->users->where('pivot.role_in_room', 'lab_incharge') as $incharge)
-                                <span
-                                    class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300">
-                                    {{ $incharge->name }}
-                                </span>
-                            @empty
-                                <span class="text-gray-400">—</span>
-                            @endforelse
-                        </td>
+                <!-- Technicians -->
+                <div class="mt-4">
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                        <flux:icon.wrench class="w-4 h-4" /> Technicians
+                    </p>
+                    <div class="mt-2 flex flex-wrap gap-2">
+                        @forelse($room->users->where('pivot.role_in_room', 'lab_technician') as $tech)
+                            <span
+                                class="px-3 py-1 rounded-lg text-xs font-medium bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300">
+                                {{ $tech->name }}
+                            </span>
+                        @empty
+                            <span class="text-gray-400 text-sm">—</span>
+                        @endforelse
+                    </div>
+                </div>
 
-                        <!-- Technicians -->
-                        <td class="px-6 py-4 text-gray-700 dark:text-gray-300">
-                            @forelse($room->users->where('pivot.role_in_room', 'lab_technician') as $tech)
-                                <span
-                                    class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300 mr-1">
-                                    {{ $tech->name }}
-                                </span>
-                            @empty
-                                <span class="text-gray-400">—</span>
-                            @endforelse
-                        </td>
+                <!-- Actions -->
+                <div class="mt-6 flex flex-wrap gap-2">
+                    @role('chairman')
+                        <button wire:click="openAssignLabIncharge({{ $room->id }})"
+                            class="px-4 py-1.5 rounded-full text-xs font-medium bg-blue-500 hover:bg-blue-600 text-white shadow transition">
+                            In-Charge
+                        </button>
+                    @endrole
 
-                        <!-- Actions -->
-                        <td class="px-6 py-4 text-right space-x-2">
-                            @role('chairman')
-                                <button wire:click="openAssignLabIncharge({{ $room->id }})"
-                                    class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-lg text-xs shadow">
-                                    In-Charge
-                                </button>
-                            @endrole
+                    @role(['lab_incharge', 'chairman'])
+                        <button wire:click="openAssignTechnician({{ $room->id }})"
+                            class="px-4 py-1.5 rounded-full text-xs font-medium bg-green-500 hover:bg-green-600 text-white shadow transition">
+                            Technician
+                        </button>
+                    @endrole
 
-                            @role(['lab_incharge', 'chairman'])
-                                <button wire:click="openAssignTechnician({{ $room->id }})"
-                                    class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-lg text-xs shadow">
-                                    Technician
-                                </button>
-                            @endrole
+                    <button wire:click="openEditModal({{ $room->id }})"
+                        class="px-4 py-1.5 rounded-full text-xs font-medium bg-yellow-500 hover:bg-yellow-600 text-white shadow transition">
+                        Edit
+                    </button>
 
-                            <button wire:click="openEditModal({{ $room->id }})"
-                                class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded-lg text-xs shadow">
-                                Edit
-                            </button>
-
-                            <button wire:click="deleteRoom({{ $room->id }})"
-                                class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg text-xs shadow">
-                                Delete
-                            </button>
-                        </td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
+                    <button wire:click="deleteRoom({{ $room->id }})"
+                        class="px-4 py-1.5 rounded-full text-xs font-medium bg-red-500 hover:bg-red-600 text-white shadow transition">
+                        Delete
+                    </button>
+                </div>
+            </div>
+        @endforeach
     </div>
 
     <!-- Conditional Modals -->

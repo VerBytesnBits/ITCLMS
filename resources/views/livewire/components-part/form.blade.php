@@ -12,7 +12,7 @@
 
                         {{-- Part --}}
                         @if ($modalMode === 'edit')
-                            <flux:select label="Part" wire:model.live="part" disabled>
+                            <flux:select label="Category" wire:model.live="part" disabled>
                                 <option value="">Select Component Category</option>
                                 <option value="CPU" {{ $part === 'CPU' ? 'selected' : '' }}>CPU</option>
                                 <option value="Motherboard" {{ $part === 'Motherboard' ? 'selected' : '' }}>Motherboard
@@ -24,7 +24,7 @@
                                 <option value="Casing" {{ $part === 'Casing' ? 'selected' : '' }}>Computer Case</option>
                             </flux:select>
                         @else
-                            <flux:select label="Part" wire:model.live="part">
+                            <flux:select label="Category" wire:model.live="part">
                                 <option value="">Select Category Type</option>
                                 <option value="CPU">CPU</option>
                                 <option value="Motherboard">Motherboard</option>

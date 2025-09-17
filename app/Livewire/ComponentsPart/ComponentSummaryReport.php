@@ -9,37 +9,45 @@ use App\Traits\HasInventorySummary;
 
 class ComponentSummaryReport extends Component
 {
-    protected $listeners = ['previewPrint' => 'exportPDF'];
-
     use HasInventorySummary;
 
-    public $summary = [];
-
-    public function mount()
-    {
-        // Generate summary using the trait
-        $this->summary = $this->getInventorySummary(
-            ComponentParts::class,
-            'part',              // group by 'part'
-            ['brand', 'model']   // description columns
-        );
-    }
+    public $pdfBase64 = null;
+    public $showPreview = false;
 
     public function exportPDF()
     {
-        $pdf = Pdf::loadView('livewire.components-part.component-summary-pdf', [
-            'summary' => $this->summary
+        // 🔄 Use trait instead of repeating SQL
+        $summary = $this->getInventorySummary(
+            ComponentParts::class,
+            'part',
+            ['brand', 'model', 'capacity' , 'type'] // <- adjust these columns to your schema
+        );
+
+        $pdf = Pdf::loadView('livewire.components-part.components-summary-pdf', [
+            'summary' => $summary
         ])->setPaper('A4', 'portrait');
 
-        return response()->streamDownload(function () use ($pdf) {
-            echo $pdf->output();
+        $this->pdfBase64 = base64_encode($pdf->output());
+        $this->showPreview = true;
+    }
+
+    public function downloadPDF()
+    {
+        $summary = $this->getInventorySummary(
+            ComponentParts::class,
+            'part',
+            ['brand', 'model', 'capacity' , 'type'] // <- adjust as needed
+        );
+
+        return response()->streamDownload(function () use ($summary) {
+            echo Pdf::loadView('livewire.components-part.components-summary-pdf', [
+                'summary' => $summary
+            ])->output();
         }, 'component-summary.pdf');
     }
 
     public function render()
     {
-        return view('livewire.components-part.component-summary-report', [
-            'summary' => $this->summary
-        ]);
+        return view('livewire.components-part.component-summary-report');
     }
 }

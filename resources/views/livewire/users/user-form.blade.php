@@ -28,35 +28,50 @@
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
                 </div>
-
-                <!-- Roles Selection - Pills -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Roles</label>
+                    <label for="password"
+                        class="block text-sm font-medium text-gray-700 dark:text-gray-200">Password</label>
+                    <input wire:model.defer="password" id="password" type="password"
+                        class="w-full px-4 py-2 border rounded-md dark:bg-zinc-700 dark:text-white" />
+                    @error('password')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Roles Selection - Modern Pills -->
+                <!-- Roles Selection - Radio Style Pills -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                        Roles
+                    </label>
                     <div class="flex flex-wrap gap-2">
                         @foreach ($roles as $name => $label)
                             <button type="button"
-                                class="px-3 py-1 rounded-full text-sm border dark:border-zinc-600 transition-all duration-150 ease-in-out"
-                                :class="selectedRoles.includes('{{ $name }}') ?
-                                    'bg-blue-600 text-white' :
-                                    'bg-gray-200 text-gray-800 dark:bg-zinc-700 dark:text-white'"
-                                @click="selectedRoles.includes('{{ $name }}')
-                        ? selectedRoles.splice(selectedRoles.indexOf('{{ $name }}'), 1)
-                        : selectedRoles.push('{{ $name }}')">
+                                class="px-4 py-1 rounded-full text-sm font-medium border transition-all duration-150 ease-in-out
+                   hover:scale-105 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500
+                   dark:border-zinc-600"
+                                :class="$wire.selectedRole === '{{ $name }}' ?
+                                    'bg-blue-600 text-white border-blue-600' :
+                                    'bg-gray-200 text-gray-800 dark:bg-zinc-700 dark:text-white dark:border-zinc-600'"
+                                wire:click="$set('selectedRole', '{{ $name }}')">
                                 {{ $label }}
                             </button>
                         @endforeach
                     </div>
+
                     @error('selectedRoles')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
                 </div>
+
+
 
                 <!-- Room Assignment -->
                 <div>
                     <label for="assigned_room_id" class="block text-sm font-medium text-gray-700 dark:text-gray-200">
                         Assign Room
                     </label>
-                     {{-- && !selectedRoles.includes('chairman') --}}
+                    {{-- && !selectedRoles.includes('chairman') --}}
                     <select wire:model.defer="assigned_room_id" id="assigned_room_id"
                         :disabled="!selectedRoles.includes('lab_incharge')"
                         class="w-full px-4 py-2 border rounded-md dark:bg-zinc-700 dark:text-white disabled:opacity-50">

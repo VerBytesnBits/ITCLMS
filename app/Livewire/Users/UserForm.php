@@ -18,8 +18,8 @@ class UserForm extends Component
     public string $password = '';
     public string $password_confirmation = '';
 
-    public array $roles = [];             // All available roles (name => label)
-    public array $selectedRoles = [];     // Selected roles via checkboxes
+    public array $roles = [];         // All available roles
+    public ?string $selectedRole = null; // Single role
 
     public $assigned_room_id = null;
     public array $roomOptions = [];
@@ -37,11 +37,12 @@ class UserForm extends Component
             $this->user = User::findOrFail($userId);
             $this->name = $this->user->name ?? '';
             $this->email = $this->user->email ?? '';
-            $this->selectedRoles = $this->user->roles()->pluck('name')->toArray();
+            $this->selectedRole = $this->user->roles()->first()?->name;
             $this->assigned_room_id = $this->user->assigned_room_id ?? null;
         }
+
         if (!$userId) {
-            $this->selectedRoles = ['lab_technician']; // ✅ default roles
+            $this->selectedRole = 'lab_technician'; // default role
         }
     }
 
@@ -51,8 +52,7 @@ class UserForm extends Component
             'name' => ['required', 'min:3'],
             'email' => ['required', 'email', Rule::unique('users', 'email')->ignore($this->user?->id)],
             'password' => [$this->user ? 'nullable' : 'required', 'min:6'],
-            'selectedRoles' => ['required', 'array', 'min:1'],
-            'selectedRoles.*' => ['string', Rule::in(array_keys($this->roles))],
+            'selectedRole' => ['required', 'string', Rule::in(array_keys($this->roles))],
             'assigned_room_id' => ['nullable', 'exists:rooms,id'],
         ];
     }
@@ -62,20 +62,19 @@ class UserForm extends Component
         try {
             $validated = $this->validate();
 
-            // Prevent assigning a room unless user has Lab Incharge role
-
-            if ($this->assigned_room_id && !in_array('lab_incharge', $this->selectedRoles)) {
+            // Only Lab Incharge can be assigned a room
+            if ($this->assigned_room_id && $this->selectedRole !== 'lab_incharge') {
                 throw ValidationException::withMessages([
                     'assigned_room_id' => 'Only users with the Lab Incharge role can be assigned to a room.',
                 ]);
             }
 
-            // Prevent assigning room if user is Chairman (they’re auto-assigned to all)
-            if (in_array('chairman', $this->selectedRoles)) {
+            // Chairmen cannot have a specific room
+            if ($this->selectedRole === 'chairman') {
                 $this->assigned_room_id = null;
             }
 
-            // 🧹 Handle previous lab in-charge reassignment
+            // Handle previous lab in-charge reassignment
             if ($this->assigned_room_id) {
                 $previousUser = User::where('assigned_room_id', $this->assigned_room_id)
                     ->when($this->user, fn($q) => $q->where('id', '!=', $this->user->id))
@@ -83,12 +82,6 @@ class UserForm extends Component
 
                 if ($previousUser) {
                     $previousUser->update(['assigned_room_id' => null]);
-                }
-
-                $previousRoom = Room::find($this->assigned_room_id);
-                if ($previousRoom && $previousRoom->lab_in_charge_id && $previousRoom->lab_in_charge_id !== optional($this->user)->id) {
-                    User::where('id', $previousRoom->lab_in_charge_id)
-                        ->update(['assigned_room_id' => null]);
                 }
 
                 Room::where('id', $this->assigned_room_id)
@@ -107,11 +100,7 @@ class UserForm extends Component
                 }
 
                 $this->user->update($updateData);
-                $this->user->syncRoles($this->selectedRoles);
-
-                Room::where('lab_in_charge_id', $this->user->id)
-                    ->where('id', '!=', $this->assigned_room_id)
-                    ->update(['lab_in_charge_id' => null]);
+                $this->user->syncRoles([$this->selectedRole]);
 
                 $this->dispatch('swal', toast: true, icon: 'success', title: 'User updated successfully', timer: 3000);
                 $this->dispatch('userUpdated');
@@ -123,19 +112,14 @@ class UserForm extends Component
                     'assigned_room_id' => $this->assigned_room_id,
                 ]);
 
-
-                $user->assignRole($this->selectedRoles);
-
-                if ($this->assigned_room_id) {
-                    Room::where('id', $this->assigned_room_id)
-                        ->update(['lab_in_charge_id' => $user->id]);
-                }
+                $user->assignRole([$this->selectedRole]);
 
                 $this->dispatch('swal', toast: true, icon: 'success', title: 'User created successfully', timer: 3000);
                 $this->dispatch('userCreated');
             }
 
             $this->dispatch('closeModal');
+
         } catch (ValidationException $e) {
             $this->setErrorBag($e->validator->errors());
             $errors = $e->validator->errors()->all();
