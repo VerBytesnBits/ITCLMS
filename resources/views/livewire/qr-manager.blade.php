@@ -28,7 +28,7 @@
                     <option value="{{ $id }}">{{ $serial }}</option>
                 @endforeach
             </select>
-            <p class="text-xs text-gray-500 mt-1">Hold CTRL (Windows) or CMD (Mac) to select multiple.</p>
+            <p class="text-xs text-gray-500 mt-1">Hold CTRL to select multiple.</p>
         </div>
     @endif
 
