@@ -3,14 +3,14 @@
         gradient-from-color="#6e2e87" gradient-to-color="#ab2e87" icon-color="text-purple-300" />
 
     <div class="flex justify-end mb-4">
-        <flux:button variant="primary" color="blue" wire:click="openCreateModal"> + Add Role</flux:button>
+        <flux:button variant="primary" color="green" wire:click="openCreateModal"> + Add Role</flux:button>
     </div>
 
 
     <div
         class="overflow-x-auto bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl shadow">
         <table class="min-w-full text-sm text-left text-gray-700 dark:text-gray-200">
-            <thead class="bg-gray-100 dark:bg-zinc-800 text-xs uppercase">
+            <thead class="bg-zinc-200 dark:bg-zinc-800 text-xs uppercase">
                 <tr>
                     <th class="px-6 py-4">Role</th>
                     <th class="px-6 py-4">Permissions</th>

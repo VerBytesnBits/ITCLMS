@@ -13,7 +13,7 @@
     <div
         class="overflow-x-auto bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl shadow">
         <table class="min-w-full text-sm text-left text-gray-700 dark:text-gray-200">
-            <thead class="bg-gray-100 dark:bg-zinc-800 text-xs uppercase">
+            <thead class="bg-zinc-200 dark:bg-zinc-800 text-xs uppercase">
                 <tr class="text-gray-700 dark:text-gray-300 font-semibold">
                     <th class="px-4 py-3 border-b">Name</th>
                     <th class="px-4 py-3 border-b">Email</th>
@@ -52,11 +52,11 @@
                                 Edit
                             </button>
 
-                            <button wire:click="openAssignRoleModal({{ $user->id }})"
+                            {{-- <button wire:click="openAssignRoleModal({{ $user->id }})"
                                 @if ($user->roles->pluck('name')->contains('chairman')) disabled @endif
                                 class="bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white px-3 py-1 rounded-lg text-xs shadow">
                                 Assign Role
-                            </button>
+                            </button> --}}
                         </td>
                     </tr>
                 @endforeach

@@ -25,6 +25,22 @@
             background-size: 300% 300%;
             animation: gradient-move 12s ease infinite;
         }
+
+        @keyframes fly-in-up {
+            0% {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fly-in-up {
+            animation: fly-in-up 0.8s ease-out forwards;
+        }
     </style>
 </head>
 
@@ -41,8 +57,9 @@
     <div class="relative z-10 flex min-h-screen flex-col items-center justify-center px-4 sm:px-6 lg:px-8">
 
         <!-- Logo + Brand -->
-        <a href="{{ route('home') }}" class="mb-8 flex flex-col items-center gap-3 font-medium text-center"
-            wire:navigate>
+        <a href="{{ route('home') }}" class="mb-8 flex flex-col items-center gap-3 font-medium text-center fly-in-up"
+            style="animation-delay: 0.2s" wire:navigate>
+
             <span class="flex h-16 w-16 items-center justify-center rounded-2xl shadow-xl dark:bg-neutral-800">
                 {{-- <x-app-logo-icon class="size-10 fill-current text-emerald-600 dark:text-emerald-400" /> --}}
                 @include('partials.itclms-logo')
@@ -67,13 +84,13 @@
                 class="rounded-2xl border border-white/20 
                        bg-white/10 p-8 shadow-2xl 
                        backdrop-blur-lg 
-                       dark:border-neutral-700/40 dark:bg-neutral-900/20">
+                       dark:border-neutral-700/40 dark:bg-neutral-900/20 fly-in-up" style="animation-delay: 0.4s">
                 {{ $slot }}
             </div>
         </div>
 
         <!-- Footer -->
-        <p class="mt-6 text-xs text-gray-200 dark:text-gray-400 tracking-wide">
+        <p class="mt-6 text-xs text-gray-200 dark:text-gray-400 tracking-wide" >
             © {{ date('Y') }} ITCLMS. All rights reserved.
         </p>
     </div>

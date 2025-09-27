@@ -21,19 +21,49 @@ class UnitAssignParts extends Component
 
     protected $listeners = ['showAssignModal' => 'open'];
 
-    public function mount($unitId)
+
+     public $partIcons = [
+        //components
+        'CPU' => 'images/icons/CPU.png',
+        'RAM' => 'images/icons/ram.png',
+        'PSU' => 'images/icons/PSU.png',
+        'GPU' => 'images/icons/GPU.png',
+        'Motherboard' => 'images/icons/motherboard.png',
+        'Storage' => 'images/icons/storage.png',
+        'Casing' => 'images/icons/CASE.png',
+        'Cooler' => 'images/icons/Cooler.png',
+
+        //peripherals
+        'Monitor' => 'images/icons/display.png',
+        'Keyboard' => 'images/icons/keyboard.png',
+        'Mouse' => 'images/icons/mouse.png',
+        'Headset' => 'images/icons/headset.png',
+        'Speaker' => 'images/icons/speaker.png',
+        'Camera' => 'images/icons/camera.png',
+    ];
+    public function mount($unitId = null)
     {
         $this->unitId = $unitId;
-        $this->unit = SystemUnit::find($unitId);
 
-        foreach ($this->unit->peripherals as $p) {
-            $this->selectedPeripherals[$p->type] = $p->id;
-        }
+        if ($this->unitId) {
+            // Editing existing unit
+            $this->unit = SystemUnit::with(['peripherals', 'components'])->findOrFail($unitId);
 
-        foreach ($this->unit->components as $c) {
-            $this->selectedComponents[$c->part] = $c->id;
+            foreach ($this->unit->peripherals as $p) {
+                $this->selectedPeripherals[$p->type] = $p->id;
+            }
+
+            foreach ($this->unit->components as $c) {
+                $this->selectedComponents[$c->part] = $c->id;
+            }
+        } else {
+            // Creating new unit → initialize empty arrays
+            $this->unit = new SystemUnit();
+            $this->selectedPeripherals = [];
+            $this->selectedComponents = [];
         }
     }
+
 
     // =========================
     // Available Peripherals
@@ -105,8 +135,8 @@ class UnitAssignParts extends Component
     // =========================
     public function assignComponent($part, $componentId)
     {
-        $component = ComponentParts::find($componentId);
-        $unit = SystemUnit::find($this->unitId); // get the unit
+        $component = ComponentParts::findOrFail($componentId);
+        $unit = SystemUnit::findOrFail($this->unitId); // get the unit
 
         if ($component && $unit) {
             $component->system_unit_id = $this->unitId;
@@ -124,7 +154,7 @@ class UnitAssignParts extends Component
         $componentId = $this->selectedComponents[$part] ?? null;
 
         if ($componentId) {
-            $component = ComponentParts::find($componentId);
+            $component = ComponentParts::findOrFail($componentId);
 
             if ($component) {
                 $component->system_unit_id = null;
@@ -143,6 +173,7 @@ class UnitAssignParts extends Component
         return view('livewire.system-units.unit-assign-parts', [
             'availablePeripherals' => $this->availablePeripherals,
             'availableComponents' => $this->availableComponents,
+            'partIcons' => $this->partIcons,
         ]);
     }
 }

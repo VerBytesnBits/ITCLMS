@@ -8,89 +8,71 @@
     <livewire:dashboard-heading title="Computer Units" subtitle="Manage and monitor all Computer units"
         icon="computer-desktop" gradient-from-color="#3b82f6" gradient-to-color="#7c3aed" icon-color="text-blue-500" />
 
-    <!-- Top Bar (Add + Filters + Search) -->
-    <div class="flex flex-col lg:flex-row justify-between gap-6 items-start lg:items-center">
-        <!-- Left: Legends / Stats -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full lg:w-auto">
-            <!-- Operational -->
-            <div
-                class="flex items-center justify-between p-5 rounded-2xl shadow-sm 
-                    bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/40 
-                    hover:shadow-md transition">
-                <div class="flex items-center justify-between gap-3">
-                    <span class="w-3 h-3 rounded-full bg-green-500 animate-pulse"></span>
-                    <span class="text-sm font-medium text-gray-700 dark:text-gray-200">Operational</span>
-                    <span class="text-xl font-bold text-green-700 dark:text-green-300">3</span>
-                </div>
+    <!-- Right: Search + Filters + Button -->
 
-            </div>
-
-            <!-- Non-Operational -->
-            <div
-                class="flex items-center justify-between p-5 rounded-2xl shadow-sm 
-                    bg-gradient-to-r from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/40 
-                    hover:shadow-md transition">
-                <div class="flex items-center justify-between gap-3">
-                    <span class="w-3 h-3 rounded-full bg-red-500"></span>
-                    <span class="text-sm font-medium text-gray-700 dark:text-gray-200">Non-Operational</span>
-                    <span class="text-xl font-bold text-red-700 dark:text-red-300">2</span>
-                </div>
-
-            </div>
+    <div class="bg-white dark:bg-zinc-800 rounded-2xl shadow-md border border-zinc-200 dark:border-zinc-700">
+        <!-- Card Header -->
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-zinc-700 ">
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">Unit Controls</h3>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Search, filter, and add computer units</p>
         </div>
 
-        <!-- Right: Search + Filters + Button -->
-        <div class="flex flex-col sm:flex-row flex-wrap items-center gap-3 w-full lg:w-auto">
-            <!-- Search -->
-            <div class="relative w-full sm:w-64">
-                <input type="text" wire:model.live="search" placeholder="Search units..."
-                    class="w-full px-4 py-2 pl-10 rounded-xl border border-gray-200 
-                       text-sm shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500
-                       dark:bg-zinc-800 dark:border-zinc-700 dark:text-gray-200" />
-                <svg class="w-5 h-5 absolute left-3 top-2.5 text-gray-400" xmlns="http://www.w3.org/2000/svg"
-                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M21 21l-4.35-4.35M16.65 16.65A7.5 7.5 0 1111.5 4.5a7.5 7.5 0 015.15 12.15z" />
-                </svg>
+        <!-- Card Body -->
+        <div class="p-6 space-y-6">
+            <!-- Stats Row -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <!-- Operational -->
+                <div class="flex items-center justify-between p-4 rounded-2xl shadow-sm 
+                bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/40 
+                hover:shadow-md transition">
+                    <span class="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-200">
+                        <span class="w-3 h-3 rounded-full bg-green-500 animate-pulse"></span> Operational
+                    </span>
+                    <span class="text-xl font-bold text-green-700 dark:text-green-300">{{ $operationalCount }}</span>
+                </div>
+                <!-- Non-Operational -->
+                <div class="flex items-center justify-between p-4 rounded-2xl shadow-sm 
+                bg-gradient-to-r from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/40 
+                hover:shadow-md transition">
+                    <span class="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-200">
+                        <span class="w-3 h-3 rounded-full bg-red-500"></span> Non-Operational
+                    </span>
+                    <span class="text-xl font-bold text-red-700 dark:text-red-300">{{ $nonOperationalCount }}</span>
+                </div>
             </div>
 
-            <!-- Room Filter -->
-            <select wire:model.live="roomFilter"
-                class="px-4 py-2 rounded-xl border border-gray-200 text-sm shadow-sm
-                   focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500
-                   dark:bg-zinc-800 dark:border-zinc-700 dark:text-gray-200">
-                <option value="">All Rooms</option>
-                @foreach ($rooms as $room)
-                    <option value="{{ $room->id }}">{{ $room->name }}</option>
-                @endforeach
-            </select>
+            <!-- Filters Row -->
+            <div class="flex flex-col sm:flex-row items-center gap-3">
+                <flux:input wire:model.live="search" placeholder="Search units..." icon="magnifying-glass"
+                    class="flex-[3] w-full min-w-[200px]" />
 
-            <!-- Status Filter -->
-            <select wire:model.live="statusFilter"
-                class="px-4 py-2 rounded-xl border border-gray-200 text-sm shadow-sm
-                   focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500
-                   dark:bg-zinc-800 dark:border-zinc-700 dark:text-gray-200">
-                <option value="">All Status</option>
-                @foreach (array_keys($statusColors) as $status)
-                    <option value="{{ $status }}">{{ $status }}</option>
-                @endforeach
-            </select>
+                <flux:select wire:model.live="selectedRoom" class="flex-1 w-full min-w-[160px]">
+                    <option value="">All Rooms</option>
+                    @foreach ($rooms as $room)
+                        <option value="{{ $room->id }}">{{ $room->name }}</option>
+                    @endforeach
+                </flux:select>
 
-            <!-- Add Unit Button -->
-            <flux:button variant="primary" color="green" wire:click="create"
-                class="w-full sm:w-auto rounded-xl shadow-md hover:shadow-lg transition">
-                + Add Unit
-            </flux:button>
+                <flux:select wire:model.live="statusFilter" class="flex-1 w-full min-w-[160px]">
+                    <option value="">All Status</option>
+                    @foreach (array_keys($statusColors) as $status)
+                        <option value="{{ $status }}">{{ $status }}</option>
+                    @endforeach
+                </flux:select>
+
+                <flux:button variant="primary" color="green" wire:click="create"
+                    class="w-full sm:w-auto rounded-xl shadow-md hover:shadow-lg transition">
+                    + Add Unit
+                </flux:button>
+            </div>
         </div>
     </div>
-
-
 
     <!-- Units Table Card -->
     <div
         class="overflow-x-auto bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl shadow-lg">
         <table class="min-w-full text-sm text-left text-gray-700 dark:text-gray-200">
-            <thead class="bg-gray-200 dark:bg-zinc-800 text-xs uppercase">
+            <thead class="bg-zinc-200 dark:bg-zinc-800 text-xs uppercase">
                 <tr>
                     {{-- <th class="px-6 py-4 text-left font-semibold">#</th> --}}
                     <th class="px-4 py-3">Name</th>
@@ -117,17 +99,8 @@
                         </td>
 
                         <!-- Actions -->
-                        {{-- <td class="px-6 py-4 text-right space-x-4">
-                            <button wire:click="openAssignModal({{ $unit->id }})"
-                                class="text-blue-500 hover:text-blue-600 text-sm font-medium">Assign</button>
-                            <button wire:click="edit({{ $unit->id }})"
-                                class="text-yellow-500 hover:text-yellow-600 text-sm font-medium">Edit</button>
-                            <button wire:click="delete({{ $unit->id }})"
-                                class="text-red-500 hover:text-red-600 text-sm font-medium">Delete</button>
-                        </td> --}}
-
                         <td class="px-4 py-3 text-center space-x-2">
-                            <!-- Actions -->
+
                             <div x-data="{ open: false }" class="relative inline-flex w-full sm:w-auto">
                                 <!-- View -->
                                 <button wire:click="view({{ $unit->id }})"
@@ -157,11 +130,6 @@
                                         })"
                                         class="z-50 mt-1 w-30 rounded-md shadow-lg bg-white dark:bg-zinc-800 ring-1 ring-black ring-opacity-5">
                                         <div class="py-1">
-                                            <button wire:click="openAssignModal({{ $unit->id }})"
-                                                @click="open = false"
-                                                class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-zinc-700">
-                                                  <flux:icon.puzzle class="h-4 w-4" />Assign
-                                            </button>
 
                                             <button wire:click="edit({{ $unit->id }})" @click="open = false"
                                                 class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-zinc-700">

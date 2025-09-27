@@ -10,7 +10,9 @@ use Livewire\Attributes\Url;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Layout;
 use App\Traits\HasInventorySummary;
+use Livewire\Attributes\Lazy;
 
+#[Lazy]
 #[Layout('components.layouts.app', ['title' => 'Peripheral'])]
 class PeripheralIndex extends Component
 {
@@ -32,6 +34,12 @@ class PeripheralIndex extends Component
     public string $sortColumn = 'available';
     public string $sortDirection = 'asc';
     public $lowStockThreshold = 5;
+
+
+    public function placeholder()
+    {
+        return view('components.skeletons.skeleton');
+    }
     /**
      * Inventory summary grouped by type
      */

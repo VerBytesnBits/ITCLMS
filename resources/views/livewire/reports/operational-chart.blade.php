@@ -11,7 +11,7 @@
         console.log('Operational:', operational);
         console.log('Non-Operational:', nonOperational);
 
-        
+
         if (this.chart) {
             this.chart.destroy();
         }
@@ -19,15 +19,14 @@
         this.chart = new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: labels, 
-                datasets: [
-                    {
-                        label: 'Operational', 
+                labels: labels,
+                datasets: [{
+                        label: 'Operational',
                         data: operational,
                         backgroundColor: 'rgba(34,197,94,0.8)',
                     },
                     {
-                        label: 'Non-Operational', 
+                        label: 'Non-Operational',
                         data: nonOperational,
                         backgroundColor: 'rgba(239,68,68,0.8)',
                     },
@@ -37,24 +36,28 @@
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: { 
+                    legend: {
                         display: true,
-                        labels: { 
+                        labels: {
                             color: '#000',
                         }
                     },
                     title: {
                         display: true,
                         text: 'Operational vs Non-Operational Units per Lab',
-                        color: '#000'
+                        color: '#000',
+                        font: {
+                            size: 20, 
+                            weight: 'lighter'
+                        }
                     }
                 },
                 scales: {
-                    x: { 
+                    x: {
                         ticks: { color: '#000' },
                         title: { display: true, text: 'Laboratories', color: '#000' }
                     },
-                    y: { 
+                    y: {
                         ticks: { color: '#000' },
                         title: { display: true, text: 'Units Count', color: '#000' }
                     }

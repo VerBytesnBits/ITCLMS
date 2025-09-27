@@ -20,12 +20,19 @@
         <!-- Confirm Password -->
         <flux:input wire:model="password_confirmation" :label="__('Confirm password')" type="password" required
             autocomplete="new-password" :placeholder="__('Confirm password')" viewable />
+        <flux:input wire:model="date_of_birth" :label="'Date of Birth'" type="date" />
 
-        {{-- <flux:select label="Register as" wire:model="role" required>
-            <option value="">-- Select Role --</option>
-            <option value="lab_incharge">Lab In-Charge</option>
-            <option value="lab_technician">Lab Technician</option>
-        </flux:select> --}}
+        <p class="mb-1 font-medium">Select Security Question:</p>
+        <select wire:model.live="selectedQuestion" class="w-full border rounded-lg p-2">
+            <option value="" selected>Select a question</option>
+            @foreach ($availableQuestions as $question)
+                <option value="{{ $question }}">{{ $question }}</option>
+            @endforeach
+        </select>
+
+        @if ($selectedQuestion)
+            <flux:input wire:model="answer" :label="'Answer for: '.$selectedQuestion" />
+        @endif
 
 
         <div class="flex items-center justify-end">

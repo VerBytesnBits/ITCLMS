@@ -26,28 +26,42 @@ class Dashboard extends Component
     public $componentsOutOfStock;
     public $peripheralsOutOfStock;
     public $threshold = 5;
+    public $totalUnits;
+    public $totalComponents;
+    public $totalPeripherals;
     public function mount()
     {
+        $this->totalUnits = SystemUnit::count();
+
+        // Total Components
+        $this->totalComponents = ComponentParts::count();
+
+        // Total Peripherals
+        $this->totalPeripherals = Peripheral::count();
+
         // =============== Summary Stats ===============
         $this->stats = [
             'units' => [
                 'Operational' => SystemUnit::where('status', 'Operational')->count(),
                 'Non-operational' => SystemUnit::where('status', 'Non-operational')->count(),
             ],
-            'parts' => [
-                'available' => ComponentParts::where('status', 'available')->count() +
-                    Peripheral::where('status', 'available')->count(),
-                'defective' => ComponentParts::where('status', 'defective')->count() +
-                    Peripheral::where('status', 'defective')->count(),
-                'In use' => ComponentParts::whereNotNull('system_unit_id')->count() +
-                    Peripheral::whereNotNull('system_unit_id')->count(),
+            'components' => [
+                'available' => ComponentParts::where('status', 'available')->count(),
+                'defective' => ComponentParts::where('status', 'defective')->count(),
+                'In use' => ComponentParts::whereNotNull('system_unit_id')->count(),
+            ],
+            'peripherals' => [
+                'available' => Peripheral::where('status', 'available')->count(),
+                'defective' => Peripheral::where('status', 'defective')->count(),
+                'In use' => Peripheral::whereNotNull('system_unit_id')->count(),
             ],
             'maintenance' => [
                 'pending' => Maintenance::where('status', 'pending')->count(),
-                'In Progress' => Maintenance::where('status', 'In Progress')->count(),
+                'in_progress' => Maintenance::where('status', 'In Progress')->count(),
                 'completed' => Maintenance::where('status', 'completed')->count(),
             ],
         ];
+
 
         // =============== Trends ===============
         $this->unitTrends = $this->fillMonths(
@@ -103,7 +117,7 @@ class Dashboard extends Component
             'type',           // group by type
             ['model', 'brand'] // variant columns
         );
-        
+
         $lowStockPeripherals = 0;
         $outOfStockPeripherals = 0;
         foreach ($peripheralsSummary as $type => $variants) {

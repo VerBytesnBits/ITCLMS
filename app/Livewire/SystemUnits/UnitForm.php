@@ -16,8 +16,8 @@ class UnitForm extends Component
     public ?string $category = null;
     public ?string $name = null;
     public ?string $serial_number = null;
-    public string $status = 'Operational';
-    public string $condition = 'Operational';
+    public string $status = 'Non-operational';
+    public string $condition = 'Good'; // ✅ corrected default
     public ?int $room_id = null;
     public int $quantity = 1;
     public bool $multiple = false;
@@ -26,20 +26,29 @@ class UnitForm extends Component
     {
         return [
             'category' => 'required|string|in:PC,SERVER,LAPTOP',
-            'name' => 'required|string|max:100',
+            'name' => 'nullable|string|max:100',
             'serial_number' => [
                 'nullable',
                 'string',
                 Rule::unique('system_units', 'serial_number')->ignore($this->unitId),
             ],
             'status' => 'required|string',
+            'condition' => 'required|string',
             'room_id' => 'required|exists:rooms,id',
             'quantity' => 'required|integer|min:1',
         ];
     }
+    protected function formData(): array
+    {
+        return $this->only([
+            'name',
+            'serial_number',
+            'status',
+            'room_id',
+        ]);
+    }
 
     /** ---------- Modal Control ---------- */
-    /** Open Create Mode */
     public function create()
     {
         $this->resetValidation();
@@ -49,45 +58,107 @@ class UnitForm extends Component
             'name',
             'serial_number',
             'status',
+            'condition',
             'room_id',
-            'quantity',
+            'quantity'
         ]);
 
-        $this->multiple = false;   // default single mode
+        $this->status = 'Operational';
+        $this->condition = 'Good';
+        $this->multiple = false;
         $this->mode = 'create';
         $this->show = true;
     }
 
-    /** Open Edit Mode */
-    public function edit(SystemUnit $unit)
+    public function mount(?int $unitId = null, string $mode = 'create', bool $show = false)
     {
-        $this->resetValidation();
+        $this->unitId = $unitId;
+        $this->mode = $mode;
+        $this->show = $show;
 
-        $this->unitId = $unit->id;
-        $this->category = preg_replace('/\d+$/', '', $unit->name);
-        $this->name = $unit->name;
-        $this->serial_number = $unit->serial_number;
-        $this->status = $unit->status;
-        $this->condition = $unit->condition;
-        $this->room_id = $unit->room_id;
-        $this->quantity = 1;
-
-        $this->multiple = false;   // disable multiple in edit mode
-        $this->mode = 'edit';
-        $this->show = true;
+        if ($unitId && $mode === 'edit') {
+            $unit = SystemUnit::findOrFail($unitId);
+            $this->fill([
+                'unitId' => $unit->id,
+                'name' => $unit->name,
+                'serial_number' => $unit->serial_number,
+                'status' => $unit->status,
+                'category' => preg_replace('/\d+$/', '', $unit->name),
+                'room_id' => $unit->room_id,
+            ]);
+        }
     }
-
 
     public function close(): void
     {
         $this->show = false;
     }
 
+    public function messages()
+    {
+        return [
+            'room_id.required' => 'Please select a room.',
+            'room_id.exists' => 'The selected room does not exist.',
+        ];
+    }
+
+    public function updated($field)
+    {
+        $this->validateOnly($field);
+    }
     /** ---------- Save Logic ---------- */
     public function save()
     {
         $this->validate();
 
+        [$startNumber] = $this->getNextIndex();
+
+        if ($this->mode === 'create') {
+            if ($this->multiple) {
+                for ($i = 0; $i < $this->quantity; $i++) {
+                    $unitNumber = $startNumber + $i;
+                    $unitName = $this->category . $unitNumber;
+                    $serial = $this->generateSerial($unitNumber);
+
+                    SystemUnit::create([
+                        'name' => $unitName,
+                        'category' => $this->category,
+                        'serial_number' => $serial,
+                        'status' => $this->status,
+
+                        'room_id' => $this->room_id,
+                    ]);
+                }
+            } else {
+                $unitName = $this->name ?: $this->category . $startNumber;
+                $serial = $this->serial_number ?: $this->generateSerial();
+
+
+                SystemUnit::create([
+                    'name' => $unitName,
+                    'category' => $this->category,
+                    'serial_number' => $serial,
+                    'status' => $this->status,
+
+                    'room_id' => $this->room_id,
+                ]);
+            }
+        } else {
+            SystemUnit::findOrFail($this->unitId)?->update([
+                'name' => $this->name,
+                'serial_number' => $this->serial_number,
+                'status' => $this->status,
+                'room_id' => $this->room_id,
+            ]);
+        }
+
+        $this->dispatch('closeModal');
+        $this->dispatch('unit-saved');
+    }
+
+    /** ---------- Helpers ---------- */
+    private function getNextIndex(): array
+    {
         $lastUnit = SystemUnit::where('room_id', $this->room_id)
             ->where('name', 'LIKE', $this->category . '%')
             ->orderByRaw("CAST(SUBSTRING(name, LENGTH(?) + 1) AS UNSIGNED) DESC", [$this->category])
@@ -96,45 +167,54 @@ class UnitForm extends Component
         preg_match('/\d+$/', $lastUnit->name ?? '', $matches);
         $startNumber = isset($matches[0]) ? ((int) $matches[0] + 1) : 1;
 
-        if ($this->mode === 'create') {
-            if ($this->multiple) {
-                // batch create
-                for ($i = 0; $i < $this->quantity; $i++) {
-                    $unitName = $this->category . ($startNumber + $i);
-                    SystemUnit::create([
-                        'name' => $unitName,
-                        'category' => $this->category,
-                        'serial_number' => strtoupper($unitName) . '-SN', // auto-gen serial
-                        'status' => $this->status,
-                        'room_id' => $this->room_id,
-                    ]);
-                }
-            } else {
-                // single create
-                $unitName = $this->name ?: $this->category . $startNumber;
-                SystemUnit::create([
-                    'name' => $unitName,
-                    'category' => $this->category,
-                    'serial_number' => $this->serial_number,
-                    'status' => $this->status,
-                    'room_id' => $this->room_id,
-                ]);
-            }
-        } else {
-            // edit mode
-            SystemUnit::find($this->unitId)?->update([
-                'name' => $this->name,
-                'category' => $this->category,
-                'serial_number' => $this->serial_number,
-                'status' => $this->status,
-                'room_id' => $this->room_id,
-            ]);
-        }
-
-        $this->dispatch('closeModal');
+        return [$startNumber, $lastUnit];
     }
 
-    /** ---------- Auto-generate Unit Name ---------- */
+
+    protected function generateSerial(int $i = 0, ?int $startNumber = null): string
+    {
+        $room = Room::find($this->room_id);
+
+        // Category prefix (e.g. PC, LAP, SER)
+        $categoryPrefix = strtoupper(substr($this->category ?? 'PC', 0, 3));
+
+        // Build room prefix (e.g. LAB-1 → L1)
+        $roomPrefix = '';
+        if ($room && !empty($room->name)) {
+            $name = strtoupper($room->name);
+            if (preg_match('/^([A-Z])[A-Z]*[- ]?(\d+)$/', $name, $matches)) {
+                $roomPrefix = $matches[1] . $matches[2];
+            } else {
+                $roomPrefix = substr(str_replace([' ', '-'], '', $name), 0, 2);
+            }
+        }
+
+        // Final prefix e.g. "PCL1"
+        $prefix = $categoryPrefix . $roomPrefix;
+
+        // 🔑 If no startNumber given → get max suffix from existing serials
+        if ($startNumber === null) {
+            $lastNumber = SystemUnit::where('room_id', $this->room_id)
+                ->where('serial_number', 'like', "{$prefix}-%")
+                ->selectRaw("MAX(CAST(SUBSTRING_INDEX(serial_number, '-', -1) AS UNSIGNED)) as max_num")
+                ->value('max_num');
+
+            $startNumber = $lastNumber ? $lastNumber + 1 : 1;
+        }
+
+        $counter = $startNumber + $i;
+        $candidate = sprintf('%s-%03d', $prefix, $counter);
+
+        // Ensure uniqueness
+        while (SystemUnit::where('serial_number', $candidate)->exists()) {
+            $counter++;
+            $candidate = sprintf('%s-%03d', $prefix, $counter);
+        }
+
+        return $candidate;
+    }
+
+
     public function updatedCategory(): void
     {
         $this->generateUnitName();
@@ -152,25 +232,27 @@ class UnitForm extends Component
             return;
         }
 
-        $lastUnit = SystemUnit::where('room_id', $this->room_id)
-            ->where('name', 'LIKE', $this->category . '%')
-            ->orderByRaw("CAST(SUBSTRING(name, LENGTH(?) + 1) AS UNSIGNED) DESC", [$this->category])
-            ->first();
-
-        if ($lastUnit) {
-            preg_match('/\d+$/', $lastUnit->name, $matches);
-            $nextNumber = isset($matches[0]) ? ((int) $matches[0] + 1) : 1;
-        } else {
-            $nextNumber = 1;
-        }
-
+        [$nextNumber] = $this->getNextIndex();
         $this->name = $this->category . $nextNumber;
+
+        if (!$this->multiple) {
+            // ❌ old: $this->serial_number = $this->generateSerial($nextNumber);
+            // ✅ new:
+            $this->serial_number = $this->generateSerial();
+        }
     }
 
-    /** ---------- Serial Generator ---------- */
-    protected function generateSerial(int $i, int $startNumber): string
+
+    public function updatedMultiple($value)
     {
-        return strtoupper(substr($this->category, 0, 3)) . '-' . str_pad($startNumber + $i, 3, '0', STR_PAD_LEFT);
+        if ($value) {
+            $this->serial_number = null;
+        } else {
+            if ($this->category && $this->room_id) {
+                [$nextNumber] = $this->getNextIndex();
+                $this->serial_number = $this->generateSerial($nextNumber);
+            }
+        }
     }
 
     public function render()

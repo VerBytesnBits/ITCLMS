@@ -114,13 +114,13 @@
             <thead>
                 <tr>
                     <th>Description</th>
-                    <th>Total</th>
+                    <th>Quantity</th>
                     <th>Available</th>
                     <th>In Use</th>
                     <th>Defective</th>
                     <th>Maintenance</th>
                     <th>Junk</th>
-                    <th>Salvaged</th>
+                    {{-- <th>Salvaged</th> --}}
                 </tr>
             </thead>
             <tbody>
@@ -133,7 +133,7 @@
                         <td>{{ $row['defective'] }}</td>
                         <td>{{ $row['maintenance'] }}</td>
                         <td>{{ $row['junk'] }}</td>
-                        <td>{{ $row['salvage'] }}</td>
+                        {{-- <td>{{ $row['salvage'] }}</td> --}}
                     </tr>
                 @endforeach
             </tbody>

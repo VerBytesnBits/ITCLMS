@@ -24,15 +24,22 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'date_of_birth',
+        'google2fa_secret',
+        'google2fa_enabled',
     ];
 
     public function rooms()
     {
         return $this->belongsToMany(Room::class, 'room_user')
-                    ->withPivot('role_in_room')
-                    ->withTimestamps();
+            ->withPivot('role_in_room')
+            ->withTimestamps();
     }
 
+    public function securityAnswers()
+    {
+        return $this->hasMany(UserSecurityAnswer::class);
+    }
 
 
 
@@ -57,6 +64,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'date_of_birth' => 'date',
         ];
     }
 

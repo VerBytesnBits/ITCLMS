@@ -16,7 +16,7 @@
     }" class="border rounded-lg  bg-white dark:bg-zinc-800 mt-4 mb-4 shadow-lg">
         <!-- Header row -->
         <div class="flex items-center justify-between p-4 border-b">
-            <flux:heading class="flex items-center gap-2 !text-2xl text-zinc-500">
+            <flux:heading class="flex items-center gap-2 !text-2xl text-zinc-600">
                 Total Peripherals
                 <flux:tooltip hoverable>
                     <flux:button icon="information-circle" size="sm" variant="subtle" />
@@ -31,21 +31,27 @@
                     </flux:tooltip.content>
                 </flux:tooltip>
             </flux:heading>
-            <span class="text-xl font-bold text-gray-700">
+            <span class="text-xl font-bold text-zinc-700">
                 {{ collect($this->peripheralSummary)->flatten(1)->sum('total') }}
             </span>
         </div>
 
         <!-- Toggle -->
         <button @click="toggle()"
-            class="w-full text-left px-4 py-2 text-sm text-green-500 hover:underline flex items-center justify-between">
+            class="w-full flex items-center justify-between px-3 py-2 text-sm font-medium
+           text-zinc-500 dark:text-zinc-200 
+           bg-zinc-50 dark:bg-zinc-800 
+           hover:bg-zinc-100 dark:hover:bg-zinc-700 
+           rounded-lg transition">
+
             <span x-text="open ? 'Hide Peripheral Statistics' : 'View Peripheral Statistics'"></span>
-            <svg :class="{ 'rotate-180': open }" class="w-4 h-4 transition-transform" xmlns="http://www.w3.org/2000/svg"
-                fill="none" viewBox="0 0 24 24" stroke="currentColor">
+
+            <!-- Chevron -->
+            <svg :class="{ 'rotate-180': open }" class="w-4 h-4 text-zinc-500 transition-transform duration-300"
+                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
             </svg>
         </button>
-
         <!-- Summary Table -->
         <div x-show="open" x-transition
             class="overflow-x-auto p-4 border-t bg-gradient-to-r from-yellow-100 to-yellow-50 shadow-inner"
@@ -116,11 +122,7 @@
                                         {{ $sortDirection === 'asc' ? '↑' : '↓' }}
                                     @endif
                                 </th>
-                                <th scope="col" class="px-6 py-3 cursor-pointer" wire:click="sortBy('salvage')">
-                                    Salvage @if ($sortColumn === 'salvage')
-                                        {{ $sortDirection === 'asc' ? '↑' : '↓' }}
-                                    @endif
-                                </th>
+
                             </tr>
                         </thead>
                         <tbody>
@@ -151,7 +153,7 @@
                                     <td class="px-4 py-2 text-center">{{ $item['defective'] }}</td>
                                     <td class="px-4 py-2 text-center">{{ $item['maintenance'] }}</td>
                                     <td class="px-4 py-2 text-center">{{ $item['junk'] }}</td>
-                                    <td class="px-4 py-2 text-center">{{ $item['salvage'] }}</td>
+
                                 </tr>
                             @endforeach
                         </tbody>
@@ -193,11 +195,7 @@
                                     {{ $sortDirection === 'asc' ? '↑' : '↓' }}
                                 @endif
                             </th>
-                            <th scope="col" class="px-6 py-3 cursor-pointer" wire:click="sortBy('salvage')">
-                                Salvage @if ($sortColumn === 'salvage')
-                                    {{ $sortDirection === 'asc' ? '↑' : '↓' }}
-                                @endif
-                            </th>
+
                         </tr>
                     </thead>
                     <tbody>
@@ -228,7 +226,7 @@
                                 <td class="px-4 py-2 text-center">{{ $item['defective'] }}</td>
                                 <td class="px-4 py-2 text-center">{{ $item['maintenance'] }}</td>
                                 <td class="px-4 py-2 text-center">{{ $item['junk'] }}</td>
-                                <td class="px-4 py-2 text-center">{{ $item['salvage'] }}</td>
+
                             </tr>
                         @endforeach
                     </tbody>
@@ -258,7 +256,7 @@
     <div
         class="overflow-x-auto bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl shadow-lg">
         <table class="min-w-full text-sm text-left text-gray-700 dark:text-gray-200">
-            <thead class="bg-gray-200 dark:bg-zinc-800 text-xs uppercase">
+            <thead class="bg-zinc-200 dark:bg-zinc-800 text-xs uppercase">
                 <tr>
 
                     <th class="px-4 py-3">Serial Number</th>
@@ -277,7 +275,7 @@
 
                 @forelse($peripherals as $peripheral)
                     <tr
-                        class="border-t border-gray-200 dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-800/50 odd:bg-white even:bg-gray-200 dark:odd:bg-zinc-800 dark:even:bg-zinc-700">
+                        class="border-t border-gray-200 dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-800/50 odd:bg-white even:bg-zinc-200 dark:odd:bg-zinc-800 dark:even:bg-zinc-700">
                         <td class="px-4 py-3">{{ $peripheral->serial_number }}</td>
                         <td class="px-4 py-3">{{ $peripheral->type }}</td>
                         {{-- <td class="px-4 py-3">

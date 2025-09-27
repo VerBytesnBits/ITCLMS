@@ -10,7 +10,9 @@ use Livewire\Attributes\Url;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Layout;
 use App\Traits\HasInventorySummary;
+use Livewire\Attributes\Lazy;
 
+#[Lazy]
 #[Layout('components.layouts.app', ['title' => 'Components'])]
 class Index extends Component
 {
@@ -32,7 +34,10 @@ class Index extends Component
     public string $sortColumn = 'available';
     public string $sortDirection = 'asc';
     public $lowStockThreshold = 5;
-
+    public function placeholder()
+    {
+        return view('components.skeletons.skeleton');
+    }
 
     /**
      * Summary grouped by part
@@ -89,7 +94,7 @@ class Index extends Component
 
     public function updatedSearch()
     {
-       
+
         $this->resetPage(); // Also reset pagination
     }
 

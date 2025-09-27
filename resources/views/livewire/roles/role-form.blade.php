@@ -20,15 +20,29 @@
                     @enderror
                 </div>
 
-                <!-- Permissions -->
-                <flux:checkbox.group wire:model="permissions" label="Permissions">
-                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-1">
-                        @foreach ($allPermissions as $permission)
-                            <flux:checkbox label="{{ $permission->name }}" value="{{ $permission->name }}"
-                                class="w-full" />
-                        @endforeach
-                    </div>
-                </flux:checkbox.group>
+                @php
+                    $groupedPermissions = $allPermissions->groupBy(function ($permission) {
+                        return explode('.', $permission->name)[0]; // prefix before dot
+                    });
+                @endphp
+
+                <div class="max-h-[60vh] overflow-y-auto pr-2 space-y-6 mt-1">
+                    @foreach ($groupedPermissions as $group => $permissions)
+                        <div>
+                            <h4 class="text-sm font-semibold text-zinc-600 dark:text-zinc-300 capitalize mb-2">
+                                {{ $group }}
+                            </h4>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                                @foreach ($permissions as $permission)
+                                    <flux:checkbox label="{{ str_replace($group . '.', '', $permission->name) }}"
+                                        value="{{ $permission->name }}" class="w-full" />
+                                @endforeach
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+
+
 
                 <!-- Actions -->
                 <div class="flex justify-end pt-4 space-x-2">

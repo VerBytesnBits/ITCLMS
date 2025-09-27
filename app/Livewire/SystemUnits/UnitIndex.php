@@ -8,11 +8,13 @@ use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
+use Livewire\Attributes\Lazy;
 
+#[Lazy]
 #[Layout('components.layouts.app', ['title' => 'Units'])]
 class UnitIndex extends Component
 {
-    
+
     public $units = [];
     public $rooms = [];
     public $search = '';
@@ -28,34 +30,64 @@ class UnitIndex extends Component
     public ?int $unitId;
     public $showAssignModal = false; // assign peripheral
     public $assignUnitId = null;     // unit id for assign modal
+    public $selectedRoom = null; // null = all rooms
+    public $operationalCount = 0;
+    public $nonOperationalCount = 0;
 
-    protected $listeners = [
-        'unit-saved' => 'loadUnits',
-        'unit-deleted' => 'loadUnits',
-        'closeModal' => 'closeModal',
-        'closeAssignModal' => 'closeAssignModal',
+    public function placeholder()
+    {
+        return view('components.skeletons.units');
+    }
+    public function updatedSelectedRoom()
+    {
+        $this->updateUnitCounts();
+        $this->loadUnits();
+    }
 
-    ];
+    protected function updateUnitCounts()
+    {
+        $user = Auth::user();
+        $query = SystemUnit::query();
+
+        if ($this->selectedRoom) {
+            $query->where('room_id', $this->selectedRoom);
+        }
+        if (!$user->hasRole('chairman')) {
+            $roomIds = $user->rooms->pluck('id');
+            $query->whereIn('room_id', $roomIds);
+        }
+        $this->operationalCount = (clone $query)->where('status', 'Operational')->count();
+        $this->nonOperationalCount = (clone $query)->where('status', 'Non-Operational')->count();
+    }
+
 
     public function mount()
     {
         $this->rooms = \App\Models\Room::orderBy('name')->get();
         $this->loadUnits();
-    }
 
+    }
+    #[On(event: 'unit-deleted')]
+    #[On(event: 'unit-saved')]
     public function loadUnits()
     {
         $user = Auth::user();
 
-        if ($user->hasRole('chairman')) {
-            $this->units = SystemUnit::with('room')->orderBy('id', 'asc')->get();
-        } else {
+        $query = SystemUnit::with('room');
+
+        if (!$user->hasRole('chairman')) {
             $roomIds = $user->rooms->pluck('id');
-            $this->units = SystemUnit::with('room')
-                ->whereIn('room_id', $roomIds)
-                ->orderBy('id', 'asc')
-                ->get();
+            $query->whereIn('room_id', $roomIds);
         }
+
+        if ($this->selectedRoom) {
+            $query->where('room_id', $this->selectedRoom);
+        }
+
+        $this->units = $query->orderBy('id', 'asc')->get();
+
+        // Recalculate counts
+        $this->updateUnitCounts();
     }
 
 
@@ -68,11 +100,6 @@ class UnitIndex extends Component
                 fn($q) =>
                 $q->where('name', 'like', "%{$this->search}%")
                     ->orWhereHas('room', fn($r) => $r->where('name', 'like', "%{$this->search}%"))
-            )
-            ->when(
-                $this->roomFilter,
-                fn($q) =>
-                $q->where('room_id', $this->roomFilter)
             )
             ->when(
                 $this->statusFilter,
@@ -89,6 +116,7 @@ class UnitIndex extends Component
         $this->selectedUnit = null;
         $this->modalMode = 'create';
         $this->showModal = true;
+
     }
 
 
@@ -102,7 +130,7 @@ class UnitIndex extends Component
     }
 
 
-
+    
     public function edit(SystemUnit $unit)
     {
         $this->selectedUnit = $unit;
@@ -125,20 +153,7 @@ class UnitIndex extends Component
         $this->unitId = null;
     }
 
-    // Assign peripherals modal
-    public function openAssignModal($unitId)
-    {
-        $this->assignUnitId = $unitId;
-        $this->showAssignModal = true;
-        $this->modalMode = 'assign';
-    }
 
-    #[On('closeAssignModal')]
-    public function closeAssignModal()
-    {
-        $this->showAssignModal = false;
-        $this->assignUnitId = null;
-    }
 
     public function render()
     {

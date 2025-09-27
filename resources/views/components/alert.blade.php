@@ -19,4 +19,5 @@
             });
         @endif
     "
-> <div x-show="show" class="fixed inset-0 bg-black/30 backdrop-blur-sm z-40"></div></div>
+> </div>
+{{-- <div x-show="show" class="fixed inset-0 bg-black/30 backdrop-blur-sm z-40"></div> --}}

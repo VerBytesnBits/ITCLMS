@@ -4,7 +4,7 @@
 
     <!-- Session Status -->
     <x-auth-session-status class="text-center" :status="session('status')" />
-
+    <x-alert />
 
 
     <form wire:submit="login" class="flex flex-col gap-6">
@@ -38,40 +38,5 @@
             <flux:link :href="route('register')" wire:navigate>{{ __('Sign up') }}</flux:link>
         </div>
     @endif
-    {{-- to display the alert --}}
-    {{-- <div x-data="{ show: false }" x-init="@if (session('alert')) show = true; Swal.fire({
-        toast: true,
-        position:'{{ session('alert')['position'] }}',
-        icon: '{{ session('alert')['type'] }}',
-        title: '{{ session('alert')['title'] }}',
-        showConfirmButton: true,
-        timer: 3000,
-        timerProgressBar: true,
-        willClose: () => show = false
-    }); @endif">
-       
-    </div> --}}
-    <div 
-    x-data="{ show: false }"
-    x-init="
-        @if (session('alert'))
-            show = true;
-            Swal.fire({
-                toast: true,
-                position: '{{ session('alert')['position'] ?? 'top-end' }}',
-                icon: '{{ session('alert')['type'] ?? 'info' }}',
-                title: '{{ session('alert')['title'] ?? '' }}',
-                text: '{{ session('alert')['text'] ?? '' }}',
-                background: '{{ session('alert')['background'] ?? '#fff' }}',
-                color: '{{ session('alert')['color'] ?? '#000' }}',
-                iconHtml: `{!! session('alert')['iconHtml'] ?? '' !!}`,
-                showConfirmButton: {{ session('alert')['confirmButton'] ?? 'false' }},
-                timer: {{ session('alert')['timer'] ?? 3000 }},
-                timerProgressBar: true,
-                willClose: () => show = false
-            });
-        @endif
-    "
-></div>
 
 </div>
