@@ -18,6 +18,7 @@ return new class extends Migration {
                 ->nullable()
                 ->constrained()
                 ->onDelete('cascade');
+            $table->foreignId('current_unit_id')->nullable()->constrained('system_units');
             $table->foreignId('room_id')->nullable()->constrained()->cascadeOnDelete(); // optional link
             // Core identification
             $table->string('serial_number')->unique();

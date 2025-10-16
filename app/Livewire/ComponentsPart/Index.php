@@ -11,7 +11,8 @@ use Livewire\Attributes\On;
 use Livewire\Attributes\Layout;
 use App\Traits\HasInventorySummary;
 use Livewire\Attributes\Lazy;
-
+use App\Support\StatusConfig;
+use App\Models\Room;
 #[Lazy]
 #[Layout('components.layouts.app', ['title' => 'Components'])]
 class Index extends Component
@@ -30,6 +31,13 @@ class Index extends Component
     #[Url(as: 'tab')]
     public ?string $tab = null; // default tab
 
+    #[Url(as: 'room')]
+    public ?int $roomId = null;
+
+    #[Url(as: 'age')]
+    public string $age = '';
+
+
     public int $perPage = 10; // Items per page
     public string $sortColumn = 'available';
     public string $sortDirection = 'asc';
@@ -39,57 +47,29 @@ class Index extends Component
         return view('components.skeletons.skeleton');
     }
 
-    /**
-     * Summary grouped by part
-     */
-    // public function getComponentSummaryProperty()
-    // {
-    //     $summary = ComponentParts::select(
-    //         'part',
-    //         DB::raw("CONCAT(
-    //             COALESCE(brand,''), ' ',
-    //             COALESCE(model,''), ' ',
-    //             COALESCE(speed,''), ' ',
-    //             COALESCE(capacity,''), ' ',
-    //             COALESCE(type,'')) as description"),
-    //         DB::raw('COUNT(*) as total'),
-    //         DB::raw("SUM(CASE WHEN status = 'Available' THEN 1 ELSE 0 END) as available"),
-    //         DB::raw("SUM(CASE WHEN status = 'In Use' THEN 1 ELSE 0 END) as in_use"),
-    //         DB::raw("SUM(CASE WHEN status = 'Defective' THEN 1 ELSE 0 END) as defective"),
-    //         DB::raw("SUM(CASE WHEN status = 'Under Maintenance' THEN 1 ELSE 0 END) as maintenance"),
-    //         DB::raw("SUM(CASE WHEN status = 'Junk' THEN 1 ELSE 0 END) as junk"),
-    //         DB::raw("SUM(CASE WHEN status = 'Salvaged' THEN 1 ELSE 0 END) as salvage")
-    //     )
-    //         ->groupBy('part', 'description')
-    //         ->orderBy('part')
-    //         ->get();
-
-    //     // Sorting logic
-    //     if ($this->sortColumn && $this->sortDirection) {
-    //         $summary = $summary->sortBy(function ($item) {
-    //             return $item->{$this->sortColumn};
-    //         });
-
-    //         if ($this->sortDirection === 'desc') {
-    //             $summary = $summary->reverse();
-    //         }
-    //     }
-
-    //     return $summary->groupBy('part')->toArray();
-    // }
-
-
-
+    
     public function getComponentSummaryProperty()
     {
+        $filters = [];
+
+        if ($this->roomId) {
+            $filters['room_id'] = $this->roomId;
+        }
+
+        if ($this->age) {
+            $filters['__age'] = $this->age;
+        }
+
         return $this->getInventorySummary(
             ComponentParts::class,
             'part',
             ['brand', 'model', 'speed', 'capacity', 'type'],
             $this->sortColumn,
-            $this->sortDirection
+            $this->sortDirection,
+            $filters
         );
     }
+
 
 
     public function updatedSearch()
@@ -156,24 +136,47 @@ class Index extends Component
 
     public function render()
     {
+        $labs = Room::all();
+        $statusColors = StatusConfig::statuses();
         $components = ComponentParts::with(['systemUnit', 'room'])
-            ->when($this->tab && $this->tab !== 'All', function ($search) {
-                $search->where('part', $this->tab);
+            ->when($this->roomId, function ($q) {
+                $q->whereHas('systemUnit', function ($unit) {
+                    $unit->where('room_id', $this->roomId);
+                });
             })
-
-            ->when($this->search, function ($search) {
-                $search->where(function ($q) {
-                    $q->where('serial_number', 'like', '%' . $this->search . '%')
+            ->when($this->age, function ($q) {
+                // applyFilters logic here
+                if ($this->age === 'new') {
+                    $q->where(function ($sub) {
+                        $sub->where('warranty_expires_at', '>=', now())
+                            ->orWhere('purchase_date', '>=', now()->subYear());
+                    });
+                } elseif (preg_match('/^older_(\d+)(month|months|year|years)$/', $this->age, $matches)) {
+                    $amount = (int) $matches[1];
+                    $unit = rtrim($matches[2], 's');
+                    $q->where('purchase_date', '<', now()->sub($unit, $amount));
+                }
+            })
+            ->when($this->tab && $this->tab !== 'All', function ($q) {
+                $q->where('part', $this->tab);
+            })
+            ->when($this->search, function ($q) {
+                $q->where(function ($sub) {
+                    $sub->where('serial_number', 'like', '%' . $this->search . '%')
                         ->orWhere('part', 'like', '%' . $this->search . '%')
                         ->orWhere('model', 'like', '%' . $this->search . '%');
                 });
             })
             ->paginate($this->perPage);
 
+
         return view('livewire.components-part.index', [
+            'statusColors' => $statusColors,
             'components' => $components,
             'summary' => $this->componentSummary,
+            'labs' => $labs
         ]);
     }
+
 
 }

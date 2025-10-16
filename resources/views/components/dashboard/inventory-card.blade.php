@@ -1,7 +1,7 @@
 <div
     class="p-6 bg-gradient-to-r from-{{ $fromColor }} to-{{ $toColor }} rounded-xl shadow-lg hover:shadow-2xl transition transform hover:-translate-y-1">
-
-    <h3 class="font-bold mb-6 text-lg text-white">{{ $title }}</h3>
+    <flux:heading size="lg" level="1" class="font-bold! mb-3 text-white">{{ $title }}</flux:heading>
+    {{-- <h3 class="font-bold mb-6 text-lg text-white">{{ $title }}</h3> --}}
 
     <!-- Circular Progress -->
     <div class="flex items-center justify-center">
@@ -54,7 +54,7 @@
     </div>
 
     <!-- Alerts -->
-    <div class="mt-6 min-h-[3rem] flex flex-col gap-2">
+    <div class="mt-6 min-h-[8rem] flex flex-col gap-2">
         @if ($belowThreshold)
             <flux:callout variant="warning" icon="exclamation-circle"
                 heading="{{ $belowThreshold }} Low Stock Alerts" />
@@ -65,7 +65,7 @@
         @endif
 
         @if (!$belowThreshold && !$outOfStock)
-            <p class="text-xs text-white/70 italic text-center">All stock levels are healthy</p>
+            <p class="text-xs text-white/70 italic text-center mt-6">All stock levels are healthy</p>
         @endif
     </div>
     <p class="text-[11px] text-white/60 text-center mt-4">

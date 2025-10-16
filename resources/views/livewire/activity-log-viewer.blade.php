@@ -25,7 +25,7 @@
     <!-- Activity Table -->
     <div class="overflow-x-auto rounded-xl border border-zinc-200 shadow-sm bg-white">
         <table class="w-full text-sm">
-            <thead class="bg-zinc-200 text-zinc-700 text-xs uppercase">
+            <thead class="bg-blue-500 text-zinc-100 text-xs uppercase">
                 <tr>
                     <th class="p-3 text-left">User</th>
                     <th class="p-3 text-left">Action</th>

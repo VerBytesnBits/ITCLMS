@@ -10,6 +10,7 @@ use App\Models\Maintenance;
 use App\Traits\HasInventorySummary; // <-- include the trait
 use Carbon\Carbon;
 use DB;
+use Spatie\Activitylog\Models\Activity;
 
 class Dashboard extends Component
 {
@@ -18,7 +19,7 @@ class Dashboard extends Component
     public $stats = [];
     public $unitTrends = [];
     public $maintenanceTrends = [];
-    public $recentLogs = [];
+    // public $recentLogs = [];
     public $operationalPercentage;
     public $peripheralPercentage;
     public $componentsBelowThreshold;
@@ -29,8 +30,10 @@ class Dashboard extends Component
     public $totalUnits;
     public $totalComponents;
     public $totalPeripherals;
+    public $recentLogs;
     public function mount()
     {
+        $this->recentLogs = Activity::latest()->take(5)->get();
         $this->totalUnits = SystemUnit::count();
 
         // Total Components

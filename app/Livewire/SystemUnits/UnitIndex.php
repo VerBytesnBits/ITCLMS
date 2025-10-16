@@ -43,7 +43,10 @@ class UnitIndex extends Component
         $this->updateUnitCounts();
         $this->loadUnits();
     }
-
+    public function updatedStatusFilter()
+    {
+        $this->loadUnits();
+    }
     protected function updateUnitCounts()
     {
         $user = Auth::user();
@@ -82,6 +85,10 @@ class UnitIndex extends Component
 
         if ($this->selectedRoom) {
             $query->where('room_id', $this->selectedRoom);
+        }
+
+        if ($this->statusFilter) {
+            $query->where('status', $this->statusFilter);
         }
 
         $this->units = $query->orderBy('id', 'asc')->get();
@@ -130,7 +137,7 @@ class UnitIndex extends Component
     }
 
 
-    
+
     public function edit(SystemUnit $unit)
     {
         $this->selectedUnit = $unit;

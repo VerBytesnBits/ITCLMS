@@ -16,7 +16,7 @@ class TwoFactorAuthentication extends Component
         $google2fa = app('pragmarx.google2fa');
 
         if ($this->user->google2fa_secret) {
-            // ✅ Reuse saved secret
+            // Reuse saved secret
             $this->secret = $this->user->google2fa_secret;
         } else {
             // Generate once
@@ -49,7 +49,7 @@ class TwoFactorAuthentication extends Component
             return;
         }
 
-        // ✅ Toggle enable/disable
+        //  Toggle enable/disable
         if ($this->user->google2fa_enabled) {
             // If enabled, disable it (but keep secret)
             $this->user->update([

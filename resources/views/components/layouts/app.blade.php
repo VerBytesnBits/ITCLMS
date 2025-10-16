@@ -6,8 +6,8 @@
            rounded-xl shadow p-8">
         {{ $slot }}
     </div>
-
-
 </x-layouts.app.sidebar-itclms>
+{{-- <x-toast /> --}}
+
 <x-alert />
 <x-scroll-to-up />

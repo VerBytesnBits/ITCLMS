@@ -1,49 +1,127 @@
-<div class="flex flex-col gap-6">
-    <x-auth-header :title="__('Create an account')" :description="__('Enter your details below to create your account')" />
+<div x-data="{ loaded: false }" x-init="setTimeout(() => loaded = true, 100)"
+    class="w-full max-w-3xl mx-auto bg-gradient-to-br from-emerald-600/60 via-teal-600/70 to-emerald-700/50 backdrop-blur-xl 
+            rounded-3xl shadow-2xl border border-emerald-200/40 p-8 sm:p-10 transition-all duration-700 hover:shadow-yellow-500/10 hover:shadow-2xl hover:scale-[1.01]"
+    x-show="loaded" x-transition:enter="transition ease-out duration-700"
+    x-transition:enter-start="opacity-0 translate-y-6 scale-95"
+    x-transition:enter-end="opacity-100 translate-y-0 scale-100">
 
-    <!-- Session Status -->
-    <x-auth-session-status class="text-center" :status="session('status')" />
+    <!-- Header -->
+    <h1 class="text-3xl font-extrabold text-white mb-2 tracking-tight text-center">Create an Account</h1>
+    <p class="text-sm text-emerald-100/80 mb-2 text-center">
+        @if ($step === 1)
+            Enter your user information below.
+        @elseif ($step === 2)
+            Set up your password.
+        @elseif ($step === 3)
+            Configure security and confirm details.
+        @endif
+    </p>
 
-    <form wire:submit="register" class="flex flex-col gap-6">
-        <!-- Name -->
-        <flux:input wire:model="name" :label="__('Name')" type="text" required autofocus autocomplete="name"
-            :placeholder="__('Full name')" />
+    <!-- Stepper -->
+    <div class="flex items-center justify-between relative px-2 sm:px-4 mb-10 mt-5">
+        @php
+            $steps = [
+                1 => ['label' => 'Enter', 'sub' => 'User Info'],
+                2 => ['label' => 'Setup', 'sub' => 'Password'],
+                3 => ['label' => 'Security', 'sub' => 'Setup'],
+            ];
+            $total = count($steps);
+        @endphp
 
-        <!-- Email Address -->
-        <flux:input wire:model="email" :label="__('Email address')" type="email" required autocomplete="email"
-            placeholder="email@example.com" />
+        @foreach ($steps as $index => $info)
+            <div class="flex flex-col items-center flex-1 text-center relative">
 
-        <!-- Password -->
-        <flux:input wire:model="password" :label="__('Password')" type="password" required autocomplete="new-password"
-            :placeholder="__('Password')" viewable />
+                <!-- Connector -->
+                @if ($index < $total)
+                    <div class="absolute top-5 right-[-50%] w-full h-[2px] bg-gray-200">
+                        @if ($step > $index)
+                            <div class="absolute top-0 left-0 h-[2px] bg-yellow-500 transition-all duration-500 w-full"></div>
+                        @endif
+                    </div>
+                @endif
 
-        <!-- Confirm Password -->
-        <flux:input wire:model="password_confirmation" :label="__('Confirm password')" type="password" required
-            autocomplete="new-password" :placeholder="__('Confirm password')" viewable />
-        <flux:input wire:model="date_of_birth" :label="'Date of Birth'" type="date" />
+                <!-- Step Circle -->
+                <div
+                    class="z-10 w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center font-semibold shadow
+                    {{ $step > $index 
+                        ? 'bg-yellow-500 text-white shadow-yellow-200' 
+                        : ($step === $index 
+                            ? 'bg-yellow-400 text-white ring-4 ring-yellow-100' 
+                            : 'bg-gray-200 text-gray-600') }}">
+                    {{ sprintf('%02d', $index) }}
+                </div>
 
-        <p class="mb-1 font-medium">Select Security Question:</p>
-        <select wire:model.live="selectedQuestion" class="w-full border rounded-lg p-2">
-            <option value="" selected>Select a question</option>
-            @foreach ($availableQuestions as $question)
-                <option value="{{ $question }}">{{ $question }}</option>
-            @endforeach
-        </select>
+                <!-- Labels -->
+                <div class="mt-2 text-xs sm:text-sm leading-tight">
+                    <span class="block font-medium text-zinc-800">{{ $info['label'] }}</span>
+                    <span class="block text-emerald-100/80">{{ $info['sub'] }}</span>
+                </div>
+            </div>
+        @endforeach
+    </div>
 
-        @if ($selectedQuestion)
-            <flux:input wire:model="answer" :label="'Answer for: '.$selectedQuestion" />
+    <!-- Form Section -->
+    <form wire:submit.prevent="{{ $step < 3 ? 'nextStep' : 'register' }}" class="flex flex-col gap-6 max-w-md mx-auto">
+
+        {{-- Step 1 --}}
+        @if ($step === 1)
+            <div x-transition.opacity.duration.300ms class="flex flex-col gap-4">
+                <flux:input wire:model="name" label="Full Name" placeholder="John Doe" required />
+                <flux:input wire:model="email" label="Email Address" type="email" placeholder="john@example.com" required />
+            </div>
+       
+                <flux:button type="submit" variant="primary">Next</flux:button>
+      
         @endif
 
+        {{-- Step 2 --}}
+        @if ($step === 2)
+            <div x-transition.opacity.duration.300ms class="flex flex-col gap-4">
+                <flux:input wire:model="password" label="Password" type="password" placeholder="Password" viewable required />
+                <flux:input wire:model="password_confirmation" label="Confirm Password" type="password" placeholder="Confirm password" viewable required />
+            </div>
+            <div class="flex justify-between mt-6">
+                <flux:button wire:click.prevent="previousStep" variant="outline" class="w-32">Back</flux:button>
+                <flux:button type="submit" variant="primary" class="w-32 bg-yellow-500 hover:bg-yellow-600 transition-all">Next</flux:button>
+            </div>
+        @endif
 
-        <div class="flex items-center justify-end">
-            <flux:button type="submit" variant="primary" class="w-full">
-                {{ __('Create account') }}
-            </flux:button>
-        </div>
+        {{-- Step 3 --}}
+        @if ($step === 3)
+            <div x-transition.opacity.duration.300ms class="flex flex-col gap-2">
+                <flux:input wire:model="date_of_birth" label="Date of Birth" type="date" />
+                <flux:select wire:model.live="selectedQuestion" label="Security Question">
+                    <option value="">Select a question</option>
+                    @foreach ($availableQuestions as $question)
+                        <option value="{{ $question }}">{{ $question }}</option>
+                    @endforeach
+                </flux:select>
+
+                @if ($selectedQuestion)
+                    <flux:input wire:model="answer" label="Your Answer" placeholder="Type your answer" />
+                @endif
+
+                <label class="flex items-center text-sm text-gray-200 mt-2">
+                    <input type="checkbox" wire:model="agreed" class="mr-2 rounded border-gray-300 text-yellow-500 focus:ring-yellow-400">
+                    I agree to the 
+                    <a href="#" class="text-yellow-300 font-medium ml-1 hover:underline">Terms & Conditions</a>.
+                </label>
+
+                @error('agreed')
+                    <span class="text-red-400 text-xs mt-1 block">{{ $message }}</span>
+                @enderror
+            </div>
+
+            <div class="flex justify-between mt-6">
+                <flux:button wire:click.prevent="previousStep" variant="outline" class="w-32">Back</flux:button>
+                <flux:button type="submit" variant="primary" class="w-32 bg-yellow-500 hover:bg-yellow-600 transition-all">Finish</flux:button>
+            </div>
+        @endif
     </form>
 
-    <div class="space-x-1 rtl:space-x-reverse text-center text-sm text-zinc-600 dark:text-zinc-400">
-        <span class="text-gray-400/60">{{ __('Already have an account?') }}</span>
-        <flux:link :href="route('login')" wire:navigate>{{ __('Log in') }}</flux:link>
+    <!-- Footer -->
+    <div class="mt-10 text-center text-sm text-emerald-100">
+        <span>Already have an account?</span>
+        <flux:link :href="route('login')" wire:navigate class="text-yellow-400 font-semibold hover:text-yellow-300 transition">Log in</flux:link>
     </div>
 </div>

@@ -1,23 +1,24 @@
-<div>
+<div class="space-y-4">
+    <!-- Heading -->
     <livewire:dashboard-heading title="Dashboard" subtitle="Overview of IT Computer Laboratory Management System"
         icon="layout-grid" gradient-from-color="#CE4A3E" gradient-to-color="#C2CE3E" icon-color="text-orange-500" />
 
-
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+    <!-- Stats Row -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <x-dashboard.stats-card title="Total Units" :value="$totalUnits" iconBg="bg-green-500" />
         <x-dashboard.stats-card title="Total Components" :value="$totalComponents" iconBg="bg-purple-500" />
         <x-dashboard.stats-card title="Total Peripherals" :value="$totalPeripherals" iconBg="bg-blue-500" />
     </div>
 
-
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-4">
-        <!-- Units -->
-        <div
-            class="p-6 bg-white dark:bg-zinc-800  dark:text-white backdrop-blur-md rounded-2xl shadow-lg hover:shadow-2xl transition transform hover:-translate-y-1 border border-zinc-200  dark:border-zinc-700">
+    <!-- Charts + Inventory -->
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
+        <!-- Units Chart -->
+        
             <livewire:reports.operational-chart />
-        </div>
+       
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Inventory Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <x-dashboard.inventory-card title="Components Inventory" from-color="emerald-500" to-color="blue-500"
                 :percentage="round($operationalPercentage, 0)" :stats="$stats['components']" :below-threshold="$componentsBelowThreshold" :out-of-stock="$componentsOutOfStock" />
 
@@ -26,13 +27,39 @@
         </div>
     </div>
 
-    <!-- Charts -->
-    <div class="grid grid-cols-1 gap-8">
-        <!-- Defective Units Trend -->
-        <div
-            class="p-6 bg-white dark:bg-gray-900 rounded-2xl shadow-xl hover:shadow-2xl transition transform hover:-translate-y-1">
-            <h1 class="text-lg mb-4">Recent Activity</h1>
-            {{-- <livewire:defective-units-chart /> --}}
+    <!-- Recent Activity Logs -->
+    <div
+        class="p-6 bg-white dark:bg-zinc-800 rounded-2xl shadow-lg border border-zinc-200 dark:border-zinc-700
+           hover:shadow-2xl transition transform hover:-translate-y-1">
+
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-4">
+            {{-- <h3 class="text-lg font-semibold flex items-center gap-2 text-zinc-800 dark:text-zinc-100">
+
+            </h3> --}}
+            <flux:heading size="lg" level="1" class="text-lg flex items-center gap-2  text-zinc-600 ">
+                <flux:icon.activity class="w-5 h-5 text-blue-500" />
+                Recent Activity
+            </flux:heading>
+            <a href="{{ route('activitylogs') }}" class="text-zinc-600 dark:hover:text-blue-300 hover:text-blue-500">
+                <flux:icon.eye />
+            </a>
         </div>
+
+        <!-- Logs List -->
+        <ul class="divide-y divide-zinc-200 dark:divide-zinc-700">
+            @forelse($recentLogs as $log)
+                <li class="py-3 text-sm text-zinc-700 dark:text-zinc-300 flex justify-between items-center">
+                    <div>
+                        <span class="font-medium">{{ $log->description }}</span>
+                        <span class="text-xs text-zinc-500">by {{ $log->causer?->name ?? 'System' }}</span>
+                    </div>
+                    <div class="text-xs text-zinc-400">{{ $log->created_at->diffForHumans() }}</div>
+                </li>
+            @empty
+                <li class="py-3 text-sm text-zinc-500 italic">No recent activity logs</li>
+            @endforelse
+        </ul>
     </div>
+
 </div>

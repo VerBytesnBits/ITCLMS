@@ -21,34 +21,33 @@ class Login extends Component
     #[Validate('required|string')]
     public string $password = '';
 
-    public bool $remember = false;
 
-   
+
+
     public function login(): void
     {
-        $this->validate([
-            'email' => 'required|email',
-            'password' => 'required',
-        ]);
+        $this->validate();
 
-        if (! Auth::attempt(['email' => $this->email, 'password' => $this->password])) {
-            // 🔴 Invalid login attempt
-            $this->dispatch('swal', toast: true, icon: 'error', title: 'Invalid Credentials!', timer: 3000);
+        $this->ensureIsNotRateLimited();
 
+        if (!Auth::attempt(['email' => $this->email, 'password' => $this->password])) {
+            RateLimiter::hit($this->throttleKey(), 60); // increment attempts, 60 sec decay
             throw ValidationException::withMessages([
                 'email' => __('auth.failed'),
             ]);
         }
 
-        // ✅ Successful login
+        RateLimiter::clear($this->throttleKey());
+        Session::regenerate();
+        // Successful login
         session()->flash('alert', [
             'type' => 'success',
-            'position' =>'top-end',
+            'position' => 'top-end',
             'title' => 'You have successfully logged in!',
         ]);
 
         $this->redirectIntended(route('dashboard'), navigate: true);
-        
+        // $this->redirectIntended(default: route('dashboard', absolute: false), navigate: true);    
     }
 
     /**
@@ -56,7 +55,7 @@ class Login extends Component
      */
     protected function ensureIsNotRateLimited(): void
     {
-        if (! RateLimiter::tooManyAttempts($this->throttleKey(), 5)) {
+        if (!RateLimiter::tooManyAttempts($this->throttleKey(), 5)) {
             return;
         }
 

@@ -12,6 +12,7 @@ use App\Livewire\ComponentsPart\index as components;
 use App\Livewire\SystemUnits\MaintenanceIndex as maintenance;
 use App\Livewire\SystemUnits\UnitIndex as units;
 use App\Livewire\QrManager;
+use App\Livewire\QrScanner;
 use App\Livewire\ActivityLogViewer as activitylogs;
 use App\Livewire\Tracking\Show;
 
@@ -39,6 +40,9 @@ Route::middleware(['auth', '2fa'])->group(function () {
     Route::get('activitylogs', activitylogs::class)->middleware('can:view.activitylogs')->name('activitylogs');
     Route::get('tracking/{type}/{serial}', Show::class)->name('tracking.show');
     Route::get('reports', ReportsIndex::class)->middleware('can:view.reports')->name('reports');
+
+    Route::get('report-issue', QrScanner::class)->middleware('can:view.reports')->name('report-issue');
+
     Route::redirect('settings', 'settings/profile');
     Route::get('settings/profile', Profile::class)->name('settings.profile');
     Route::get('settings/password', Password::class)->name('settings.password');

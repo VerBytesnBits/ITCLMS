@@ -11,7 +11,7 @@
             <div class="flex justify-between items-center bg-white p-3 shadow-md">
                 <h3 class="text-lg font-bold">Component Summary Preview</h3>
                 <div class="space-x-2">
-                    {{-- <flux:button variant="outline" wire:click="downloadPDF">Download</flux:button> --}}
+                    <flux:button variant="outline" wire:click="downloadPDF">Download</flux:button>
                     <flux:button variant="danger" wire:click="$set('showPreview', false)">Close</flux:button>
                 </div>
             </div>

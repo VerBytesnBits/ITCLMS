@@ -15,7 +15,7 @@
     <div
         class="flex flex-wrap items-center gap-3 p-4 bg-zinc-50 dark:bg-zinc-800 
                rounded-xl border border-zinc-200 dark:border-zinc-700 shadow-sm">
-        
+
         <!-- Report Type -->
         <flux:select wire:model.live="reportType" class="min-w-[160px]">
             <option value="inventory">Inventory</option>
@@ -33,8 +33,8 @@
         </flux:select>
 
         <!-- Search -->
-        <flux:input type="text" wire:model.live.debounce.300ms="search" 
-            placeholder="Search..." icon="magnifying-glass" class="flex-1 min-w-[180px]" />
+        <flux:input type="text" wire:model.live.debounce.300ms="search" placeholder="Search..."
+            icon="magnifying-glass" class="flex-1 min-w-[180px]" />
 
         <!-- Date Range -->
         <flux:input type="date" wire:model="dateFrom" class="min-w-[140px]" />
@@ -44,7 +44,7 @@
         <!-- Export Buttons -->
         <div class="ml-auto flex gap-2">
             <flux:button wire:click="exportCsv" variant="primary" color="green" class="flex items-center">
-               <span>CSV</span>
+                <span>CSV</span>
             </flux:button>
 
             @if ($reportType == 'qr')
@@ -58,15 +58,16 @@
     <!-- Report Table -->
     <div class="overflow-x-auto rounded-xl border border-zinc-200 bg-white shadow-md">
         <table class="w-full text-sm">
-            <thead class="bg-zinc-100 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-200 text-xs uppercase sticky top-0 z-10">
+            <thead
+                class="bg-zinc-100 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-200 text-xs uppercase sticky top-0 z-10">
                 <tr>
                     @if ($reportType == 'inventory')
                         <th class="p-3 text-left">Type</th>
                         <th class="p-3 text-left">Name</th>
+                        <th class="p-3 text-left">Room</th>
                         <th class="p-3 text-left">Serial</th>
                         <th class="p-3 text-left">Status</th>
-                        <th class="p-3 text-left">Condition</th>
-                        <th class="p-3 text-left">Room</th>
+                        {{-- <th class="p-3 text-left">Condition</th> --}}
                     @elseif($reportType == 'qr')
                         <th class="p-3 text-left">Item Type</th>
                         <th class="p-3 text-left">Serial</th>
@@ -87,14 +88,14 @@
                         @if ($reportType == 'inventory')
                             <td class="p-3">{{ class_basename($record) }}</td>
                             <td class="p-3 font-medium">{{ $record->name ?? '-' }}</td>
+                            <td class="p-3">{{ $record->room->name ?? '-' }}</td>
                             <td class="p-3">{{ $record->serial_number ?? '-' }}</td>
                             <td class="p-3">
                                 <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-700">
                                     {{ $record->status ?? '-' }}
                                 </span>
                             </td>
-                            <td class="p-3">{{ $record->condition ?? '-' }}</td>
-                            <td class="p-3">{{ $record->room->name ?? '-' }}</td>
+                            {{-- <td class="p-3">{{ $record->condition ?? '-' }}</td> --}}
                         @elseif($reportType == 'qr')
                             <td class="p-3">{{ class_basename($record->item_type) }}</td>
                             <td class="p-3">{{ $record->item->serial_number ?? '-' }}</td>
@@ -120,7 +121,7 @@
                 @empty
                     <tr>
                         <td colspan="10" class="p-10 text-center text-zinc-500">
-                           No records found. Try adjusting filters.
+                            No records found. Try adjusting filters.
                         </td>
                     </tr>
                 @endforelse

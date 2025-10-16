@@ -52,7 +52,9 @@
             <div class="pt-4 border-t border-gray-200 dark:border-zinc-700">
                 <h3 class="text-xs uppercase font-semibold text-gray-500 dark:text-gray-400 mb-2">Warranty</h3>
                 <div>
-                    @php $expiry = \Carbon\Carbon::parse($component->warranty_expires_at ?? now()); @endphp
+                    @php $expiry = \Carbon\Carbon::parse($component->warranty_expires_at ?? now());
+                        $purchase = \Carbon\Carbon::parse($component->purchase_date ?? now());
+                     @endphp
 
                     @if ($expiry->isPast())
                         <span class="text-red-500 font-semibold">
@@ -65,6 +67,9 @@
                         </span>
                     @endif
                 </div>
+            </div>
+            <div>
+                Purchase Date {{ $purchase->format('M d, Y') }}
             </div>
 
         </div>

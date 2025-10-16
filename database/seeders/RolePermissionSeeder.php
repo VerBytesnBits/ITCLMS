@@ -20,7 +20,7 @@ class RolePermissionSeeder extends Seeder
             'create.unit',
             'update.unit',
             'delete.unit',
-            
+
             // Components
             'view.component',
             'create.component',
@@ -52,7 +52,7 @@ class RolePermissionSeeder extends Seeder
             // Users & Roles
             'manage.users',
             'manage.roles',
-            
+
 
             // QR Generator
             'view.qr',
@@ -81,17 +81,29 @@ class RolePermissionSeeder extends Seeder
         $labInchargeRole->syncPermissions([
             'view.dashboard',
 
-            'view.unit', 'create.unit', 'update.unit',
-            'view.component', 'create.component', 'update.component',
-            'view.peripheral', 'create.peripheral', 'update.peripheral',
+            'view.unit',
+            'create.unit',
+            'update.unit',
+            'view.component',
+            'create.component',
+            'update.component',
+            'view.peripheral',
+            'create.peripheral',
+            'update.peripheral',
 
-            'view.laboratories', 'create.laboratories', 'update.laboratories',
+            'view.laboratories',
+            'create.laboratories',
+            'update.laboratories',
 
-            'view.maintenance', 'create.maintenance', 'update.maintenance',
+            'view.maintenance',
+            'create.maintenance',
+            'update.maintenance',
 
-            'view.reports', 'export.reports',
-            
-            'view.qr', 'create.qr',
+            'view.reports',
+            'export.reports',
+
+            'view.qr',
+            'create.qr',
 
             'view.activitylogs',
         ]);
@@ -100,13 +112,18 @@ class RolePermissionSeeder extends Seeder
         $labTechnicianRole->syncPermissions([
             'view.dashboard',
 
-            'view.unit', 'update.unit',
-            'view.component', 'update.component',
-            'view.peripheral', 'update.peripheral',
+            'view.unit',
+            'update.unit',
+            'view.component',
+            'update.component',
+            'view.peripheral',
+            'update.peripheral',
 
             'view.laboratories',
 
-            'view.maintenance', 'create.maintenance', 'update.maintenance',
+            'view.maintenance',
+            'create.maintenance',
+            'update.maintenance',
 
             'view.reports',
 
@@ -122,9 +139,17 @@ class RolePermissionSeeder extends Seeder
                 'name' => 'System Administrator',
                 'password' => bcrypt('password'),
                 'email_verified_at' => now(),
+                'date_of_birth' => '1990-01-01'
             ]
         );
 
         $admin->assignRole($chairmanRole);
+
+        $admin->securityAnswers()->firstOrCreate(
+            ['question' => 'What is your favorite color?'],
+            ['answer' => 'Chairman-Blue']
+        );
+
+
     }
 }

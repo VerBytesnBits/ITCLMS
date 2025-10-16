@@ -4,16 +4,19 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes; // <--- add this
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
 
 class SystemUnit extends Model
 {
-    use HasFactory, LogsActivity;
+    use HasFactory, LogsActivity, SoftDeletes; // <--- include SoftDeletes
 
     protected $fillable = ['name', 'serial_number', 'status', 'room_id'];
 
-    // This is now required
+    // Optional: log deleted events too
+    protected static $logAttributes = ['name', 'serial_number', 'status', 'room_id'];
+
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
@@ -40,5 +43,23 @@ class SystemUnit extends Model
     public function maintenances()
     {
         return $this->morphMany(Maintenance::class, 'maintainable');
+    }
+
+     protected static function booted()
+    {
+        static::deleting(function ($unit) {
+            if ($unit->isForceDeleting()) {
+                $unit->peripherals()->forceDelete();
+                $unit->components()->forceDelete();
+            } else {
+                $unit->peripherals()->delete();
+                $unit->components()->delete();
+            }
+        });
+
+        static::restoring(function ($unit) {
+            $unit->peripherals()->withTrashed()->restore();
+            $unit->components()->withTrashed()->restore();
+        });
     }
 }

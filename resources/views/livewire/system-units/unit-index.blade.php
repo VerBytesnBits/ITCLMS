@@ -10,11 +10,19 @@
 
     <!-- Right: Search + Filters + Button -->
 
-    <div class="bg-white dark:bg-zinc-800 rounded-2xl shadow-md border border-zinc-200 dark:border-zinc-700">
+    <div
+        class="relative bg-white dark:bg-zinc-800 rounded-2xl shadow-md border border-zinc-200 dark:border-zinc-700 overflow-hidden">
+        <!-- Card Header -->
+        <div class="absolute top-0 left-0 w-full h-2 bg-blue-500"></div>
         <!-- Card Header -->
         <div class="px-6 py-4 border-b border-gray-200 dark:border-zinc-700 ">
-            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">Unit Controls</h3>
-            <p class="text-sm text-gray-500 dark:text-gray-400">Search, filter, and add computer units</p>
+            {{-- <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">Controls</h3> --}}
+            <flux:heading size="lg" level="1"
+                class="text-lg flex items-center gap-2  text-zinc-600 dark:text-zinc-50">
+                Controls
+            </flux:heading>
+            <flux:text class="text-xs">Search, filter, and add computer units</flux:text>
+            {{-- <p class="text-sm text-gray-500 dark:text-gray-400">Search, filter, and add computer units</p> --}}
         </div>
 
         <!-- Card Body -->
@@ -22,7 +30,8 @@
             <!-- Stats Row -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <!-- Operational -->
-                <div class="flex items-center justify-between p-4 rounded-2xl shadow-sm 
+                <div
+                    class="flex items-center justify-between p-4 rounded-2xl shadow-sm 
                 bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/40 
                 hover:shadow-md transition">
                     <span class="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-200">
@@ -31,7 +40,8 @@
                     <span class="text-xl font-bold text-green-700 dark:text-green-300">{{ $operationalCount }}</span>
                 </div>
                 <!-- Non-Operational -->
-                <div class="flex items-center justify-between p-4 rounded-2xl shadow-sm 
+                <div
+                    class="flex items-center justify-between p-4 rounded-2xl shadow-sm 
                 bg-gradient-to-r from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/40 
                 hover:shadow-md transition">
                     <span class="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-200">
@@ -55,9 +65,9 @@
 
                 <flux:select wire:model.live="statusFilter" class="flex-1 w-full min-w-[160px]">
                     <option value="">All Status</option>
-                    @foreach (array_keys($statusColors) as $status)
-                        <option value="{{ $status }}">{{ $status }}</option>
-                    @endforeach
+                    <option value="Operational">Operational</option>
+                    <option value="Non-operational">Non-Operational</option>
+                    <option value="Needs Repair">Needs Repair</option>
                 </flux:select>
 
                 <flux:button variant="primary" color="green" wire:click="create"
@@ -72,7 +82,7 @@
     <div
         class="overflow-x-auto bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl shadow-lg">
         <table class="min-w-full text-sm text-left text-gray-700 dark:text-gray-200">
-            <thead class="bg-zinc-200 dark:bg-zinc-800 text-xs uppercase">
+            <thead class="bg-blue-500 text-xs uppercase text-zinc-100">
                 <tr>
                     {{-- <th class="px-6 py-4 text-left font-semibold">#</th> --}}
                     <th class="px-4 py-3">Name</th>
@@ -84,7 +94,7 @@
             <tbody class="divide-y divide-gray-100 dark:divide-zinc-800">
                 @forelse($units as $unit)
                     <tr
-                        class="border-t border-gray-200 dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-800/50 odd:bg-white even:bg-gray-200 dark:odd:bg-zinc-800 dark:even:bg-zinc-700">
+                        class="border-t border-gray-200 dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-800/50 odd:bg-white even:bg-zinc-200 dark:odd:bg-zinc-800 dark:even:bg-zinc-700">
                         {{-- <td class="px-6 py-4 font-medium text-zinc-800 dark:text-white">{{ $unit->id }}</td> --}}
                         <td class="px-4 py-3 font-medium text-zinc-800 dark:text-white">{{ $unit->name }}</td>
                         <td class="px-6 py-4 text-center">{{ $unit->room?->name ?? 'N/A' }}</td>
@@ -123,29 +133,51 @@
                                         x-init="$watch('open', value => {
                                             if (value) {
                                                 let btn = $refs.toggleBtn.getBoundingClientRect();
+                                                let dropdownHeight = $el.offsetHeight || 150; // fallback height
+                                                let spaceBelow = window.innerHeight - btn.bottom;
+                                                let spaceAbove = btn.top;
+                                        
                                                 $el.style.position = 'absolute';
-                                                $el.style.top = (btn.bottom + window.scrollY) + 'px';
                                                 $el.style.left = (btn.left + window.scrollX) + 'px';
+                                        
+                                                if (spaceBelow < dropdownHeight && spaceAbove > dropdownHeight) {
+                                                    // place above
+                                                    $el.style.top = (btn.top + window.scrollY - dropdownHeight) + 'px';
+                                                } else {
+                                                    // place below
+                                                    $el.style.top = (btn.bottom + window.scrollY) + 'px';
+                                                }
                                             }
                                         })"
                                         class="z-50 mt-1 w-30 rounded-md shadow-lg bg-white dark:bg-zinc-800 ring-1 ring-black ring-opacity-5">
                                         <div class="py-1">
-
+                                            <!-- actions -->
                                             <button wire:click="edit({{ $unit->id }})" @click="open = false"
                                                 class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-zinc-700">
                                                 <flux:icon.pencil class="h-4 w-4" />
                                                 <span>Edit</span>
                                             </button>
-
+                                            <button wire:click="report({{ $unit->id }})" @click="open = false"
+                                                class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-zinc-700">
+                                                <flux:icon.triangle-alert class="h-4 w-4" />
+                                                <span>Report</span>
+                                            </button>
                                             <button wire:click="delete({{ $unit->id }})" @click="open = false"
                                                 class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-700">
                                                 <flux:icon.trash class="h-4 w-4" />
                                                 <span>Delete</span>
                                             </button>
+                                            <button x-data
+                                                @click="$dispatch('confirm-delete-system-unit', { id: {{ $unit->id }} })"
+                                                class="px-3 py-1 bg-red-600 text-white rounded-md hover:bg-red-700">
+                                                Delete
+                                            </button>
+
 
                                         </div>
                                     </div>
                                 </template>
+
                             </div>
                         </td>
                     </tr>
@@ -159,6 +191,16 @@
             </tbody>
         </table>
     </div>
+   
+
+    <livewire:system-units.decommissioned-units />
+
+
+
+
+    <livewire:system-units.delete-modal />
+
+
 
     <!-- Modals -->
     @if ($showModal)

@@ -1,7 +1,7 @@
 <div class="flex flex-col justify-center items-center text-center">
     <!-- Icon -->
 
-    <div class="relative flex items-center justify-center w-full px-2">
+    <div class="relative flex items-center justify-center w-full">
         <!-- Logo centered -->
         <div class="flex items-center justify-center w-13 h-13 rounded-md">
             @include('partials.itclms-logo')

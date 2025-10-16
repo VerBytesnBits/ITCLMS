@@ -35,6 +35,14 @@ class TwoFactorAuthentication extends Component
 
         $this->addError('otp', 'Invalid OTP code.');
     }
+    public function goBackToLogin()
+    {
+        auth()->logout(); // Clears the authenticated session
+        session()->invalidate();
+        session()->regenerateToken();
+
+        return redirect()->route('login');
+    }
 
 
     public function render()

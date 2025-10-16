@@ -65,10 +65,15 @@
                 {{ __('Activity Logs') }}
             </flux:sidebar.item>
 
-            <flux:sidebar.item icon="document-chart-bar" :href="route('reports')"
+            <flux:sidebar.item icon="scan-qr-code" :href="route('report-issue')"
+                :current="request()->routeIs('report-issue')" wire:navigate>
+                {{ __('Report An Issue') }}
+            </flux:sidebar.item>
+
+            {{-- <flux:sidebar.item icon="document-chart-bar" :href="route('reports')"
                 :current="request()->routeIs('reports')" wire:navigate>
                 {{ __('Reports') }}
-            </flux:sidebar.item>
+            </flux:sidebar.item> --}}
 
 
 
@@ -116,18 +121,26 @@
                     </span>
 
                     <div class="flex gap-1 mt-0.5 flex-wrap">
-                        @foreach (auth()->user()->getRoleNames() as $role)
-                            <span
-                                class="px-2 py-0.5 rounded-full text-[13px] font-medium
+                        @if (auth()->user()->getRoleNames()->isNotEmpty())
+                            @foreach (auth()->user()->getRoleNames() as $role)
+                                <span
+                                    class="px-2 py-0.5 rounded-full text-[13px] font-medium
                             {{ match ($role) {
                                 'chairman' => 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',
                                 'lab_incharge' => 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300',
                                 'lab_technician' => 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
                                 default => 'bg-gray-100 text-gray-700 dark:bg-gray-800/30 dark:text-gray-300',
                             } }}">
-                                {{ ucwords(str_replace('_', ' ', $role)) }}
+                                    {{ ucwords(str_replace('_', ' ', $role)) }}
+                                </span>
+                            @endforeach
+                        @else
+                            <span
+                                class="px-2 py-0.5 rounded-full text-[13px] font-medium 
+                                     bg-gray-100 text-gray-700 dark:bg-gray-800/30 dark:text-gray-300">
+                                Guest
                             </span>
-                        @endforeach
+                        @endif
                     </div>
                 </div>
             @else
@@ -141,12 +154,6 @@
                 </div>
             @endif
         </div>
-
-
-
-
-
-
     </flux:header>
 
     <flux:main>

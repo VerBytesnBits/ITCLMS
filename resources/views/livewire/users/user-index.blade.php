@@ -1,4 +1,4 @@
-<div class="p-4 space-y-6">
+<div class="space-y-6">
 
     <livewire:dashboard-heading title="Users" subtitle="Manage all users" icon="user-group" gradient-from-color="#ebbc49"
         gradient-to-color="#ccf662" icon-color="text-yellow-300" />
@@ -13,8 +13,8 @@
     <div
         class="overflow-x-auto bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl shadow">
         <table class="min-w-full text-sm text-left text-gray-700 dark:text-gray-200">
-            <thead class="bg-zinc-200 dark:bg-zinc-800 text-xs uppercase">
-                <tr class="text-gray-700 dark:text-gray-300 font-semibold">
+            <thead class="bg-blue-500 text-xs uppercase">
+                <tr class="text-zinc-100 font-semibold">
                     <th class="px-4 py-3 border-b">Name</th>
                     <th class="px-4 py-3 border-b">Email</th>
                     <th class="px-4 py-3 border-b">Roles</th>
@@ -24,7 +24,7 @@
             <tbody>
                 @foreach ($users as $user)
                     <tr
-                        class="border-t border-gray-200 dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-800/50">
+                        class="border-t border-gray-200 dark:border-zinc-700 hover:bg-gray-100 dark:hover:bg-zinc-800/50">
                         <td class="px-4 py-3 font-medium text-gray-900 dark:text-gray-100">{{ $user->name }}</td>
                         <td class="px-4 py-3 text-gray-700 dark:text-gray-300">{{ $user->email }}</td>
                         <td class="px-4 py-3">
@@ -47,9 +47,18 @@
                         </td>
 
                         <td class="px-4 py-3 text-center space-x-2">
+                            <button
+                                class="bg-orange-500 hover:bg-yellow-600 text-white px-3 py-1 rounded-lg text-xs shadow">
+                                Deactivate
+                            </button>
                             <button wire:click="openEditModal({{ $user->id }})"
                                 class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded-lg text-xs shadow">
                                 Edit
+                            </button>
+
+                            <button 
+                                class="bg-red-500 hover:bg-yellow-600 text-white px-3 py-1 rounded-lg text-xs shadow">
+                                Delete
                             </button>
 
                             {{-- <button wire:click="openAssignRoleModal({{ $user->id }})"

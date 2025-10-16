@@ -1,7 +1,7 @@
-<div>
+<div class="space-y-6">
     <!-- Header -->
-    <livewire:dashboard-heading title="Components" subtitle="Track and manage all component parts" icon="cpu-chip"
-        gradient-from-color="#10b981" gradient-to-color="#047857" icon-color="text-green-600" />
+    <livewire:dashboard-heading title="Components" subtitle="Track and manage all component parts inventory"
+        icon="cpu-chip" gradient-from-color="#10b981" gradient-to-color="#047857" icon-color="text-green-600" />
 
     <!-- Summary -->
     <div x-data="{
@@ -13,33 +13,39 @@
                 $wire.set('tab', null); // reset tab when collapsed
             }
         }
-    }" class="border rounded-lg  bg-white dark:bg-zinc-800 mt-4 mb-4 shadow-lg">
+    }"
+        class="border rounded-2xl  bg-white dark:bg-zinc-800 mt-4 mb-4 shadow-lg relative overflow-hidden ">
 
-
+        <div class="absolute top-0 left-0 w-full h-2 bg-blue-500"></div>
         <div class="flex items-center justify-between p-4 border-b">
             {{-- <h2 class="text-lg font-semibold">Total Components</h2>  --}}
-            <flux:heading class="flex items-center gap-2 !text-2xl text-zinc-600 ">
+
+            <flux:heading size="lg" level="1"
+                class="text-lg flex items-center gap-2  text-zinc-600 dark:text-zinc-50 ">
                 Total Components
                 <flux:tooltip hoverable>
                     <flux:button icon="information-circle" size="sm" variant="subtle" />
-                    <flux:tooltip.content class="max-w-[20rem] space-y-2">
-                        <p>Click (View Component Analytics) to expand detailed summary of component inventory.</p>
+                    <flux:tooltip.content class="max-w-[20rem] space-y-2 ">
+                        <p>Click (View Component Statistics) to expand detailed summary of component inventory.</p>
                     </flux:tooltip.content>
                 </flux:tooltip>
                 {{-- gerating component summary report --}}
-                <livewire:components-part.component-summary-report />
+                <livewire:components-part.component-summary-report :room-id="$roomId" :age="$age" :tab="$tab"
+                    :key="$roomId . '-' . $age . '-' . $tab" />
             </flux:heading>
+
             <span class="text-xl font-bold text-zinc-700">
                 {{ collect($this->componentSummary)->flatten(1)->sum('total') }} </span>
         </div>
         <button @click="toggle()"
-            class="w-full flex items-center justify-between px-3 py-2 text-sm font-medium
+            class="w-full flex items-center justify-between px-4 py-2 font-medium
            text-zinc-500 dark:text-zinc-200 
            bg-zinc-50 dark:bg-zinc-800 
            hover:bg-zinc-100 dark:hover:bg-zinc-700 
            rounded-lg transition">
+            <flux:text size="sm"><span
+                    x-text="open ? 'Hide Component Statistics' : 'View Component Statistics'"></span></flux:text>
 
-            <span x-text="open ? 'Hide Component Statistics' : 'View Component Statistics'"></span>
 
             <!-- Chevron -->
             <svg :class="{ 'rotate-180': open }" class="w-4 h-4 text-zinc-500 transition-transform duration-300"
@@ -48,9 +54,8 @@
             </svg>
         </button>
 
-        <div x-show="open" x-transition
-            class="overflow-x-auto p-4 border-t bg-gradient-to-r from-yellow-100 to-yellow-50 shadow-inner "
-            x-data="stockTooltip()" x-init="init()">
+        <div x-show="open" x-transition class="overflow-x-auto p-4 border-t shadow-inner " x-data="stockTooltip()"
+            x-init="init()">
             {{-- <h3 class="text-md font-semibold mb-2">Component Inventory</h3> --}}
             <!-- Tabs -->
             <div class="mb-4 border-b border-gray-200 dark:border-zinc-700">
@@ -62,7 +67,7 @@
 
                     @foreach ($parts as $part)
                         <button wire:click="$set('tab', '{{ $part }}')"
-                            class="px-4 py-2 text-sm font-medium border-b-2 
+                            class="px-4 py-2 text-sm font-medium border-b-2 uppercase 
                         {{ $tab === $part
                             ? 'border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400'
                             : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-200' }}">
@@ -79,7 +84,7 @@
                     <h3 class="font-bold text-gray-900 dark:text-gray-200 mt-4">{{ $part }}</h3>
                     <table class="w-full border-collapse mb-4">
                         <thead>
-                            <tr class="bg-gray-100 dark:bg-zinc-700 text-gray-500">
+                            <tr class="bg-blue-500  text-zinc-100">
                                 <th class="px-4 py-2 text-left">Description</th>
                                 <th scope="col" class="px-6 py-3 cursor-pointer" wire:click="sortBy('total')">
                                     Quantity @if ($sortColumn === 'total')
@@ -101,13 +106,13 @@
                                         {{ $sortDirection === 'asc' ? '↑' : '↓' }}
                                     @endif
                                 </th>
-                                <th scope="col" class="px-6 py-3 cursor-pointer" wire:click="sortBy('maintenance')">
+                                {{-- <th scope="col" class="px-6 py-3 cursor-pointer" wire:click="sortBy('maintenance')">
                                     Maintenance @if ($sortColumn === 'maintenance')
                                         {{ $sortDirection === 'asc' ? '↑' : '↓' }}
                                     @endif
-                                </th>
-                                <th scope="col" class="px-6 py-3 cursor-pointer" wire:click="sortBy('junk')">
-                                    Junk @if ($sortColumn === 'junk')
+                                </th> --}}
+                                <th scope="col" class="px-6 py-3 cursor-pointer" wire:click="sortBy('Decommission')">
+                                    Decommission @if ($sortColumn === 'decommission')
                                         {{ $sortDirection === 'asc' ? '↑' : '↓' }}
                                     @endif
                                 </th>
@@ -120,7 +125,7 @@
                         </thead>
                         <tbody>
                             @foreach ($items as $item)
-                                <tr class="odd:bg-white even:bg-gray-50 dark:odd:bg-zinc-800 dark:even:bg-zinc-700">
+                                <tr class="odd:bg-white even:bg-zinc-200 dark:odd:bg-zinc-800 dark:even:bg-zinc-700">
                                     <td class="px-6 py-4">
                                         {{ $item['description'] }}
                                         @if ($item['available'] == 0)
@@ -144,7 +149,7 @@
                                         @mouseleave="hide()"> {{ $item['available'] }} </td>
                                     <td class="px-4 py-2 text-center">{{ $item['in_use'] }}</td>
                                     <td class="px-4 py-2 text-center">{{ $item['defective'] }}</td>
-                                    <td class="px-4 py-2 text-center">{{ $item['maintenance'] }}</td>
+                                    {{-- <td class="px-4 py-2 text-center">{{ $item['maintenance'] }}</td> --}}
                                     <td class="px-4 py-2 text-center">{{ $item['junk'] }}</td>
                                     {{-- <td class="px-4 py-2 text-center">{{ $item['salvage'] }}</td> --}}
                                 </tr>
@@ -156,7 +161,7 @@
                 {{-- Show only selected tab --}}
                 <table class="w-full border-collapse">
                     <thead>
-                        <tr class="bg-gray-100 dark:bg-zinc-700">
+                        <tr class="bg-blue-500  text-zinc-100">
                             <th class="px-4 py-2 text-left">Description</th>
                             <th scope="col" class="px-6 py-3 cursor-pointer" wire:click="sortBy('total')">
                                 Quantity @if ($sortColumn === 'total')
@@ -178,13 +183,13 @@
                                     {{ $sortDirection === 'asc' ? '↑' : '↓' }}
                                 @endif
                             </th>
-                            <th scope="col" class="px-6 py-3 cursor-pointer" wire:click="sortBy('maintenance')">
+                            {{-- <th scope="col" class="px-6 py-3 cursor-pointer" wire:click="sortBy('maintenance')">
                                 Maintenance @if ($sortColumn === 'maintenance')
                                     {{ $sortDirection === 'asc' ? '↑' : '↓' }}
                                 @endif
-                            </th>
-                            <th scope="col" class="px-6 py-3 cursor-pointer" wire:click="sortBy('junk')">
-                                Junk @if ($sortColumn === 'junk')
+                            </th> --}}
+                            <th scope="col" class="px-6 py-3 cursor-pointer" wire:click="sortBy('Decommission')">
+                                Decommission @if ($sortColumn === 'decommission')
                                     {{ $sortDirection === 'asc' ? '↑' : '↓' }}
                                 @endif
                             </th>
@@ -221,7 +226,7 @@
                                     @mouseleave="hide()"> {{ $item['available'] }} </td>
                                 <td class="px-4 py-2 text-center">{{ $item['in_use'] }}</td>
                                 <td class="px-4 py-2 text-center">{{ $item['defective'] }}</td>
-                                <td class="px-4 py-2 text-center">{{ $item['maintenance'] }}</td>
+                                {{-- <td class="px-4 py-2 text-center">{{ $item['maintenance'] }}</td> --}}
                                 <td class="px-4 py-2 text-center">{{ $item['junk'] }}</td>
                                 {{-- <td class="px-4 py-2 text-center">{{ $item['salvage'] }}</td> --}}
                             </tr>
@@ -236,20 +241,54 @@
     </div>
 
 
-    <!-- Add Component Button -->
-    <div class="flex flex-col md:flex-row md:justify-between gap-4 mb-4">
-        <div class="flex-1">
-            <flux:input type="text" placeholder="Search..." wire:model.live="search" icon="magnifying-glass"
-                kbd="⌘K" />
+    <div
+        class="relative bg-white dark:bg-zinc-800 rounded-2xl shadow-md border border-zinc-200 dark:border-zinc-700 overflow-hidden">
+        <!-- Card Header -->
+        <div class="absolute top-0 left-0 w-full h-2 bg-blue-500"></div>
+        <div class="px-4 py-4 border-b border-gray-200 dark:border-zinc-700">
+
+            {{-- <h2 class="text-lg font-semibold text-zinc-600 dark:text-zinc-100">Controls</h2> --}}
+            <flux:heading size="lg" level="1" class="text-lg flex items-center gap-2  text-zinc-600 ">
+                Controls
+            </flux:heading>
+            <flux:text class="text-xs">Search, filter, and add components</flux:text>
+            {{-- <p class="text-sm text-gray-500 dark:text-gray-400">Search, filter, and add components</p> --}}
         </div>
 
-        <div>
-            <flux:button variant="primary" color="green" wire:click="openCreateModal">
-                + Add Component
-            </flux:button>
+        <!-- Card Body -->
+        <div class="p-4 space-y-6">
+
+            <!-- Filters Row -->
+            <div class="flex flex-col sm:flex-row items-center gap-3">
+                <!-- Search -->
+                <flux:input wire:model.live="search" placeholder="Search components..." icon="magnifying-glass"
+                    class="flex-[3] w-full min-w-[200px]" />
+
+                <!-- Room Filter -->
+                <flux:select wire:model.live="roomId" class="flex-1 w-full min-w-[160px]">
+                    <option value="">All Rooms</option>
+                    @foreach ($labs as $lab)
+                        <option value="{{ $lab->id }}">{{ $lab->name }}</option>
+                    @endforeach
+                </flux:select>
+                <!-- Age Filter -->
+                <flux:select wire:model.live="age" class="flex-1 w-full min-w-[160px]">
+                    <option value="">All</option>
+                    <option value="new">New (within 1 year or under warranty)</option>
+                    <option value="older_1month">Older than 1 month</option>
+                    <option value="older_6months">Older than 6 months</option>
+                    <option value="older_1year">Older than 1 year</option>
+                    <option value="older_2years">Older than 2 years</option>
+                    <option value="older_5years">Older than 5 years</option>
+                </flux:select>
+                <!-- Add Component -->
+                <flux:button variant="primary" color="green" wire:click="openCreateModal"
+                    class="w-full sm:w-auto rounded-xl shadow-md hover:shadow-lg transition">
+                    + Add Component
+                </flux:button>
+            </div>
         </div>
     </div>
-
 
 
     <!-- Table -->
@@ -257,7 +296,7 @@
         class="overflow-x-auto bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl shadow-lg">
 
         <table class="min-w-full text-sm text-left text-gray-700 dark:text-gray-200">
-            <thead class="bg-zinc-200 dark:bg-zinc-800 text-xs uppercase">
+            <thead class="bg-blue-500 text-xs uppercase text-zinc-100">
                 <tr>
                     {{-- <th class="px-4 py-3">#</th> --}}
                     {{-- <th class="px-4 py-3">Unit</th> --}}
@@ -270,16 +309,10 @@
                     <th class="px-4 py-3 text-center">Actions</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-gray-200">
-                @php
-                    use App\Support\StatusConfig;
-                    //$conditionColors = StatusConfig::conditions();
-                    $statusColors = StatusConfig::statuses();
-                @endphp
-
+            <tbody class="divide-y divide-zinc-200">
                 @forelse($components as $component)
                     <tr wire:key="component-row-{{ $component->id }}"
-                        class="border-t border-gray-200 dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-800/50 odd:bg-white even:bg-zinc-200 dark:odd:bg-zinc-800 dark:even:bg-zinc-700">
+                        class="border-t border-gray-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 odd:bg-white even:bg-zinc-200 dark:odd:bg-zinc-800 dark:even:bg-zinc-700">
 
                         {{-- <td class="px-4 py-3">{{ optional($component->systemUnit)->name ?? '—' }}</td> --}}
                         <td class="px-4 py-3">{{ $component->serial_number }}</td>

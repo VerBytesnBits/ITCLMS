@@ -95,7 +95,8 @@
                     </span>
                 </p>
 
-                <p><strong>LABORATORY ROOM:</strong> LAB 3 Room 237</p>
+                <p><strong>LABORATORY ROOM:</strong> {{ $roomName }}</p>
+
             </td>
 
             <!-- Right Side -->

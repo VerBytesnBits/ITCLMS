@@ -155,38 +155,56 @@ class QrManager extends Component
         );
     }
 
-    /** -------------------------
-     * Lazy load QR for paginated records
-     * ------------------------- */
     public function loadQr(int $qrId): void
     {
+        // ✅ Skip if already loaded
+        if (isset($this->activeQrsWithQr[$qrId])) {
+            return;
+        }
+
+        // Load QR record and its related item
         $qrRecord = QrGeneration::with('item')->find($qrId);
 
-        if (!$qrRecord || !$qrRecord->item) {
+        if (!$qrRecord) {
             $this->activeQrsWithQr[$qrId] = null;
+            return;
+        }
+
+        // Handle missing or deleted related item
+        if (!$qrRecord->item) {
+            $this->activeQrsWithQr[$qrId] = base64_encode(
+                QrCode::format('png')
+                    ->size(100)
+                    ->color(150, 150, 150) // gray QR for deleted items
+                    ->generate('DELETED ITEM')
+            );
             return;
         }
 
         $itemClass = class_basename($qrRecord->item->getMorphClass());
 
-        // Map class names to friendly terms
         $typeMap = [
             'ComponentParts' => 'component',
             'SystemUnit' => 'unit',
-            'Peripheral' => 'peripheral'
+            'Peripheral' => 'peripheral',
         ];
 
         $type = $typeMap[$itemClass] ?? strtolower($itemClass);
 
         $this->activeQrsWithQr[$qrId] = base64_encode(
-            QrCode::format('png')->size(100)->generate(
-                route('tracking.show', [
-                    'type' => $type,
-                    'serial' => $qrRecord->item->serial_number,
-                ])
-            )
+            QrCode::format('png')
+                ->size(100)
+                ->generate(
+                    route('tracking.show', [
+                        'type' => $type,
+                        'serial' => $qrRecord->item->serial_number,
+                    ])
+                )
         );
     }
+
+
+
 
 
     /** -------------------------

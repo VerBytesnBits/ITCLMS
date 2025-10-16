@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
 @import 'tailwindcss';
 @import '../../vendor/livewire/flux/dist/flux.css';
 
@@ -83,15 +84,22 @@
 [data-flux-sidebar-item][data-current="data-current"]{
   --brand-yellow: 234,179,8;
   --brand-green: 22,163,74;
+  --brand-blue: 37,99,235;
 
-  background: rgba(var(--brand-yellow), 0.03); /* very faint tint */
-  color: rgb(var(--brand-yellow));
+  background: rgba(var(--brand-blue), 0.03); /* very faint tint */
+  color: rgb(var(--brand-blue));
   font-weight: 600;
-  border-left: 3px solid rgba(var(--brand-yellow), 1);
+  border-left: 3px solid rgba(var(--brand-blue), 1);
   padding-left: calc(1rem - 3px); /* compensate for left border if needed */
   border-radius: 0 .4rem .4rem 0;
 }
 
+
+
+/* when collapsed on desktop */
+ui-sidebar[data-flux-sidebar-collapsed-desktop] {
+    padding: 0.25rem !important; 
+}
 
 
 
@@ -111,6 +119,7 @@ select:focus[data-flux-control] {
 
 html {
   font-size: 20px;
+  font-family: 'Poppins', sans-serif;
 }
 html[style*="padding-right"] {
     padding-right: 0 !important;
