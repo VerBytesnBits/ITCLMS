@@ -8,7 +8,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
 use Carbon\Carbon;
-
+use Milon\Barcode\DNS1D;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 class ComponentParts extends Model
 {
     use HasFactory, LogsActivity, SoftDeletes;
@@ -31,6 +33,7 @@ class ComponentParts extends Model
         'retirement_action',
         'retirement_notes',
         'retired_at',
+        'barcode_path',
     ];
 
     protected $casts = [
@@ -78,10 +81,11 @@ class ComponentParts extends Model
             ->useLogName('component');
     }
 
-    /** -------------------- Warranty Helpers -------------------- **/
-
-    public function getWarrantyExpiresAtAttribute()
+    public function getWarrantyExpiresAtAttribute($value)
     {
+        if ($value)
+            return Carbon::parse($value);
+
         if (!$this->purchase_date || !$this->warranty_period_months) {
             return null;
         }
@@ -91,10 +95,20 @@ class ComponentParts extends Model
 
     public function getWarrantyStatusAttribute(): string
     {
-        if (!$this->warranty_expires_at) return 'No Warranty';
-        if (now()->gt($this->warranty_expires_at)) return 'Expired';
-        if (now()->diffInDays($this->warranty_expires_at) <= 30) return 'Expiring Soon';
+        if (!$this->warranty_expires_at)
+            return 'No Warranty';
+        if (now()->gt($this->warranty_expires_at))
+            return 'Expired';
+        if (now()->diffInDays($this->warranty_expires_at) <= 30)
+            return 'Expiring Soon';
         return 'Valid';
+    }
+
+    public function getWarrantyRemainingDaysAttribute(): ?int
+    {
+        return $this->warranty_expires_at
+            ? now()->diffInDays($this->warranty_expires_at, false)
+            : null;
     }
 
     /** -------------------- Status / Decommission Helpers -------------------- **/
@@ -143,8 +157,11 @@ class ComponentParts extends Model
         // Warranty calculation
         static::saving(function ($part) {
             if ($part->purchase_date && $part->warranty_period_months) {
-                $part->warranty_expires_at = $part->purchase_date->copy()
-                    ->addMonths($part->warranty_period_months);
+                // Ensure purchase_date is Carbon instance
+                $purchaseDate = Carbon::parse($part->purchase_date);
+                $part->warranty_expires_at = $purchaseDate->copy()->addMonths($part->warranty_period_months);
+            } else {
+                $part->warranty_expires_at = null;
             }
         });
 
@@ -161,5 +178,38 @@ class ComponentParts extends Model
                     ->log('Component reassigned');
             }
         });
+
+        static::creating(function ($components) {
+            if ($components->serial_number && empty($components->barcode_path)) {
+                $components->barcode_path = self::generateAndSaveBarcode($components->serial_number);
+            }
+        });
+
+        static::updating(function ($components) {
+            if ($components->isDirty('serial_number')) {
+                $components->barcode_path = self::generateAndSaveBarcode($components->serial_number);
+            }
+        });
+    }
+
+
+    protected static function generateAndSaveBarcode($serialNumber)
+    {
+        $barcode = new DNS1D();
+
+        // Create the barcode PNG in memory
+        $barcodeData = $barcode->getBarcodePNG($serialNumber, 'C128', 2, 60, [0, 0, 0], true);
+
+        // Decode base64 image data
+        $image = base64_decode($barcodeData);
+
+        // Create a unique file name
+        $fileName = 'barcodes/' . Str::slug($serialNumber) . '-' . Str::random(6) . '.png';
+
+        // Save to storage (public disk)
+        Storage::disk('public')->put($fileName, $image);
+
+        // Return the relative path (for example: storage/barcodes/...)
+        return 'storage/' . $fileName;
     }
 }

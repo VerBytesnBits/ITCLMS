@@ -16,7 +16,7 @@ class SystemUnit extends Model
 
     // Optional: log deleted events too
     protected static $logAttributes = ['name', 'serial_number', 'status', 'room_id'];
-
+ 
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
@@ -45,7 +45,7 @@ class SystemUnit extends Model
         return $this->morphMany(Maintenance::class, 'maintainable');
     }
 
-     protected static function booted()
+    protected static function booted()
     {
         static::deleting(function ($unit) {
             if ($unit->isForceDeleting()) {
@@ -62,4 +62,43 @@ class SystemUnit extends Model
             $unit->components()->withTrashed()->restore();
         });
     }
+
+    public function checkOperationalStatus(): string
+    {
+        $requiredComponents = ['CPU', 'Motherboard', 'RAM', 'PSU', 'Storage'];
+        $requiredPeripherals = ['Monitor', 'Keyboard', 'Mouse'];
+
+        // Default to operational
+        $newStatus = 'Operational';
+
+        // Check components
+        foreach ($requiredComponents as $type) {
+            $component = $this->components->firstWhere('part', $type); // collection
+            if (!$component || $component->status !== 'In Use') {
+                $newStatus = 'Non-operational';
+                break; // no need to check further
+            }
+        }
+
+        // Check peripherals only if still operational
+        if ($newStatus === 'Operational') {
+            foreach ($requiredPeripherals as $type) {
+                $peripheral = $this->peripherals->firstWhere('type', $type); // collection
+                if (!$peripheral || $peripheral->status !== 'In Use') {
+                    $newStatus = 'Non-operational';
+                    break;
+                }
+            }
+        }
+
+        // Update the status in the database if it changed
+        if ($this->status !== $newStatus) {
+            $this->update(['status' => $newStatus]);
+        }
+
+        return $newStatus;
+    }
+
+
+
 }

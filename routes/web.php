@@ -15,7 +15,7 @@ use App\Livewire\QrManager;
 use App\Livewire\QrScanner;
 use App\Livewire\ActivityLogViewer as activitylogs;
 use App\Livewire\Tracking\Show;
-
+use App\Livewire\Reports\UnitReport;
 use App\Livewire\Reports\Index as ReportsIndex;
 
 Route::get('/', function () {
@@ -42,6 +42,9 @@ Route::middleware(['auth', '2fa'])->group(function () {
     Route::get('reports', ReportsIndex::class)->middleware('can:view.reports')->name('reports');
 
     Route::get('report-issue', QrScanner::class)->middleware('can:view.reports')->name('report-issue');
+
+
+    Route::get('/reports/unit', UnitReport::class)->name('reports.unit');
 
     Route::redirect('settings', 'settings/profile');
     Route::get('settings/profile', Profile::class)->name('settings.profile');

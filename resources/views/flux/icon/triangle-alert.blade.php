@@ -1,3 +1,5 @@
+@pure
+
 {{-- Credit: Lucide (https://lucide.dev) --}}
 
 @props([

@@ -13,3 +13,10 @@ window.qrScanner = qrScanner;
 document.addEventListener('alpine:init', () => {
     Alpine.data('labChart', labChart);
 });
+
+
+window.addEventListener('clear-url-query', () => {
+    history.replaceState({}, '', window.location.pathname);
+});
+
+

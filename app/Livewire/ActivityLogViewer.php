@@ -17,7 +17,7 @@ class ActivityLogViewer extends Component
     public $search = '';
     public $filterModel = ''; // optional filter by model type
 
-    protected $paginationTheme = 'tailwind';
+
 
     public function updatingSearch()
     {
@@ -28,15 +28,34 @@ class ActivityLogViewer extends Component
     {
         $this->resetPage();
     }
+    public function restoreSubject($id, $type)
+{
+    $model = $type::withTrashed()->find($id);
+
+    if ($model && $model->trashed()) {
+        $model->restore();
+
+        // Prefer serial_number, but fallback to name or ID
+        $identifier = $model->serial_number 
+            ?? $model->name 
+            ?? "ID: {$model->id}";
+
+        session()->flash('message', "{$identifier} restored successfully!");
+    } else {
+        session()->flash('error', 'Unable to restore the record.');
+    }
+}
+
+
 
     public function render()
     {
         $logs = Activity::with('causer')
             ->when($this->search, function ($query) {
                 $query->where('description', 'like', "%{$this->search}%")
-                      ->orWhereHas('causer', function ($q) {
-                          $q->where('name', 'like', "%{$this->search}%");
-                      });
+                    ->orWhereHas('causer', function ($q) {
+                        $q->where('name', 'like', "%{$this->search}%");
+                    });
             })
             ->when($this->filterModel, function ($query) {
                 $query->where('subject_type', 'like', "%{$this->filterModel}%");

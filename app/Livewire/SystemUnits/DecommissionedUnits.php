@@ -48,6 +48,8 @@ class DecommissionedUnits extends Component
                 'peripherals' => $unit->peripherals->toArray() ?? [],
             ];
         })->toArray();
+
+        $this->dispatch("unit-restored");
     }
 
     // Expand/Collapse unit to show children
@@ -79,6 +81,10 @@ class DecommissionedUnits extends Component
                 $unit->components()
                     ->onlyTrashed()
                     ->whereIn('id', $components)
+                    ->update(['status' => 'Available']); // update status in DB
+                $unit->components()
+                    ->onlyTrashed()
+                    ->whereIn('id', $components)
                     ->restore();
             }
 
@@ -86,21 +92,31 @@ class DecommissionedUnits extends Component
                 $unit->peripherals()
                     ->onlyTrashed()
                     ->whereIn('id', $peripherals)
+                    ->update(['status' => 'Available']);
+                $unit->peripherals()
+                    ->onlyTrashed()
+                    ->whereIn('id', $peripherals)
                     ->restore();
             }
 
-            $this->dispatch('toast', [
+            $this->dispatch('swal', [
                 'icon' => 'success',
                 'title' => 'Selected components/peripherals restored successfully.'
             ]);
         } else {
-            // Restore parent unit along with all its children
-            $unit->restore(); // restores parent
+            // Restore parent
+            $unit->restore();
 
+            // Restore children first
             $unit->components()->onlyTrashed()->restore();
             $unit->peripherals()->onlyTrashed()->restore();
 
-            $this->dispatch('toast', [
+            // Update all children status
+            $unit->components()->update(['status' => 'In Use']);
+            $unit->peripherals()->update(['status' => 'In Use']);
+
+
+            $this->dispatch('swal', [
                 'icon' => 'success',
                 'title' => 'Unit and all its components/peripherals restored successfully.'
             ]);
@@ -113,6 +129,7 @@ class DecommissionedUnits extends Component
         $this->selectedComponents[$unitId] = [];
         $this->selectedPeripherals[$unitId] = [];
     }
+
 
 
 

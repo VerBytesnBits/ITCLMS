@@ -47,7 +47,7 @@ class Index extends Component
         return view('components.skeletons.skeleton');
     }
 
-    
+
     public function getComponentSummaryProperty()
     {
         $filters = [];
@@ -122,6 +122,7 @@ class Index extends Component
     #[On('componentCreated')]
     #[On('componentUpdated')]
     #[On('componentDeleted')]
+    #[On('item-deleted')]
     public function handleComponentChange()
     {
         $this->resetPage();
@@ -132,6 +133,100 @@ class Index extends Component
         ComponentParts::findOrFail($id)->delete();
         $this->dispatch('swal', toast: true, icon: 'success', title: 'Component deleted successfully', timer: 3000);
         $this->dispatch('componentDeleted');
+    }
+    public $selectedComponents = [];
+    public $selectAll = false;
+
+    public function updatedSelectAll($value)
+    {
+        if ($value) {
+            // Get the currently rendered items (already paginated)
+            $this->selectedComponents = $this->getRenderedComponentsIds();
+        } else {
+            $this->selectedComponents = [];
+        }
+    }
+    protected function getRenderedComponentsIds()
+    {
+        return ComponentParts::query()
+            ->when($this->roomId, function ($q) {
+                $q->whereHas('systemUnit', fn($unit) => $unit->where('room_id', $this->roomId));
+            })
+            ->when($this->age, function ($q) {
+                if ($this->age === 'new') {
+                    $q->where(function ($sub) {
+                        $sub->where('warranty_expires_at', '>=', now())
+                            ->orWhere('purchase_date', '>=', now()->subYear());
+                    });
+                } elseif (preg_match('/^older_(\d+)(month|months|year|years)$/', $this->age, $matches)) {
+                    $amount = (int) $matches[1];
+                    $unit = rtrim($matches[2], 's');
+                    $q->where('purchase_date', '<', now()->sub($unit, $amount));
+                }
+            })
+            ->when($this->tab && $this->tab !== 'All', fn($q) => $q->where('part', $this->tab))
+            ->when($this->search, function ($q) {
+                $q->where(function ($sub) {
+                    $sub->where('serial_number', 'like', '%' . $this->search . '%')
+                        ->orWhere('part', 'like', '%' . $this->search . '%')
+                        ->orWhere('model', 'like', '%' . $this->search . '%');
+                });
+            })
+            ->paginate($this->perPage)
+            ->pluck('id')
+            ->toArray();
+    }
+
+
+    protected $listeners = ['confirm-bulk-delete' => 'bulkDelete'];
+
+    public function bulkDelete($payload)
+    {
+        if ($payload['model'] !== 'ComponentParts')
+            return;
+
+        match ($payload['action']) {
+            'delete' => ComponentParts::whereIn('id', $this->selectedComponents)->forceDelete(),
+            'junk' => ComponentParts::whereIn('id', $this->selectedComponents)->each(function ($item) {
+                    $item->update(['status' => 'Junk']);
+                    $item->delete();
+                }),
+            default => null,
+        };
+
+        $this->reset(['selectedComponents', 'selectAll']);
+        $this->dispatch('swal', [
+            'icon' => $payload['action'] === 'delete' ? 'success' : 'warning',
+            'title' => $payload['action'] === 'delete'
+                ? 'Selected items permanently deleted.'
+                : 'Selected items moved to Junk.',
+            'timer' => 2000,
+        ]);
+
+        $this->dispatch('$refresh');
+    }
+    public string $scannedCode = '';
+    public ?ComponentParts $scannedComponents = null;
+
+    public function findComponentByBarcode()
+    {
+        if (empty($this->scannedCode))
+            return;
+
+        $code = trim($this->scannedCode);
+
+        $components = ComponentParts::where('serial_number', $code)
+            ->orWhereRaw("REPLACE(REPLACE(barcode_path, 'storage/barcodes/', ''), '.png', '') = ?", [$code])
+            ->first();
+
+        if ($components) {
+            $this->openViewModal($components->id);
+        } else {
+            $this->dispatch('swal', icon: 'error', title: 'Component not found');
+        }
+
+        $this->reset('scannedCode');
+        $this->dispatch('scan-complete');
     }
 
     public function render()

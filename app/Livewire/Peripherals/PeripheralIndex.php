@@ -11,6 +11,8 @@ use Livewire\Attributes\On;
 use Livewire\Attributes\Layout;
 use App\Traits\HasInventorySummary;
 use Livewire\Attributes\Lazy;
+use App\Support\StatusConfig;
+use App\Models\Room;
 
 #[Lazy]
 #[Layout('components.layouts.app', ['title' => 'Peripheral'])]
@@ -25,11 +27,14 @@ class PeripheralIndex extends Component
     public ?int $id = null;
 
     #[Url(as: 'q')]
-    public string $query = ''; // Search/filter text
+    public string $search = ''; // Search/filter text
 
     #[Url(as: 'tab')]
     public ?string $tab = null; // Active tab
-
+    #[Url(as: 'room')]
+    public ?int $roomId = null;
+    #[Url(as: 'age')]
+    public string $age = '';
     public int $perPage = 10; // Items per page
     public string $sortColumn = 'available';
     public string $sortDirection = 'asc';
@@ -45,15 +50,31 @@ class PeripheralIndex extends Component
      */
     public function getPeripheralSummaryProperty()
     {
+        $filters = [];
+
+        if ($this->roomId) {
+            $filters['room_id'] = $this->roomId;
+        }
+
+        if ($this->age) {
+            $filters['__age'] = $this->age;
+        }
         return $this->getInventorySummary(
             Peripheral::class,
             'type', // group peripherals by type (e.g., Mouse, AVR, Printer)
             ['brand', 'model'],
             $this->sortColumn,
-            $this->sortDirection
+            $this->sortDirection,
+            $filters
         );
     }
 
+
+    public function updatedSearch()
+    {
+
+        $this->resetPage(); // Also reset pagination
+    }
     public function updatedTab()
     {
         $this->resetPage();
@@ -98,6 +119,7 @@ class PeripheralIndex extends Component
     #[On('peripheralCreated')]
     #[On('peripheralUpdated')]
     #[On('peripheralDeleted')]
+    #[On('item-deleted')]
     public function handlePeripheralChange()
     {
         $this->resetPage();
@@ -110,24 +132,137 @@ class PeripheralIndex extends Component
         $this->dispatch('peripheralDeleted');
     }
 
-    public function render()
+
+    public string $scannedCode = '';
+    public ?Peripheral $scannedPeripheral = null;
+
+    public function findPeripheralByBarcode()
     {
-        $peripherals = Peripheral::with(['systemUnit', 'room'])
-            ->when($this->tab && $this->tab !== 'All', function ($query) {
-                $query->where('type', $this->tab);
+        if (empty($this->scannedCode))
+            return;
+
+        $code = trim($this->scannedCode);
+
+        $peripheral = Peripheral::where('serial_number', $code)
+            ->orWhereRaw("REPLACE(REPLACE(barcode_path, 'storage/barcodes/', ''), '.png', '') = ?", [$code])
+            ->first();
+
+        if ($peripheral) {
+            $this->openViewModal($peripheral->id);
+        } else {
+            $this->dispatch('swal', icon: 'error', title: 'Peripheral not found');
+        }
+
+        $this->reset('scannedCode');
+        $this->dispatch('scan-complete');
+    }
+
+
+
+    public $selectedPeripherals = [];
+    public $selectAll = false;
+
+    public function updatedSelectAll($value)
+    {
+        if ($value) {
+            // Get the currently rendered items (already paginated)
+            $this->selectedPeripherals = $this->getRenderedPeripheralsIds();
+        } else {
+            $this->selectedPeripherals = [];
+        }
+    }
+    protected function getRenderedPeripheralsIds()
+    {
+        return Peripheral::query()
+            ->when($this->roomId, function ($q) {
+                $q->whereHas('systemUnit', fn($unit) => $unit->where('room_id', $this->roomId));
             })
-            ->when($this->query, function ($query) {
-                $query->where(function ($q) {
-                    $q->where('serial_number', 'like', '%' . $this->query . '%')
-                        ->orWhere('brand', 'like', '%' . $this->query . '%')
-                        ->orWhere('model', 'like', '%' . $this->query . '%');
+            ->when($this->age, function ($q) {
+                if ($this->age === 'new') {
+                    $q->where(function ($sub) {
+                        $sub->where('warranty_expires_at', '>=', now())
+                            ->orWhere('purchase_date', '>=', now()->subYear());
+                    });
+                } elseif (preg_match('/^older_(\d+)(month|months|year|years)$/', $this->age, $matches)) {
+                    $amount = (int) $matches[1];
+                    $unit = rtrim($matches[2], 's');
+                    $q->where('purchase_date', '<', now()->sub($unit, $amount));
+                }
+            })
+            ->when($this->tab && $this->tab !== 'All', fn($q) => $q->where('type', $this->tab))
+            ->when($this->search, function ($q) {
+                $q->where(function ($sub) {
+                    $sub->where('serial_number', 'like', '%' . $this->search . '%')
+                        ->orWhere('type', 'like', '%' . $this->search . '%')
+                        ->orWhere('model', 'like', '%' . $this->search . '%');
                 });
             })
+            ->paginate($this->perPage)
+            ->pluck('id')
+            ->toArray();
+    }
+
+
+    protected $listeners = ['confirm-bulk-delete' => 'bulkDelete'];
+    public function bulkDelete($payload)
+    {
+        if ($payload['model'] !== 'Peripherals')
+            return;
+
+        match ($payload['action']) {
+            'delete' => Peripheral::whereIn('id', $this->selectedPeripherals)->forceDelete(),
+            'junk' => Peripheral::whereIn('id', $this->selectedPeripherals)->each(function ($item) {
+                    $item->update(['status' => 'Junk']);
+                    $item->delete();
+                }),
+            default => null,
+        };
+
+        $this->reset(['selectedPeripherals', 'selectAll']);
+        $this->dispatch('swal', [
+            'icon' => $payload['action'] === 'delete' ? 'success' : 'warning',
+            'title' => $payload['action'] === 'delete'
+                ? 'Selected items permanently deleted.'
+                : 'Selected items moved to Junk.',
+            'timer' => 2000,
+        ]);
+
+        $this->dispatch('$refresh');
+    }
+
+    public function render()
+    {
+        $labs = Room::all();
+        $statusColors = StatusConfig::statuses();
+
+        $peripherals = Peripheral::with(['systemUnit', 'room'])
+            ->when($this->roomId, function ($q) {
+                $q->whereHas('systemUnit', function ($unit) {
+                    $unit->where('room_id', $this->roomId);
+                });
+            })
+            ->when($this->age, function ($q) {
+                if ($this->age === 'new') {
+                    $q->where(function ($sub) {
+                        $sub->where('warranty_expires_at', '>=', now())
+                            ->orWhere('purchase_date', '>=', now()->subYear());
+                    });
+                } elseif (preg_match('/^older_(\d+)(month|months|year|years)$/', $this->age, $matches)) {
+                    $amount = (int) $matches[1];
+                    $unit = rtrim($matches[2], 's');
+                    $q->where('purchase_date', '<', now()->sub($unit, $amount));
+                }
+            })
+            ->when($this->tab && $this->tab !== 'All', fn($q) => $q->where('type', $this->tab))
+            ->when($this->search, fn($q) => $q->whereAny(['serial_number', 'brand', 'model'], 'like', '%' . $this->search . '%'))
             ->paginate($this->perPage);
 
         return view('livewire.peripherals.peripheral-index', [
             'peripherals' => $peripherals,
+            'statusColors' => $statusColors,
             'summary' => $this->peripheralSummary,
+            'labs' => $labs,
         ]);
     }
+
 }

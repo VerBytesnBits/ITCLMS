@@ -47,25 +47,16 @@
                         </td>
 
                         <td class="px-4 py-3 text-center space-x-2">
-                            <button
-                                class="bg-orange-500 hover:bg-yellow-600 text-white px-3 py-1 rounded-lg text-xs shadow">
-                                Deactivate
-                            </button>
+                            
                             <button wire:click="openEditModal({{ $user->id }})"
-                                class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded-lg text-xs shadow">
-                                Edit
+                                class="px-3 py-2 text-xs font-medium rounded-md border border-gray-300 dark:border-zinc-700 text-gray-700 dark:text-gray-200 hover:bg-yellow-100 dark:hover:bg-zinc-700">
+                                <flux:icon.pencil />
                             </button>
-
                             <button 
-                                class="bg-red-500 hover:bg-yellow-600 text-white px-3 py-1 rounded-lg text-xs shadow">
-                                Delete
+                                class="px-3 py-2 text-xs font-medium rounded-md border border-gray-300 dark:border-zinc-700 text-red-600 hover:bg-red-100 dark:hover:bg-red-700">
+                                <flux:icon.trash />
                             </button>
-
-                            {{-- <button wire:click="openAssignRoleModal({{ $user->id }})"
-                                @if ($user->roles->pluck('name')->contains('chairman')) disabled @endif
-                                class="bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white px-3 py-1 rounded-lg text-xs shadow">
-                                Assign Role
-                            </button> --}}
+                     
                         </td>
                     </tr>
                 @endforeach

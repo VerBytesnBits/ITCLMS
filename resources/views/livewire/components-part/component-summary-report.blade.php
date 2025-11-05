@@ -7,7 +7,7 @@
     </flux:tooltip>
     @if ($showPreview && $pdfBase64)
         <div class="fixed inset-0 z-50 flex flex-col">
-            <!-- Header controls -->
+    
             <div class="flex justify-between items-center bg-white p-3 shadow-md">
                 <h3 class="text-lg font-bold">Component Summary Preview</h3>
                 <div class="space-x-2">
@@ -16,7 +16,6 @@
                 </div>
             </div>
 
-            <!-- Full page iframe -->
             <iframe src="data:application/pdf;base64,{{ $pdfBase64 }}" class="flex-1 w-full"></iframe>
         </div>
     @endif

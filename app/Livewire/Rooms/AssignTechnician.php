@@ -63,6 +63,7 @@ class AssignTechnician extends Component
         $this->dispatch('closeModal');
         $this->dispatch('roomUpdated');
     }
+   
 
 
     public function render()

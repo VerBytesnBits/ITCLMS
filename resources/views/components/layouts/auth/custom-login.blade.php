@@ -12,7 +12,7 @@
         class="absolute inset-0 overflow-hidden bg-gradient-to-br from-emerald-700/70 via-emerald-800/70 to-emerald-900/80 z-0">
         <!-- Lab Image -->
         <img src="{{ asset('images/bg1.jpg') }}" alt="IT Lab"
-            class="absolute inset-0 w-full h-full object-cover opacity-45 mix-blend-overlay z-0">
+            class="absolute inset-0 w-full h-full object-cover opacity-45 mix-blend-overlay z-0" lazy>
 
 
         <!-- Animated Blobs -->

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+/* @import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap'); */
 @import 'tailwindcss';
 @import '../../vendor/livewire/flux/dist/flux.css';
 
@@ -78,7 +78,7 @@
     font-weight: 600;
 } */
 
-[data-flux-sidebar-item]{
+/* [data-flux-sidebar-item]{
     margin-bottom: 5px;
 }
 [data-flux-sidebar-item][data-current="data-current"]{
@@ -86,12 +86,66 @@
   --brand-green: 22,163,74;
   --brand-blue: 37,99,235;
 
-  background: rgba(var(--brand-blue), 0.03); /* very faint tint */
+  background: rgba(var(--brand-blue), 0.03); 
   color: rgb(var(--brand-blue));
   font-weight: 600;
   border-left: 3px solid rgba(var(--brand-blue), 1);
-  padding-left: calc(1rem - 3px); /* compensate for left border if needed */
+  padding-left: calc(1rem - 3px); 
   border-radius: 0 .4rem .4rem 0;
+} */
+/* ----------------------- Light Mode ----------------------- */
+[data-flux-sidebar-item] {
+    background-color: #F9FAFB; /* light background */
+    color: #111827; /* dark text */
+    backdrop-filter: blur(8px);
+    
+    margin-bottom: 5px;
+    border-radius: 0.5rem;
+}
+
+[data-flux-sidebar-item]:hover {
+    background-color: rgba(229, 231, 235, 0.5); /* subtle hover */
+    border: 2px solid #F9FAFB;
+}
+
+[data-flux-sidebar-item][data-current="data-current"] {
+    --brand-blue-start: 59,130,246; /* Tailwind blue-500 */
+    --brand-blue-end: 37,99,235;    /* Tailwind blue-600 */
+    
+    background: linear-gradient(135deg,
+      rgb(var(--brand-blue-start)) 0%,
+      rgb(var(--brand-blue-end)) 100%
+    );
+    color: white;
+    font-weight: 600;
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.4);
+    transition: all 0.25s ease;
+}
+
+/* ----------------------- Dark Mode ----------------------- */
+.dark [data-flux-sidebar-item] {
+    background-color: #1F2937; /* gray-800 */
+    color: #F3F4F6; /* gray-100 */
+    
+}
+
+.dark [data-flux-sidebar-item]:hover {
+    background-color: rgba(100, 116, 139, 0.3); /* gray-700 semi-transparent */
+    border: 2px solid #1F2937;
+}
+
+.dark [data-flux-sidebar-item][data-current="data-current"] {
+    --brand-blue-start: 96,165,250; /* Tailwind blue-400 */
+    --brand-blue-end: 59,130,246;   /* Tailwind blue-500 */
+    
+    background: linear-gradient(135deg,
+      rgb(var(--brand-blue-start)) 0%,
+      rgb(var(--brand-blue-end)) 100%
+    );
+    color: white;
+    font-weight: 600;
+    box-shadow: 0 2px 6px rgba(96, 165, 250, 0.4);
+    transition: all 0.25s ease;
 }
 
 
@@ -117,9 +171,12 @@ select:focus[data-flux-control] {
     @apply outline-hidden ring-2 ring-accent ring-offset-2 ring-offset-accent-foreground;
 }
 
-html {
+/* html {
   font-size: 20px;
   font-family: 'Poppins', sans-serif;
+} */
+@theme {
+    --font-sans: Inter, sans-serif;
 }
 html[style*="padding-right"] {
     padding-right: 0 !important;
@@ -145,6 +202,7 @@ html[style*="padding-right"] {
     animation: fade-in-scale 0.2s ease-out;
   }
 }
+
 
 
 

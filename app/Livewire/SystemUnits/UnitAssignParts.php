@@ -6,9 +6,18 @@ use Livewire\Component;
 use App\Models\SystemUnit;
 use App\Models\Peripheral;
 use App\Models\ComponentParts;
-
+use Livewire\WithPagination;
+use Illuminate\Support\Facades\Auth;
+use Spatie\Activitylog\Models\Activity;
+use function activity;
 class UnitAssignParts extends Component
 {
+    use WithPagination;
+
+
+    protected $queryString = [];
+    public $searchPeripherals = '';
+    public $searchComponents = '';
     public $unitId;
     public $unit;
 
@@ -22,7 +31,7 @@ class UnitAssignParts extends Component
     protected $listeners = ['showAssignModal' => 'open'];
 
 
-     public $partIcons = [
+    public $partIcons = [
         //components
         'CPU' => 'images/icons/CPU.png',
         'RAM' => 'images/icons/ram.png',
@@ -65,107 +74,218 @@ class UnitAssignParts extends Component
     }
 
 
+
+
+    public function updatedSearchPeripherals()
+    {
+        $this->resetPage();
+    }
+    public function updatedSearchComponents()
+    {
+        $this->resetPage();
+    }
+
     // =========================
-    // Available Peripherals
-    // =========================
+// Available Peripherals (Paginated + Search + Multi-field using whereAny)
+// =========================
     public function getAvailablePeripheralsProperty()
     {
         $types = Peripheral::select('type')->distinct()->pluck('type');
         $available = [];
 
         foreach ($types as $type) {
-            $available[$type] = Peripheral::where('type', $type)
+            $query = Peripheral::query()
+                ->where('type', $type)
                 ->whereNull('system_unit_id')
                 ->where('status', 'available')
-                ->get();
+                ->select('*');
+
+            if ($this->searchPeripherals) {
+                $search = "%{$this->searchPeripherals}%";
+                $query->whereAny(['brand', 'model', 'type', 'serial_number'], 'like', $search);
+            }
+
+            $available[$type] = $query->paginate(5, ['*'], $type . '_page');
         }
 
         return $available;
     }
 
     // =========================
-    // Available Components
-    // =========================
+// Available Components (Paginated + Search + Multi-field using whereAny)
+// =========================
     public function getAvailableComponentsProperty()
     {
         $parts = ComponentParts::select('part')->distinct()->pluck('part');
         $available = [];
 
         foreach ($parts as $part) {
-            $available[$part] = ComponentParts::where('part', $part)
+            $query = ComponentParts::query()
+                ->where('part', $part)
                 ->whereNull('system_unit_id')
                 ->where('status', 'available')
-                ->get();
+                ->select('*');
+
+            if ($this->searchComponents) {
+                $search = "%{$this->searchComponents}%";
+                $query->whereAny(['brand', 'model', 'capacity', 'part', 'serial_number'], 'like', $search);
+            }
+
+            $available[$part] = $query->paginate(5, ['*'], $part . '_page');
         }
 
         return $available;
     }
 
+
     // =========================
-    // Peripheral Assign/Unassign
-    // =========================
+// Peripheral Assign/Unassign
+// =========================
     public function assignSelected($type, $peripheralId)
     {
         $peripheral = Peripheral::find($peripheralId);
-        if ($peripheral) {
-            $peripheral->system_unit_id = $this->unitId;
-            $peripheral->status = 'In Use';
-            $peripheral->save();
+        $unit = SystemUnit::find($this->unitId);
+
+        if ($peripheral && $unit) {
+            // Update peripheral assignment
+            $peripheral->update([
+                'system_unit_id' => $this->unitId,
+                'status' => 'In Use',
+            ]);
 
             $this->selectedPeripherals[$type] = $peripheral->id;
+
+            // ✅ Log the assignment on the SystemUnit
+            activity()
+                ->causedBy(Auth::user())
+                ->performedOn($unit)
+                ->withProperties([
+                    'type' => $type,
+                    'peripheral_id' => $peripheral->id,
+                    'peripheral_serial' => $peripheral->serial_number,
+                    'unit_name' => $unit->name,
+                ])
+                ->log("Assigned peripheral ({$peripheral->serial_number}) to  '{$unit->name}'");
+
+            // ✅ SweetAlert success
+            $this->dispatch('swal', [
+                'title' => 'Peripheral Assigned!',
+                'text' => "{$peripheral->serial_number} successfully assigned to {$unit->name}.",
+            ]);
         }
     }
 
     public function unassign($type)
     {
         $peripheralId = $this->selectedPeripherals[$type] ?? null;
-        if ($peripheralId) {
+        $unit = SystemUnit::find($this->unitId);
+
+        if ($peripheralId && $unit) {
             $peripheral = Peripheral::find($peripheralId);
             if ($peripheral) {
-                $peripheral->system_unit_id = null;
-                $peripheral->status = 'available';
-                $peripheral->save();
+                // Update peripheral unassignment
+                $peripheral->update([
+                    'system_unit_id' => null,
+                    'status' => 'Available',
+                ]);
+
+                // ✅ Log the unassignment on the SystemUnit
+                activity()
+                    ->causedBy(Auth::user())
+                    ->performedOn($unit) // Important: link to system unit
+                    ->withProperties([
+                        'type' => $type,
+                        'peripheral_id' => $peripheral->id,
+                        'peripheral_serial' => $peripheral->serial_number,
+                        'unit_name' => $unit->name,
+                    ])
+                    ->log("Unassigned peripheral ({$peripheral->serial_number}) from  '{$unit->name}'");
+
+                // ✅ SweetAlert success
+                $this->dispatch('swal', [
+                    'title' => 'Peripheral Unassigned!',
+                    'text' => "{$peripheral->serial_number} has been unassigned from {$unit->name}.",
+                ]);
             }
+
             $this->selectedPeripherals[$type] = null;
         }
     }
 
+
     // =========================
-    // Component Assign/Unassign
-    // =========================
+// Component Assign/Unassign
+// =========================
     public function assignComponent($part, $componentId)
     {
         $component = ComponentParts::findOrFail($componentId);
-        $unit = SystemUnit::findOrFail($this->unitId); // get the unit
+        $unit = SystemUnit::findOrFail($this->unitId);
 
         if ($component && $unit) {
-            $component->system_unit_id = $this->unitId;
-            $component->room_id = $unit->room_id; // inherit the room from the unit
-            $component->status = 'In Use';
-            $component->save();
+            $component->update([
+                'system_unit_id' => $this->unitId,
+                'room_id' => $unit->room_id,
+                'status' => 'In Use',
+            ]);
 
             $this->selectedComponents[$part] = $component->id;
+
+            activity()
+                ->causedBy(Auth::user())
+                ->performedOn($unit) // ← link to the system unit
+                ->withProperties([
+                    'item' => $component->serial_number, // optional
+                    'part' => $part,
+                    'component_id' => $componentId,
+                ])
+                ->log("Assigned component ({$component->serial_number}) to  '{$unit->name}'");
+
+            // ✅ SweetAlert success
+            $this->dispatch('swal', [
+                'title' => 'Component Assigned!',
+                'text' => "{$component->serial_number} successfully assigned to {$unit->name}.",
+            ]);
         }
     }
-
 
     public function unassignComponent($part)
     {
         $componentId = $this->selectedComponents[$part] ?? null;
+        $unit = SystemUnit::find($this->unitId);
 
-        if ($componentId) {
+        if ($componentId && $unit) {
             $component = ComponentParts::findOrFail($componentId);
 
             if ($component) {
-                $component->system_unit_id = null;
-                $component->room_id = null;
-                $component->status = 'Available';
-                $component->save();
+                $component->update([
+                    'system_unit_id' => null,
+                    'room_id' => null,
+                    'status' => 'Available',
+                ]);
+
+                // ✅ Log the unassignment
+                activity()
+                    ->causedBy(Auth::user())
+                    ->performedOn($unit)
+                    ->withProperties([
+                        'item' => $component->serial_number, // optional
+                        'part' => $part,
+                        'component_id' => $componentId,
+                    ])
+                    ->log("Unassigned component ({$component->serial_number}) from  '{$unit->name}'");
+
+                // ✅ SweetAlert success
+                $this->dispatch('swal', [
+                    'title' => 'Component Unassigned!',
+                    'text' => "{$component->serial_number} has been unassigned from {$unit->name}.",
+                ]);
             }
 
             $this->selectedComponents[$part] = null;
         }
     }
+
+
 
 
     public function render()

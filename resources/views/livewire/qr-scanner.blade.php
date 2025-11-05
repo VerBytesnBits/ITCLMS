@@ -1,8 +1,8 @@
-<div>
-    <livewire:dashboard-heading title="QR Scanner" subtitle="Scan QR for fast report and viewing" icon="qr-code"
+<div class="space-y-6">
+    <livewire:dashboard-heading title="Issue Reported Table" subtitle="Details of reported issues" icon="qr-code"
         gradient-from-color="#3b82f6" gradient-to-color="#7c3aed" icon-color="text-blue-500" />
 
-    <div x-data="qrScanner()" x-init="init()" class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+    {{-- <div x-data="qrScanner()" x-init="init()" class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
 
         <div
             class="col-span-1 bg-white dark:bg-zinc-800 rounded-2xl shadow-lg border border-zinc-200 dark:border-zinc-700 flex flex-col overflow-hidden">
@@ -131,5 +131,10 @@
             </div>
         </div>
 
-    </div>
+    </div> --}}
+
+
+    {{-- Issue Reports Table --}}
+    <livewire:issues.issue-table />
+
 </div>

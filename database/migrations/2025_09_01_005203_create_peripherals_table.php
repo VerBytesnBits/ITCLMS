@@ -20,7 +20,7 @@ return new class extends Migration {
             $table->string('model')->nullable();
             $table->string('color')->nullable();
             $table->string('type'); // e.g. Monitor, Keyboard, Mouse, Printer
-
+            $table->string('barcode_path')->nullable();
             // Lifecycle status
             $table->enum('condition', ['Excellent', 'Good', 'Fair', 'Poor'])->default('Good');
             $table->enum('status', [

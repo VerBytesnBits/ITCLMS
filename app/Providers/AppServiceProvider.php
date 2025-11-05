@@ -3,7 +3,9 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
-
+use App\Models\ComponentParts;
+use App\Models\Peripheral;
+use App\Observers\ComponentPeripheralObserver;
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -17,8 +19,12 @@ class AppServiceProvider extends ServiceProvider
     /**
      * Bootstrap any application services.
      */
-    public function boot(): void
+
+
+    public function boot()
     {
-        //
+        ComponentParts::observe(ComponentPeripheralObserver::class);
+        Peripheral::observe(ComponentPeripheralObserver::class);
     }
+
 }

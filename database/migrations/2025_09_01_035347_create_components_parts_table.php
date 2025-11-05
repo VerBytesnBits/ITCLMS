@@ -28,7 +28,7 @@ return new class extends Migration {
             $table->string('capacity')->nullable(); // e.g. 16GB, 1TB
             $table->string('speed')->nullable();    // e.g. 3200MHz
             $table->string('part')->nullable();     // general label (if needed)
-
+            $table->string('barcode_path')->nullable();
             // Lifecycle status
             $table->enum('condition', ['Excellent', 'Good', 'Fair', 'Poor'])->default('Good');
             $table->enum('status', [

@@ -34,7 +34,7 @@ class AssignLabIncharge extends Component
         ])->toArray();
 
         $this->room->users()->syncWithoutDetaching($syncData);
-
+        $this->dispatch('swal', toast: true, icon: 'success', title: 'Lab Incharge(s) assigned successfully');
         $this->dispatch('closeModal');
         $this->dispatch('roomUpdated'); // refresh parent
     }

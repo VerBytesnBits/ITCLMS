@@ -169,7 +169,7 @@ class PeripheralForm extends Component
                 Peripheral::create($data);
             }
 
-            $title = $count > 1 ? "{$count} Peripherals created!" : "Peripheral created!";
+            $title = $count > 1 ? "{$count} Peripherals added!" : "Peripheral added!";
             $event = 'peripheralCreated';
         } else {
             $this->peripheral->update($data);

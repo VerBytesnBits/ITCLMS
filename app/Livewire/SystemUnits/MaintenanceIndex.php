@@ -179,12 +179,12 @@ class MaintenanceIndex extends Component
             if ($asset) {
                 if ($successful) {
                     // Mark repaired
-                    $asset->status = 'Available';
-                    $asset->condition = 'Operational';
+                    $asset->status = 'Operational';
+                   
                 } else {
                     // Mark defective
-                    $asset->status = 'Defective';
-                    $asset->condition = 'Poor';
+                    $asset->status = 'Non-Operational';
+                 
                     if (method_exists($asset, 'systemUnit')) {
                         $asset->system_unit_id = null; // unassign
                     }

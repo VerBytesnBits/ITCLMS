@@ -58,7 +58,7 @@ trait HasInventorySummary
             DB::raw("SUM(CASE WHEN status = 'In Use' THEN 1 ELSE 0 END) as in_use"),
             DB::raw("SUM(CASE WHEN status = 'Defective' THEN 1 ELSE 0 END) as defective"),
             DB::raw("SUM(CASE WHEN status = 'Under Maintenance' THEN 1 ELSE 0 END) as maintenance"),
-            DB::raw("SUM(CASE WHEN status = 'Junk' THEN 1 ELSE 0 END) as junk")
+            DB::raw("SUM(CASE WHEN status = 'Decommission' THEN 1 ELSE 0 END) as decommission")
         );
 
         // ✅ Apply filters (normal + age-based)

@@ -3,9 +3,9 @@
     <livewire:dashboard-heading title="Maintenance" subtitle="Manage all maintenance records" icon="wrench"
         gradient-from-color="#ab2e87" gradient-to-color="#c62c5f" icon-color="text-pink-500" />
 
-    <div class="flex justify-end mb-4">
+    {{-- <div class="flex justify-end mb-4">
         <flux:button variant="primary" color="blue" wire:click="openModal"> + Add Maintenance</flux:button>
-    </div>
+    </div> --}}
 
     <div
         class="overflow-x-auto bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl shadow">

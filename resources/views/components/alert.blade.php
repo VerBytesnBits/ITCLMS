@@ -13,7 +13,7 @@
                 color: '{{ session('alert')['color'] ?? '#000' }}',
                 iconHtml: `{!! session('alert')['iconHtml'] ?? '' !!}`,
                 showConfirmButton: {{ session('alert')['confirmButton'] ?? 'false' }},
-                timer: {{ session('alert')['timer'] ?? 3000 }},
+                timer: {{ session('alert')['timer'] ?? 5000 }},
                 timerProgressBar: true,
                 willClose: () => show = false
             });

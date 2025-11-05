@@ -119,8 +119,9 @@
                     <th>Available</th>
                     <th>In Use</th>
                     <th>Defective</th>
-                    <th>Maintenance</th>
-                    <th>Junk</th>
+                    {{-- <th>Maintenance</th>
+                    <th>Decommission</th> --}}
+                    {{-- <th>Junk</th> --}}
                     {{-- <th>Salvaged</th> --}}
                 </tr>
             </thead>
@@ -132,8 +133,8 @@
                         <td>{{ $row['available'] }}</td>
                         <td>{{ $row['in_use'] }}</td>
                         <td>{{ $row['defective'] }}</td>
-                        <td>{{ $row['maintenance'] }}</td>
-                        <td>{{ $row['junk'] }}</td>
+                        {{-- <td>{{ $row['maintenance'] }}</td>
+                        <td>{{ $row['decommission'] }}</td> --}}
                         {{-- <td>{{ $row['salvage'] }}</td> --}}
                     </tr>
                 @endforeach

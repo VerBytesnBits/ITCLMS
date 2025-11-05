@@ -28,11 +28,9 @@
                     @foreach ($availablePeripherals as $type => $list)
                         <button wire:click="$set('selectedType', '{{ $type }}')"
                             class="flex items-center w-full text-left px-3 py-2 rounded mb-1
-                            {{ ($selectedType ?? null) === $type ? 'bg-blue-300 font-semibold' : 'hover:bg-gray-100' }}">
-
+                    {{ ($selectedType ?? null) === $type ? 'bg-green-200 font-semibold' : 'hover:bg-gray-100' }}">
                             <img src="{{ asset($partIcons[$type] ?? 'images/icons/default.png') }}"
                                 class="w-10 h-10 mr-1" alt="{{ $type }}">
-
                             {{ ucfirst($type) }}
                         </button>
                     @endforeach
@@ -42,10 +40,11 @@
                 <div class="md:col-span-3 border rounded-md p-2 overflow-auto max-h-[60vh]">
                     @if ($selectedType)
                         @php
-                            $available = $availablePeripherals[$selectedType] ?? [];
+                            $available = $availablePeripherals[$selectedType] ?? null;
                             $assignedId = $selectedPeripherals[$selectedType] ?? null;
                             $assigned = $assignedId ? \App\Models\Peripheral::find($assignedId) : null;
                         @endphp
+
                         @if ($assigned)
                             <h3 class="font-semibold mt-4 mb-2">Assigned {{ ucfirst($selectedType) }}</h3>
                             <div class="flex justify-between items-center border-b py-1">
@@ -58,26 +57,38 @@
                                 </button>
                             </div>
                         @endif
+
                         <h3 class="font-semibold mb-2">Available {{ ucfirst($selectedType) }}</h3>
-                        @forelse($available as $peripheral)
-                            <div class="flex justify-between items-center border-b py-1">
-                                <span>{{ $peripheral->brand ?? '' }} {{ $peripheral->model ?? '' }}
-                                    ({{ $peripheral->serial_number ?? 'No Serial' }})
-                                </span>
-                                <button wire:click="assignSelected('{{ $selectedType }}', {{ $peripheral->id }})"
-                                    class="bg-blue-500 text-white px-2 py-1 rounded text-sm">
-                                    Assign
-                                </button>
+                        <input type="text" wire:model.live.debounce.500ms="searchPeripherals"
+                            placeholder="Search peripherals..." class="border rounded px-3 py-2 mb-2 w-full">
+
+                        @if ($available && $available->count())
+                            @foreach ($available as $peripheral)
+                                <div class="flex justify-between items-center border-b py-1">
+                                    <span>{{ $peripheral->brand ?? '' }} {{ $peripheral->model ?? '' }}
+                                        ({{ $peripheral->serial_number ?? 'No Serial' }})
+                                    </span>
+                                    <button wire:click="assignSelected('{{ $selectedType }}', {{ $peripheral->id }})"
+                                        class="bg-blue-500 text-white px-2 py-1 rounded text-sm">
+                                        Assign
+                                    </button>
+                                </div>
+                            @endforeach
+
+                            <!-- Pagination -->
+                            <div class="mt-2">
+                                {{ $available->onEachSide(0)->links('components.pagination.simple') }}
                             </div>
-                        @empty
+                        @else
                             <p class="text-gray-500">No available {{ $selectedType }} peripherals.</p>
-                        @endforelse
+                        @endif
                     @else
                         <p class="text-gray-500">Select a peripheral type from the left column.</p>
                     @endif
                 </div>
             </div>
         @endif
+
 
         {{-- Components Tab --}}
         @if ($tab === 'components')
@@ -87,26 +98,23 @@
                     @foreach ($availableComponents as $part => $list)
                         <button wire:click="$set('selectedPart', '{{ $part }}')"
                             class="flex items-center w-full text-left px-3 py-2 rounded mb-1
-                            {{ ($selectedPart ?? null) === $part ? 'bg-green-200 font-semibold' : 'hover:bg-gray-100' }}">
-
-                            {{-- Pull image path from backend --}}
+                    {{ ($selectedPart ?? null) === $part ? 'bg-green-200 font-semibold' : 'hover:bg-gray-100' }}">
                             <img src="{{ asset($partIcons[$part] ?? 'images/icons/default.png') }}"
                                 class="w-10 h-10 mr-1" alt="{{ $part }}">
-
                             {{ ucfirst($part) }}
                         </button>
                     @endforeach
                 </div>
 
-
                 {{-- Right Column --}}
                 <div class="md:col-span-3 border rounded-md p-2 overflow-auto max-h-[60vh]">
                     @if ($selectedPart)
                         @php
-                            $available = $availableComponents[$selectedPart] ?? [];
+                            $available = $availableComponents[$selectedPart] ?? null;
                             $assignedId = $selectedComponents[$selectedPart] ?? null;
                             $assigned = $assignedId ? \App\Models\ComponentParts::find($assignedId) : null;
                         @endphp
+
                         @if ($assigned)
                             <h3 class="font-semibold mt-4 mb-2">Assigned {{ ucfirst($selectedPart) }}</h3>
                             <div class="flex justify-between items-center border-b py-1">
@@ -117,38 +125,44 @@
                                     class="bg-red-500 text-white px-2 py-1 rounded text-sm">
                                     Unassign
                                 </button>
-                                <button wire:click="unassignComponent('{{ $selectedPart }}')"
-                                    class="border-red-500 text-red-500 hover:bg-red-200 px-2 py-1 rounded text-sm">
-                                    <flux:icon.triangle-alert />
-                                </button>
                             </div>
                         @endif
-                        <h3 class="font-semibold mb-2">Available {{ ucfirst($selectedPart) }}</h3>
-                        @forelse($available as $component)
-                            <div class="flex justify-between items-center border-b py-1">
-                                <span>
-                                    {{ $component->brand ?? '' }}
-                                    {{ $component->model ?? '' }}
-                                    {{ $component->capacity ?? '' }}
-                                    {{ $component->type ?? '' }}
-                                    ({{ $component->serial_number ?? 'No Serial' }})
-                                    
-                                </span>
 
-                                <button wire:click="assignComponent('{{ $selectedPart }}', {{ $component->id }})"
-                                    class="bg-blue-500 text-white px-2 py-1 rounded text-sm">
-                                    Assign
-                                </button>
+                        <h3 class="font-semibold mb-2">Available {{ ucfirst($selectedPart) }}</h3>
+                        <input type="text" wire:model.live.debounce.500ms="searchComponents"
+                            placeholder="Search components..." class="border rounded px-3 py-2 mb-2 w-full">
+
+                        @if ($available && $available->count())
+                            @foreach ($available as $component)
+                                <div class="flex justify-between items-center border-b py-1">
+                                    <span>
+                                        {{ $component->brand ?? '' }}
+                                        {{ $component->model ?? '' }}
+                                        {{ $component->capacity ?? '' }}
+                                        {{ $component->type ?? '' }}
+                                        ({{ $component->serial_number ?? 'No Serial' }})
+                                    </span>
+                                    <button wire:click="assignComponent('{{ $selectedPart }}', {{ $component->id }})"
+                                        class="bg-blue-500 text-white px-2 py-1 rounded text-sm">
+                                        Assign
+                                    </button>
+                                </div>
+                            @endforeach
+
+                            <!-- Pagination -->
+                            <div class="mt-2">
+                                {{ $available->onEachSide(0)->links('components.pagination.simple') }}
                             </div>
-                        @empty
+                        @else
                             <p class="text-gray-500">No available {{ $selectedPart }} components.</p>
-                        @endforelse
+                        @endif
                     @else
                         <p class="text-gray-500">Select a component part from the left column.</p>
                     @endif
                 </div>
             </div>
         @endif
+
 
         {{-- Footer --}}
         {{-- <div class="flex justify-end mt-6 gap-2">

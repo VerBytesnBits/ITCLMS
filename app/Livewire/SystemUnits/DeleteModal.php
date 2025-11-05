@@ -5,6 +5,7 @@ namespace App\Livewire\SystemUnits;
 use Livewire\Component;
 use App\Models\SystemUnit;
 use Livewire\Attributes\On;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class DeleteModal extends Component
 {
@@ -16,20 +17,22 @@ class DeleteModal extends Component
     #[On('confirm-delete-system-unit')]
     public function openModal(int $id)
     {
-        $unit = SystemUnit::find($id);
+        try {
+            $unit = SystemUnit::findOrFail($id);
 
-        if (!$unit) {
-            $this->dispatch('toast', [
+            $this->systemUnitId = $id;
+            $this->unitName = $unit->name ?? 'Unnamed Unit';
+            $this->action = '';
+            $this->show = true;
+
+        } catch (ModelNotFoundException $e) {
+            $this->dispatch('swal', [
+                'toast' => true,
                 'icon' => 'error',
-                'title' => 'System Unit not found.'
+                'title' => 'System Unit not found.',
+                'timer' => 3000,
             ]);
-            return;
         }
-
-        $this->systemUnitId = $id;
-        $this->unitName = $unit->name ?? 'Unnamed Unit';
-        $this->action = '';
-        $this->show = true;
     }
 
     public function cancel()
@@ -40,9 +43,11 @@ class DeleteModal extends Component
     public function confirmAction()
     {
         if (!$this->action) {
-            $this->dispatch('toast', [
+            $this->dispatch('swal', [
+                'toast' => true,
                 'icon' => 'error',
-                'title' => 'Please select an action before confirming.'
+                'title' => 'Please select an action before confirming.',
+                'timer' => 3000,
             ]);
             return;
         }
@@ -50,45 +55,62 @@ class DeleteModal extends Component
         $unit = SystemUnit::find($this->systemUnitId);
 
         if (!$unit) {
-            $this->dispatch('toast', [
+            $this->dispatch('swal', [
+                'toast' => true,
                 'icon' => 'error',
-                'title' => 'System Unit not found.'
+                'title' => 'System Unit not found.',
+                'timer' => 3000,
             ]);
             return;
         }
 
-        match ($this->action) {
-            'delete' => $unit->forceDelete(), // permanently remove
+        try {
+            match ($this->action) {
+                'delete' => $unit->forceDelete(),
+                'decommission' => $this->decommissionUnit($unit),
+                'mark_defective' => $unit->update(['status' => 'Non-Operational']),
+                default => null,
+            };
 
-            'decommission' => $this->decommissionUnit($unit), // handle all relations
+            $this->dispatch('unit-deleted'); // notify parent to refresh
 
-            'mark_defective' => $unit->update(['status' => 'Defective']),
+            // 🔔 Action-specific success messages
+            $messages = [
+                'delete' => 'System Unit permanently deleted.',
+                'decommission' => 'System Unit successfully decommissioned.',
+                'mark_defective' => 'System Unit marked as defective.',
+            ];
 
-            default => null,
-        };
+            $this->dispatch('swal', [
+                'toast' => true,
+                'icon' => 'success',
+                'title' => $messages[$this->action] ?? 'Action completed successfully.',
+                'timer' => 3000,
+            ]);
 
+            $this->cancel();
 
-
-        $this->dispatch('unit-deleted'); // refresh in parent component
-        $this->dispatch('toast', [
-            'icon' => 'success',
-            'title' => 'Action completed successfully.'
-        ]);
-
-        $this->cancel();
+        } catch (\Throwable $e) {
+            $this->dispatch('swal', [
+                'toast' => true,
+                'icon' => 'error',
+                'title' => 'Something went wrong. Please try again.',
+                'timer' => 3000,
+            ]);
+        }
     }
+
     protected function decommissionUnit($unit)
     {
-        // Update the unit’s own status
-        $unit->update(['status' => 'Decommissioned']);
+   
 
-        // Update all linked components
-        $unit->components()->update(['status' => 'Decommissioned']);
+        // Update linked components
+        $unit->components()->update(['status' => 'Decommission']);
 
-        // Update all linked peripherals
-        $unit->peripherals()->update(['status' => 'Decommissioned']);
+        // Update linked peripherals
+        $unit->peripherals()->update(['status' => 'Decommission']);
 
-        // Finally soft delete the unit
+        // Soft delete the unit
         $unit->delete();
     }
 

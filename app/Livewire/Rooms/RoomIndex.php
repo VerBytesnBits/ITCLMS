@@ -16,6 +16,7 @@ class RoomIndex extends Component
     public ?int $id = null;         // the selected room id
 
     public $rooms;
+    public $roomId;
 
     public function mount()
     {
@@ -32,6 +33,7 @@ class RoomIndex extends Component
     {
         $this->id = $id;
         $this->modal = 'edit';
+
     }
 
     public function openAssignLabIncharge($roomId)
@@ -60,12 +62,44 @@ class RoomIndex extends Component
     {
         $this->rooms = Room::with('users')->orderBy('id', 'asc')->get();
     }
-
-    public function deleteRoom($id)
+    // Trigger confirmation modal
+    public function confirmDeleteRoom($id)
     {
-        Room::findOrFail($id)->delete();
-        $this->dispatch('swal', toast: true, icon: 'success', title: 'Room deleted successfully', timer: 3000);
-        $this->dispatch('roomDeleted');
+       $this->roomId = $id;
+       $this->dispatch('delete-confirm');
+    }
+
+    #[On('deleteRoomConfirmed')]
+    public function deleteRoom()
+    {
+        if ($this->roomId) {
+            Room::findOrFail($this->roomId)->delete();
+
+            $this->dispatch('roomDeleted'); // triggers the Swal success message
+            $this->reset('roomId'); // optional: reset after deletion
+        }
+    }
+
+
+
+
+
+    public function removeTechnician($roomId, $userId)
+    {
+        $room = Room::findOrFail($roomId);
+        $room->users()->wherePivot('role_in_room', 'lab_technician')->detach($userId);
+        $this->dispatch('swal', toast: true, icon: 'success', title: 'Lab Technician unassigned successfully.');
+
+    }
+    public function removeIncharge($roomId, $userId)
+    {
+        $room = Room::findOrFail($roomId);
+
+        $room->users()
+            ->wherePivot('role_in_room', 'lab_incharge')
+            ->detach($userId);
+        $this->dispatch('swal', toast: true, icon: 'success', title: 'Lab In-Charge unassigned successfully.');
+
     }
 
     public function render()

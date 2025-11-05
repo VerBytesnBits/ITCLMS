@@ -1,26 +1,27 @@
 <div class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 px-2 sm:px-4"
-    x-data="{ showParts: false }">
+    x-data="{ showParts: false }" x-cloak>
 
     <!-- Modal -->
     <div class="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl w-full max-w-screen-lg
                 max-h-[95vh] flex flex-col animate-[fade-in-scale_0.2s_ease-out]"
         :class="showParts ? 'max-w-screen-xl' : 'max-w-screen-md'">
-
         <!-- Header -->
-        <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-zinc-700">
-            <h2 class="text-lg sm:text-xl font-semibold text-gray-800 dark:text-gray-100">
+        <div
+            class="flex items-center justify-between px-6 py-4 rounded-t-2xl
+           bg-gradient-to-r from-blue-700 via-blue-500 to-blue-400 dark:from-blue-300 dark:to-blue-900 text-white border-b border-blue-500 ">
+            <h2 class="text-lg sm:text-xl font-semibold">
                 {{ $mode === 'create' ? 'Add Unit' : 'Edit Unit' }}
             </h2>
-            <button type="button" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-800"
-                wire:click="$dispatch('closeModal')">
-                ✕
+
+            <button wire:click="$dispatch('closeModal')" class="p-2 rounded-full hover:bg-red-500 transition">
+                <flux:icon.x class="w-5 h-5" />
             </button>
         </div>
 
+
         <!-- Body -->
         <div class="flex-1 overflow-y-auto px-6 py-4">
-            <div class="grid gap-6"
-                :class="showParts ? 'grid-cols-1 md:grid-cols-[38%_62%]' : 'grid-cols-1'">
+            <div class="grid gap-6" :class="showParts ? 'grid-cols-1 md:grid-cols-[38%_62%]' : 'grid-cols-1'">
 
                 <!-- Left Column -->
                 <div>
@@ -100,15 +101,16 @@
                 </div>
 
                 <!-- Right Column: Parts -->
-                <div class="border-t md:border-t-0 md:border-l pt-4 md:pt-0 pl-0 md:pl-6"
-                    x-show="showParts" x-transition>
+                <div class="border-t md:border-t-0 md:border-l pt-4 md:pt-0 pl-0 md:pl-6" x-show="showParts"
+                    x-transition>
                     <livewire:system-units.unit-assign-parts :unitId="$unitId" />
                 </div>
             </div>
         </div>
 
         <!-- Footer -->
-        <div class="flex justify-end gap-3 px-6 py-4 border-t border-gray-200 dark:border-zinc-700 
+        <div
+            class="flex justify-end gap-3 px-6 py-4 border-t border-gray-200 dark:border-zinc-700 
                     bg-white dark:bg-zinc-900 sticky bottom-0">
             <button type="button"
                 class="px-4 py-2 bg-gray-200 dark:bg-zinc-700 dark:text-white rounded-lg 
@@ -121,5 +123,8 @@
                 {{ $mode === 'create' ? 'Add Unit' : 'Update Unit' }}
             </button>
         </div>
+        
     </div>
+    
 </div>
+

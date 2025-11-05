@@ -11,18 +11,43 @@
     <!-- Right: Search + Filters + Button -->
 
     <div
-        class="relative bg-white dark:bg-zinc-800 rounded-2xl shadow-md border border-zinc-200 dark:border-zinc-700 overflow-hidden">
+        class="relative bg-white dark:bg-zinc-800 rounded-2xl shadow-md border border-zinc-200 dark:border-zinc-700 overflow-hidden outline-2 outline-offset-2 outline-blue-500/50">
+        {{-- <div class="absolute top-0 left-0 w-full h-1 bg-blue-500"></div> --}}
+        <!-- content -->
+
         <!-- Card Header -->
-        <div class="absolute top-0 left-0 w-full h-2 bg-blue-500"></div>
-        <!-- Card Header -->
-        <div class="px-6 py-4 border-b border-gray-200 dark:border-zinc-700 ">
-            {{-- <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">Controls</h3> --}}
-            <flux:heading size="lg" level="1"
-                class="text-lg flex items-center gap-2  text-zinc-600 dark:text-zinc-50">
-                Controls
-            </flux:heading>
-            <flux:text class="text-xs">Search, filter, and add computer units</flux:text>
-            {{-- <p class="text-sm text-gray-500 dark:text-gray-400">Search, filter, and add computer units</p> --}}
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-zinc-700 flex items-center justify-between">
+            <!-- Left side -->
+            <div>
+                <flux:heading size="lg" level="1"
+                    class="text-lg flex items-center gap-2 text-zinc-600 dark:text-zinc-50">
+                    Controls
+                </flux:heading>
+                <flux:text class="text-xs">Search, filter, and add computer units</flux:text>
+            </div>
+
+            <!-- Right side -->
+            <div class="flex items-center gap-3">
+                <!-- Printer Button with matching tooltip style -->
+                <div class="relative group inline-block">
+                    <button wire:navigate href="/reports/unit"
+                        class="flex items-center justify-center w-10 h-10 rounded-full 
+               bg-gray-400 hover:bg-gray-700 text-white shadow-md transition duration-200">
+                        <flux:icon.printer class="w-5 h-5" />
+                    </button>
+
+                    <!-- Tooltip -->
+                    <div
+                        class="absolute left-[-7rem] top-1/2 -translate-y-1/2 
+               bg-gray-800 text-white text-xs rounded px-2 py-1 
+               opacity-0 group-hover:opacity-100 transition duration-200 
+               pointer-events-none shadow-lg whitespace-nowrap">
+                        Print Unit Reports
+                    </div>
+                </div>
+
+                <livewire:system-units.decommissioned-units />
+            </div>
         </div>
 
         <!-- Card Body -->
@@ -70,9 +95,9 @@
                     <option value="Needs Repair">Needs Repair</option>
                 </flux:select>
 
-                <flux:button variant="primary" color="green" wire:click="create"
+                <flux:button icon="plus" variant="primary" color="green" wire:click="create"
                     class="w-full sm:w-auto rounded-xl shadow-md hover:shadow-lg transition">
-                    + Add Unit
+                    Add Unit
                 </flux:button>
             </div>
         </div>
@@ -133,7 +158,7 @@
                                         x-init="$watch('open', value => {
                                             if (value) {
                                                 let btn = $refs.toggleBtn.getBoundingClientRect();
-                                                let dropdownHeight = $el.offsetHeight || 150; // fallback height
+                                                let dropdownHeight = $el.offsetHeight || 125; // fallback height
                                                 let spaceBelow = window.innerHeight - btn.bottom;
                                                 let spaceAbove = btn.top;
                                         
@@ -157,20 +182,28 @@
                                                 <flux:icon.pencil class="h-4 w-4" />
                                                 <span>Edit</span>
                                             </button>
-                                            <button wire:click="report({{ $unit->id }})" @click="open = false"
+                                            {{-- <button wire:click="report({{ $unit->id }})" @click="open = false"
                                                 class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-zinc-700">
                                                 <flux:icon.triangle-alert class="h-4 w-4" />
                                                 <span>Report</span>
+                                            </button> --}}
+                                            {{-- <button x-data
+                                                @click="$dispatch('open-modal', { component: 'issues.report-issue', { id: {{ $unit->id }} }); open = false"
+                                                class="px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">
+                                                Report Issue
+                                            </button> --}}
+                                            <button x-data
+                                                @click="$dispatch('openReportIssue', { systemUnitId: {{ $unit->id }} }); open = false"
+                                                class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-zinc-700">
+                                                <flux:icon.triangle-alert class="h-4 w-4" />
+                                                Report
                                             </button>
-                                            <button wire:click="delete({{ $unit->id }})" @click="open = false"
+
+                                            <button x-data
+                                                @click="$dispatch('confirm-delete-system-unit', { id: {{ $unit->id }} }); open = false"
                                                 class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-700">
                                                 <flux:icon.trash class="h-4 w-4" />
                                                 <span>Delete</span>
-                                            </button>
-                                            <button x-data
-                                                @click="$dispatch('confirm-delete-system-unit', { id: {{ $unit->id }} })"
-                                                class="px-3 py-1 bg-red-600 text-white rounded-md hover:bg-red-700">
-                                                Delete
                                             </button>
 
 
@@ -190,14 +223,11 @@
                 @endforelse
             </tbody>
         </table>
+
     </div>
-   
 
-    <livewire:system-units.decommissioned-units />
-
-
-
-
+    {{ $units->links() }}
+    <livewire:issues.report-issue />
     <livewire:system-units.delete-modal />
 
 

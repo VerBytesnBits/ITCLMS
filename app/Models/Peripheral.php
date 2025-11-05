@@ -8,6 +8,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
 use Carbon\Carbon;
+use Milon\Barcode\DNS1D;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class Peripheral extends Model
 {
@@ -32,13 +35,14 @@ class Peripheral extends Model
         'retirement_action',
         'retirement_notes',
         'retired_at',
+        'barcode_path',
     ];
 
     protected $casts = [
         'purchase_date' => 'date',
         'warranty_expires_at' => 'date',
         'retired_at' => 'datetime',
-        'warranty_period_months' => 'integer', 
+        'warranty_period_months' => 'integer',
     ];
 
     /** -------------------- Relationships -------------------- **/
@@ -112,6 +116,19 @@ class Peripheral extends Model
                     ->log('Peripheral reassigned');
             }
         });
+
+
+        static::creating(function ($peripheral) {
+            if ($peripheral->serial_number && empty($peripheral->barcode_path)) {
+                $peripheral->barcode_path = self::generateAndSaveBarcode($peripheral->serial_number);
+            }
+        });
+
+        static::updating(function ($peripheral) {
+            if ($peripheral->isDirty('serial_number')) {
+                $peripheral->barcode_path = self::generateAndSaveBarcode($peripheral->serial_number);
+            }
+        });
     }
 
     /** -------------------- Warranty Helpers -------------------- **/
@@ -127,11 +144,14 @@ class Peripheral extends Model
 
     public function getWarrantyStatusAttribute(): string
     {
-        if (!$this->warranty_expires_at) return 'No Warranty';
+        if (!$this->warranty_expires_at)
+            return 'No Warranty';
 
-        if (now()->gt($this->warranty_expires_at)) return 'Expired';
+        if (now()->gt($this->warranty_expires_at))
+            return 'Expired';
 
-        if (now()->diffInDays($this->warranty_expires_at) <= 30) return 'Expiring Soon';
+        if (now()->diffInDays($this->warranty_expires_at) <= 30)
+            return 'Expiring Soon';
 
         return 'Valid';
     }
@@ -173,5 +193,29 @@ class Peripheral extends Model
                 'to_unit_id' => $this->current_unit_id,
             ])
             ->log('Peripheral restored and reassigned');
+    }
+
+
+    /**
+     * Generate barcode image and return its storage path
+     */
+    protected static function generateAndSaveBarcode($serialNumber)
+    {
+        $barcode = new DNS1D();
+
+        // Create the barcode PNG in memory
+        $barcodeData = $barcode->getBarcodePNG($serialNumber, 'C128', 2, 60, [0, 0, 0], true);
+
+        // Decode base64 image data
+        $image = base64_decode($barcodeData);
+
+        // Create a unique file name
+        $fileName = 'barcodes/' . Str::slug($serialNumber) . '-' . Str::random(6) . '.png';
+
+        // Save to storage (public disk)
+        Storage::disk('public')->put($fileName, $image);
+
+        // Return the relative path (for example: storage/barcodes/...)
+        return 'storage/' . $fileName;
     }
 }

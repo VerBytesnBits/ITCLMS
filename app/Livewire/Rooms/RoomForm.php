@@ -15,17 +15,12 @@ class RoomForm extends Component
     public $description = '';
     public $status = 'Available';
 
-    public $showModal = false;
-
-    protected $listeners = ['open-room-form' => 'open'];
-
-    public function open($roomId = null)
+    public function mount($roomId = null)
     {
-        $this->resetErrorBag();
         $this->roomId = $roomId;
 
         if ($roomId) {
-            $this->room = Room::findOrFail($roomId);
+            $this->room = Room::find($roomId);
             $this->name = $this->room->name;
             $this->description = $this->room->description;
             $this->status = $this->room->status;
@@ -35,8 +30,6 @@ class RoomForm extends Component
             $this->description = '';
             $this->status = 'Available';
         }
-
-        $this->dispatch('open-modal', modal: 'room-form');
     }
 
     protected function rules()
@@ -55,20 +48,41 @@ class RoomForm extends Component
 
             if ($this->room) {
                 $this->room->update($validated);
-                $this->dispatch('swal', toast: true, icon: 'success', title: 'Room updated successfully', timer: 3000);
+
+                $this->dispatch('swal', [
+                    'toast' => true,
+                    'icon' => 'success',
+                    'title' => 'Room updated successfully',
+                    'timer' => 3000,
+                ]);
+
                 $this->dispatch('roomUpdated');
             } else {
                 Room::create($validated);
-                $this->dispatch('swal', toast: true, icon: 'success', title: 'Room created successfully', timer: 3000);
+
+                $this->dispatch('swal', [
+                    'toast' => true,
+                    'icon' => 'success',
+                    'title' => 'Room added successfully',
+                    'timer' => 3000,
+                ]);
+
                 $this->dispatch('roomCreated');
             }
 
-            $this->dispatch('close-modal', modal: 'room-form');
+            // Close modal in parent
+            $this->dispatch('closeModal');
 
         } catch (ValidationException $e) {
             $this->setErrorBag($e->validator->errors());
             $errors = $e->validator->errors()->all();
-            $this->dispatch('swal', toast: true, icon: 'error', title: implode(' ', $errors), timer: 3000);
+
+            $this->dispatch('swal', [
+                'toast' => true,
+                'icon' => 'error',
+                'title' => implode(' ', $errors),
+                'timer' => 3000,
+            ]);
         }
     }
 

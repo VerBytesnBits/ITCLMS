@@ -12,7 +12,7 @@ class UnitForm extends Component
     public bool $show = false;
     public string $mode = 'create'; // create | edit
     public ?int $unitId = null;
-
+   
     public ?string $category = null;
     public ?string $name = null;
     public ?string $serial_number = null;
@@ -33,7 +33,7 @@ class UnitForm extends Component
                 Rule::unique('system_units', 'serial_number')->ignore($this->unitId),
             ],
             'status' => 'required|string',
-            'condition' => 'required|string',
+            'condition' => 'nullable|string',
             'room_id' => 'required|exists:rooms,id',
             'quantity' => 'required|integer|min:1',
         ];
@@ -109,16 +109,37 @@ class UnitForm extends Component
     /** ---------- Save Logic ---------- */
     public function save()
     {
-        $this->validate();
+        try {
+            $this->validate();
 
-        [$startNumber] = $this->getNextIndex();
+            [$startNumber] = $this->getNextIndex();
 
-        if ($this->mode === 'create') {
-            if ($this->multiple) {
-                for ($i = 0; $i < $this->quantity; $i++) {
-                    $unitNumber = $startNumber + $i;
-                    $unitName = $this->category . $unitNumber;
-                    $serial = $this->generateSerial($unitNumber);
+            if ($this->mode === 'create') {
+                if ($this->multiple) {
+                    for ($i = 0; $i < $this->quantity; $i++) {
+                        $unitNumber = $startNumber + $i;
+                        $unitName = $this->category . $unitNumber;
+                        $serial = $this->generateSerial($unitNumber);
+
+                        SystemUnit::create([
+                            'name' => $unitName,
+                            'category' => $this->category,
+                            'serial_number' => $serial,
+                            'status' => $this->status,
+
+                            'room_id' => $this->room_id,
+                        ]);
+                    }
+
+                    $this->dispatch('swal', [
+                        'toast' => true,
+                        'icon' => 'success',
+                        'title' => "{$this->quantity} system units created successfully",
+                        'timer' => 3000,
+                    ]);
+                } else {
+                    $unitName = $this->name ?: $this->category . $startNumber;
+                    $serial = $this->serial_number ?: $this->generateSerial();
 
                     SystemUnit::create([
                         'name' => $unitName,
@@ -128,33 +149,59 @@ class UnitForm extends Component
 
                         'room_id' => $this->room_id,
                     ]);
+
+                    $this->dispatch('swal', [
+                        'toast' => true,
+                        'icon' => 'success',
+                        'title' => 'System unit created successfully',
+                        'timer' => 3000,
+                    ]);
                 }
+
+                $this->dispatch('unitCreated');
             } else {
-                $unitName = $this->name ?: $this->category . $startNumber;
-                $serial = $this->serial_number ?: $this->generateSerial();
-
-
-                SystemUnit::create([
-                    'name' => $unitName,
-                    'category' => $this->category,
-                    'serial_number' => $serial,
+                $unit = SystemUnit::findOrFail($this->unitId);
+                $unit->update([
+                    'name' => $this->name,
+                    'serial_number' => $this->serial_number,
                     'status' => $this->status,
 
                     'room_id' => $this->room_id,
                 ]);
+
+                $this->dispatch('swal', [
+                    'toast' => true,
+                    'icon' => 'success',
+                    'title' => 'System unit updated successfully',
+                    'timer' => 3000,
+                ]);
+
+                $this->dispatch('unitUpdated');
             }
-        } else {
-            SystemUnit::findOrFail($this->unitId)?->update([
-                'name' => $this->name,
-                'serial_number' => $this->serial_number,
-                'status' => $this->status,
-                'room_id' => $this->room_id,
+
+            // Close modal
+            $this->dispatch('closeModal');
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            $this->setErrorBag($e->validator->errors());
+            $errors = $e->validator->errors()->all();
+
+            $this->dispatch('swal', [
+                'toast' => true,
+                'icon' => 'error',
+                'title' => implode(' ', $errors),
+                'timer' => 3000,
+            ]);
+        } catch (\Exception $e) {
+            $this->dispatch('swal', [
+                'toast' => true,
+                'icon' => 'error',
+                'title' => 'Something went wrong: ' . $e->getMessage(),
+                'timer' => 3000,
             ]);
         }
-
-        $this->dispatch('closeModal');
-        $this->dispatch('unit-saved');
     }
+
 
     /** ---------- Helpers ---------- */
     private function getNextIndex(): array
@@ -236,8 +283,7 @@ class UnitForm extends Component
         $this->name = $this->category . $nextNumber;
 
         if (!$this->multiple) {
-            // ❌ old: $this->serial_number = $this->generateSerial($nextNumber);
-            // ✅ new:
+
             $this->serial_number = $this->generateSerial();
         }
     }

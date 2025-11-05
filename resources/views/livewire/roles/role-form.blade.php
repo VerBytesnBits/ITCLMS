@@ -35,7 +35,7 @@
                             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                                 @foreach ($permissions as $permission)
                                     <flux:checkbox label="{{ str_replace($group . '.', '', $permission->name) }}"
-                                        value="{{ $permission->name }}" class="w-full" />
+                                        value="{{ $permission->name }}" wire:model="permissions" class="w-full" />
                                 @endforeach
                             </div>
                         </div>
