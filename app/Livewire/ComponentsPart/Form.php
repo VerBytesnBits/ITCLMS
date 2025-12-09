@@ -6,7 +6,7 @@ use Livewire\Component;
 use App\Models\ComponentParts;
 use App\Models\SystemUnit;
 use Carbon\Carbon;
-use Illuminate\Support\Str;
+
 class Form extends Component
 {
     public ?ComponentParts $component = null;
@@ -28,6 +28,8 @@ class Form extends Component
     public $modalMode = 'create';
     public $multiple = false;   // for checkbox
     public $quantity = 1;       // for number input
+    public $room_id = null;
+    public $embedded = false; // when used inside unit form
 
     protected function rules()
     {
@@ -44,6 +46,7 @@ class Form extends Component
             'status' => ['required', 'in:Available,In Use,Defective,Under Maintenance'],
             'purchase_date' => ['nullable', 'date'],
             'warranty_period_months' => ['nullable', 'integer', 'min:0'],
+            'room_id' => ['nullable', 'exists:rooms,id'],
         ];
     }
 
@@ -65,11 +68,14 @@ class Form extends Component
             'status',
             'purchase_date',
             'warranty_period_months',
+            'room_id',
         ]);
     }
 
+    public $rooms = [];
     public function mount($id = null)
     {
+        $this->rooms = \App\Models\Room::orderBy('name')->get();
         if ($id) {
             $this->component = ComponentParts::findOrFail($id);
             $this->componentId = $this->component->id;
@@ -84,70 +90,65 @@ class Form extends Component
     }
 
 
-    // ...
-
-    public function updatedPart($value)
-    {
-        if ($this->modalMode === 'create' && !$this->multiple) {
-            $this->serial_number = $this->generateSerial($value);
-        } else {
-            // Clear serial preview when multiple mode is on
-            $this->serial_number = null;
-        }
-    }
-
-    public function updatedMultiple($value)
-    {
-        if ($value) {
-            // If user turns on "Add more", clear the pre-generated serial
-            $this->serial_number = null;
-        } else {
-            // If user unchecks "Add more", regenerate serial for the selected part
-            if ($this->part) {
-                $this->serial_number = $this->generateSerial($this->part);
-            }
-        }
-    }
-
-    private function generateSerial(string $prefix): string
-    {
-        do {
-            // Generate a random serial (you can adjust the format)
-            $serial = strtoupper($prefix) . '-' . strtoupper(Str::random(5)) . rand(1000, 9999);
-        } while (ComponentParts::where('serial_number', $serial)->exists());
-
-        return $serial;
-    }
 
     public function save()
     {
-        if ($this->modalMode === 'create' && $this->multiple) {
-            $this->serial_number = $this->generateSerial($this->part);
-        }
-        $this->validate();
-
         $this->validate();
 
         $data = $this->formData();
+
         if (!empty($data['warranty_period_months'])) {
             $data['warranty_period_months'] = (int) $data['warranty_period_months'];
         }
+
+        // ✅ TEMP MODE (INSIDE SYSTEM UNIT FORM)
+        if ($this->embedded) {
+
+            $this->dispatch(
+                'tempComponentAdded',
+                component: $data
+            );
+
+            $this->dispatch(
+                'swal',
+                toast: true,
+                icon: 'success',
+                title: 'Component temporarily added to Unit'
+            );
+
+            $this->reset([
+                'system_unit_id',
+                'serial_number',
+                'brand',
+                'model',
+                'capacity',
+                'speed',
+                'type',
+                'part',
+                'condition',
+                'status',
+                'purchase_date',
+                'warranty_period_months',
+                'room_id',
+                'multiple',
+                'quantity',
+            ]);
+
+            return;
+        }
+
+        // ✅ NORMAL DATABASE MODE (STANDALONE)
         if ($this->modalMode === 'create') {
-            $count = $this->multiple ? $this->quantity : 1;
 
-            for ($i = 0; $i < $count; $i++) {
-                // Only generate serials in loop if multiple
-                $data['serial_number'] = $this->multiple
-                    ? $this->generateSerial($this->part)
-                    : $this->serial_number;
+            ComponentParts::create($data);
 
-                ComponentParts::create($data);
-            }
-
-            $title = $count > 1 ? "{$count} Components created!" : "Component created!";
+            $title = "Component Added!";
             $event = 'componentCreated';
+
         } else {
+
             $this->component->update($data);
+
             $title = 'Component updated!';
             $event = 'componentUpdated';
         }
@@ -156,6 +157,8 @@ class Form extends Component
         $this->dispatch('swal', toast: true, icon: 'success', title: $title, timer: 3000);
         $this->dispatch('closeModal');
     }
+
+
 
 
 

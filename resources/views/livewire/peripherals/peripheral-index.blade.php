@@ -34,8 +34,7 @@
 
         <!-- Header -->
         <div class="flex items-center justify-between p-4 border-b">
-            <flux:heading size="lg" level="1"
-                class="text-lg flex items-center gap-2 text-zinc-600 dark:text-zinc-50">
+            <flux:heading size="lg" level="1" class="text-lg flex items-center gap-2 text-zinc-600 ">
                 Total Peripherals
 
                 <flux:tooltip hoverable>
@@ -46,14 +45,23 @@
                 </flux:tooltip>
 
                 <flux:tooltip hoverable>
-                    <flux:button icon="printer" size="sm" variant="subtle" />
+                    <flux:button icon="printer" size="sm" variant="primary"
+                        :href="route('peripherals.report-preview')" wire:navigate
+                        class="text-white bg-gradient-to-r from-gray-400 via-gray-500 to-gray-600 
+           hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-gray-300 
+           dark:focus:ring-gray-800 shadow-lg shadow-gray-500/50 
+           dark:shadow-lg dark:shadow-gray-800/80 
+           font-medium rounded-base text-sm px-4 py-2.5 inline-flex items-center gap-1">
+                        Peripheral Reports</flux:button>
                     <flux:tooltip.content class="max-w-[20rem] space-y-2">
-                        <p>Print Peripheral Reports</p>
+                        <p>Peripheral Reports</p>
                     </flux:tooltip.content>
                 </flux:tooltip>
             </flux:heading>
 
-            <span class="text-xl font-bold text-zinc-700">
+            {{-- <livewire:peripherals.peripherals-report :room-id="$roomId" :key="$roomId" /> --}}
+
+            <span class="text-xl font-bold text-zinc-400">
                 {{ collect($this->peripheralSummary)->flatten(1)->sum('total') }}
             </span>
         </div>
@@ -64,7 +72,7 @@
         text-zinc-500 dark:text-zinc-200 
         bg-zinc-50 dark:bg-zinc-800 
         hover:bg-zinc-100 dark:hover:bg-zinc-700 
-        rounded-lg transition">
+         transition">
             <flux:text size="sm">
                 <span x-text="open ? 'Hide Peripheral Statistics' : 'View Peripheral Statistics'"></span>
             </flux:text>
@@ -83,17 +91,7 @@
             <div class="mb-4 border-b border-gray-200 dark:border-zinc-700">
                 <nav class="-mb-px flex flex-wrap gap-2">
                     @php
-                        $parts = [
-                            'Monitor',
-                            'Keyboard',
-                            'Mouse',
-                            'Printer',
-                            'Speaker',
-                            'Projector',
-                            'AVR',
-                            'UPS',
-                            'Webcam',
-                        ];
+                        $parts = ['Monitor', 'Keyboard', 'Mouse', 'Speaker', 'AVR', 'UPS', 'Webcam'];
                     @endphp
 
                     @foreach ($parts as $part)
@@ -266,7 +264,7 @@
                     <label for="barcodeInput"
                         class="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-1 flex items-center gap-2">
 
-                        Scan Barcode
+                        Barcode
                     </label>
                     <div x-data x-init="$nextTick(() => $refs.barcodeInput.focus())" x-on:scan-complete.window="$refs.barcodeInput.focus()">
                         <flux:input id="barcodeInput" x-ref="barcodeInput" wire:model.lazy="scannedCode"
@@ -304,8 +302,8 @@
 
                 <!-- Add Peripheral Button -->
                 <div class="flex items-end w-full sm:w-auto">
-                    <flux:button icon="plus" variant="primary" color="green" wire:click="openCreateModal"
-                        class="w-full sm:w-auto rounded-xl shadow-md hover:shadow-lg transition">
+                    <flux:button icon="circle-plus" variant="primary" color="green" wire:click="openCreateModal"
+                        class="text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-green-300 dark:focus:ring-green-800 font-medium rounded-base text-sm px-4 py-2.5 text-center leading-5">
                         Add Peripheral
                     </flux:button>
                 </div>
@@ -337,6 +335,7 @@
                     <th class="px-4 py-3">Category</th>
                     {{-- <th class="px-4 py-3">Condition</th> --}}
                     <th class="px-4 py-3">Status</th>
+                    <th class="px-4 py-3">PC :: Room</th>
                     <th class="px-4 py-3 text-center">Actions</th>
                 </tr>
             </thead>
@@ -361,65 +360,101 @@
 
                         <td class="px-4 py-3">
                             <span
-                                class="px-2 py-1 text-xs font-semibold rounded-full {{ $statusColors[$peripheral->status] ?? 'bg-gray-100 text-gray-700' }}">
+                                class="px-2 py-1 text-base font-semibold rounded-full {{ $statusColors[$peripheral->status] ?? 'bg-gray-100 text-gray-700' }}">
                                 {{ $peripheral->status }}
                             </span>
+
                         </td>
-                        <td class="px-4 py-3 text-center space-x-2">
-                            <!-- Actions -->
-                            <div x-data="{ open: false }" class="relative inline-flex w-full sm:w-auto">
-                                <!-- View -->
-                                <button wire:click="openViewModal({{ $peripheral->id }})"
-                                    class="inline-flex items-center justify-center px-3 py-2 text-xs md:text-sm font-medium border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-zinc-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 rounded-l-md flex-1 sm:flex-none">
-                                    <flux:icon.eye />
-                                </button>
-                                <!-- Dropdown -->
-                                <button @click="open = !open" x-ref="toggleBtn" type="button"
-                                    class="inline-flex items-center justify-center px-2 py-2 border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-500 hover:bg-gray-50 dark:hover:bg-zinc-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 rounded-r-md border-l-0 flex-1 sm:flex-none">
-                                    <svg class="h-4 w-4 md:h-5 md:w-5" xmlns="http://www.w3.org/2000/svg"
-                                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <td class="px-4 py-3">
+                            <span class="text-base">{{ optional($peripheral->systemUnit)->name ?? '—' }}</span>::
+                            <span class="text-base">{{ optional($peripheral->room)->name ?? '—' }}</span>
+                        </td>
+                        <td class="px-4 py-3 text-center">
+
+                            <div x-data="{ open: false }" class="relative inline-flex">
+
+                                <!-- Desktop Buttons -->
+                                <div class="hidden sm:flex gap-2">
+                                    <flux:tooltip hoverable>
+                                        <!-- View -->
+                                        <flux:button wire:click="openViewModal({{ $peripheral->id }})"
+                                            variant="primary" icon="eye"
+                                            class="text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 
+                       hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 
+                       dark:focus:ring-blue-800 shadow-lg shadow-blue-500/50 
+                       dark:shadow-lg dark:shadow-blue-800/80 
+                       font-medium rounded-base text-sm px-4 py-2.5 inline-flex items-center gap-1">
+                                        </flux:button>
+                                        <flux:tooltip.content class="max-w-[20rem] ">
+                                            <p>View</p>
+                                        </flux:tooltip.content>
+                                    </flux:tooltip>
+
+                                    <flux:tooltip hoverable>
+                                        <!-- Edit -->
+                                        <flux:button wire:click="openEditModal({{ $peripheral->id }})"
+                                            variant="primary" icon="pencil"
+                                            class="text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 
+                       hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-green-300 
+                       dark:focus:ring-green-800 shadow-lg shadow-green-500/50 
+                       dark:shadow-lg dark:shadow-green-800/80 
+                       font-medium rounded-base text-sm px-4 py-2.5 inline-flex items-center gap-1">
+                                        </flux:button>
+                                        <flux:tooltip.content class="max-w-[20rem] ">
+                                            <p>Modify</p>
+                                        </flux:tooltip.content>
+                                    </flux:tooltip>
+
+                                    <!-- Delete -->
+                                    <flux:button
+                                        wire:click="$dispatch('open-delete-modal', [{{ $peripheral->id }}, 'Peripheral'])"
+                                        variant="primary" icon="trash"
+                                        class="text-white bg-gradient-to-r from-red-400 via-red-500 to-red-600 
+           hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-red-300 
+           dark:focus:ring-red-800 shadow-lg shadow-red-500/50 
+           dark:shadow-lg dark:shadow-red-800/80 
+           font-medium rounded-base text-sm px-4 py-2.5 inline-flex items-center gap-1">
+
+                                    </flux:button>
+                                </div>
+
+                                <!-- Mobile Dropdown Button -->
+                                <button @click="open = !open"
+                                    class="sm:hidden inline-flex items-center justify-center w-9 h-9 rounded-md border border-gray-300 
+                   dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-700 dark:text-gray-200">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M19 9l-7 7-7-7" />
+                                            d="M12 6v0m0 6v0m0 6v0" />
                                     </svg>
                                 </button>
 
-                                <!-- Dropdown Menu -->
-                                <template x-teleport="body">
-                                    <div x-show="open" x-transition @click.away="open = false" x-cloak
-                                        x-init="$watch('open', value => {
-                                            if (value) {
-                                                let btn = $refs.toggleBtn.getBoundingClientRect();
-                                                $el.style.position = 'absolute';
-                                                $el.style.top = (btn.bottom + window.scrollY) + 'px';
-                                                $el.style.left = (btn.left + window.scrollX) + 'px';
-                                            }
-                                        })"
-                                        class="z-50 mt-1 w-30 rounded-md shadow-lg bg-white dark:bg-zinc-800 ring-1 ring-black ring-opacity-5">
-                                        <div class="py-1">
-                                            <button wire:click="openEditModal({{ $peripheral->id }})"
-                                                @click="open = false"
-                                                class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-zinc-700">
-                                                <flux:icon.pencil class="h-4 w-4" />
-                                                <span>Edit</span>
-                                            </button>
-                                            {{-- <button wire:click="deletePeripheral({{ $peripheral->id }})"
-                                                @click="open = false"
-                                                class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-700">
-                                                <flux:icon.trash class="h-4 w-4" />
-                                                <span>Delete</span>
-                                            </button> --}}
-                                            <button
-                                                wire:click="$dispatch('open-delete-modal', [{{ $peripheral->id }}, 'Peripheral'])"
-                                                @click="open = false"
-                                                class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-700">
-                                                <flux:icon.trash class="h-4 w-4" />
-                                                Delete
-                                            </button>
-                                        </div>
-                                    </div>
-                                </template>
+                                <!-- Mobile Dropdown Menu -->
+                                <div x-show="open" @click.away="open = false" x-cloak
+                                    class="absolute right-0 mt-2 w-36 bg-white dark:bg-zinc-800 shadow-lg rounded-md z-50 sm:hidden">
+
+                                    <button wire:click="openViewModal({{ $peripheral->id }})" @click="open = false"
+                                        class="w-full flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-zinc-700">
+                                        <flux:icon.eye class="w-4 h-4" /> View
+                                    </button>
+
+                                    <button wire:click="openEditModal({{ $peripheral->id }})" @click="open = false"
+                                        class="w-full flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-zinc-700">
+                                        <flux:icon.pencil class="w-4 h-4" /> Edit
+                                    </button>
+
+                                    <button
+                                        wire:click="$dispatch('open-delete-modal', [{{ $peripheral->id }}, 'Peripheral'])"
+                                        @click="open = false"
+                                        class="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-700/30">
+                                        <flux:icon.trash class="w-4 h-4" /> Delete
+                                    </button>
+
+                                </div>
+
                             </div>
+
                         </td>
+
                     </tr>
                 @empty
                     <tr>

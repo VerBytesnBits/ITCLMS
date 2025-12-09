@@ -4,8 +4,8 @@
         gradient-to-color="#ccf662" icon-color="text-yellow-300" />
 
     <div class="flex justify-end mb-4">
-        <flux:button wire:click="openCreateModal" variant="primary" color="green">
-            + Add User
+        <flux:button wire:click="openCreateModal" icon="circle-plus" variant="primary" color="green" class="text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-green-300 dark:focus:ring-green-800 font-medium rounded-base text-sm px-4 py-2.5 text-center leading-5">
+            Add User
         </flux:button>
     </div>
 
@@ -48,15 +48,24 @@
 
                         <td class="px-4 py-3 text-center space-x-2">
                             
-                            <button wire:click="openEditModal({{ $user->id }})"
-                                class="px-3 py-2 text-xs font-medium rounded-md border border-gray-300 dark:border-zinc-700 text-gray-700 dark:text-gray-200 hover:bg-yellow-100 dark:hover:bg-zinc-700">
-                                <flux:icon.pencil />
-                            </button>
-                            <button 
-                                class="px-3 py-2 text-xs font-medium rounded-md border border-gray-300 dark:border-zinc-700 text-red-600 hover:bg-red-100 dark:hover:bg-red-700">
-                                <flux:icon.trash />
-                            </button>
-                     
+                           <flux:button wire:click="openEditModal({{ $user->id }})" icon="pencil"
+                                variant="primary"
+                                class="text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 
+           hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-green-300 
+           dark:focus:ring-green-800 shadow-lg shadow-green-500/50 
+           dark:shadow-lg dark:shadow-green-800/80 
+           font-medium rounded-base text-sm px-4 py-2.5 inline-flex items-center gap-1">
+
+                            </flux:button>
+                            <flux:button  icon="trash" variant="primary"
+                                class="text-white bg-gradient-to-r from-red-400 via-red-500 to-red-600 
+           hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-red-300 
+           dark:focus:ring-red-800 shadow-lg shadow-red-500/50 
+           dark:shadow-lg dark:shadow-red-800/80 
+           font-medium rounded-base text-sm px-4 py-2.5 inline-flex items-center gap-1">
+
+                            </flux:button>
+                     {{-- wire:click="deleteUser({{ $role->id }})" --}}
                         </td>
                     </tr>
                 @endforeach

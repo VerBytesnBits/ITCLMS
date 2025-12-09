@@ -7,29 +7,25 @@ use Illuminate\Support\Facades\DB;
 trait HasInventorySummary
 {
     /**
-     * Apply dynamic filters including age filters.
+     * Apply filters like age or other columns
      */
     protected function applyFilters($query, array $filters)
     {
         foreach ($filters as $column => $value) {
+
             if ($column === '__age') {
                 if ($value === 'new') {
-                    // Still in warranty OR purchased within 12 months
                     $query->where(function ($q) {
                         $q->where('warranty_expires_at', '>=', now())
-                            ->orWhere('purchase_date', '>=', now()->subYear());
+                          ->orWhere('purchase_date', '>=', now()->subYear());
                     });
                 } elseif (preg_match('/^older_(\d+)(month|months|year|years)$/', $value, $matches)) {
-                    $amount = (int)$matches[1];
-                    $unit = $matches[2];
-
-                    // Normalize plural → singular (years, months → year, month)
-                    $unit = rtrim($unit, 's');
-
+                    $amount = (int) $matches[1];
+                    $unit = rtrim($matches[2], 's');
                     $query->where('purchase_date', '<', now()->sub($unit, $amount));
                 }
-            } else {
-                // Normal column filters (e.g. room_id, unit_id, category)
+            } elseif ($column !== 'room_id') {
+                // Other direct filters
                 $query->where($column, $value);
             }
         }
@@ -38,73 +34,73 @@ trait HasInventorySummary
     }
 
     /**
-     * Generate a summary grouped by type + description.
+     * Get inventory summary grouped by one or more columns.
      */
     public function getInventorySummary(
         string $modelClass,
-        string $groupColumn,
+        array|string $groupColumn, // <-- Now correctly handles array or string
         array $descriptionColumns,
         string $sortColumn = 'available',
         string $sortDirection = 'asc',
         array $filters = []
     ) {
+        $model = new $modelClass;
+        $table = $model->getTable();
+
+        // 1. Normalize groupColumn to an array and determine the primary group column for final output
+        $groupColumns = is_array($groupColumn) ? $groupColumn : [$groupColumn];
+        $primaryGroupColumn = is_array($groupColumn) ? $groupColumn[0] : $groupColumn;
+        
+        // Prepare the columns for the SQL GROUP BY clause (e.g., ['assets.type', 'assets.model'])
+        $qualifiedGroupColumns = array_map(fn($col) => "{$table}.{$col}", $groupColumns);
+
+
         $concatExpr = implode(", ' ', ", array_map(fn($col) => "COALESCE($col,'')", $descriptionColumns));
 
-        $query = $modelClass::select(
-            $groupColumn,
-            DB::raw("CONCAT($concatExpr) as description"),
-            DB::raw('COUNT(*) as total'),
-            DB::raw("SUM(CASE WHEN status = 'Available' THEN 1 ELSE 0 END) as available"),
-            DB::raw("SUM(CASE WHEN status = 'In Use' THEN 1 ELSE 0 END) as in_use"),
-            DB::raw("SUM(CASE WHEN status = 'Defective' THEN 1 ELSE 0 END) as defective"),
-            DB::raw("SUM(CASE WHEN status = 'Under Maintenance' THEN 1 ELSE 0 END) as maintenance"),
-            DB::raw("SUM(CASE WHEN status = 'Decommission' THEN 1 ELSE 0 END) as decommission")
-        );
+        $query = $modelClass::query();
 
-        // ✅ Apply filters (normal + age-based)
-        $this->applyFilters($query, $filters);
+        // Room filter (No changes needed here)
+        if (!empty($filters['room_id'])) {
+            $roomId = $filters['room_id'];
+            unset($filters['room_id']);
 
-        $summary = $query
-            ->groupBy($groupColumn, 'description')
-            ->orderBy($groupColumn)
-            ->get();
-
-        // Sorting
-        if ($sortColumn && $sortDirection) {
-            $summary = $summary->sortBy(fn($item) => $item->{$sortColumn});
-            if ($sortDirection === 'desc') {
-                $summary = $summary->reverse();
-            }
+            $query->leftJoin('system_units', "{$table}.system_unit_id", '=', 'system_units.id')
+                ->where(function($q) use ($roomId, $table) {
+                    $q->where('system_units.room_id', $roomId)      // linked system units
+                      ->orWhere("{$table}.room_id", $roomId);       // direct room assignment
+                });
         }
 
-        return $summary->groupBy($groupColumn)->toArray();
+        // Apply other filters (No changes needed here)
+        $query = $this->applyFilters($query, $filters);
+
+        // 2. Build the SELECT statement
+        $selects = [
+            DB::raw("MAX(CONCAT($concatExpr)) as description"),
+            DB::raw("COUNT(*) as total"),
+            DB::raw("SUM(CASE WHEN LOWER({$table}.status) = 'available' THEN 1 ELSE 0 END) as available"),
+            DB::raw("SUM(CASE WHEN LOWER({$table}.status) = 'in use' THEN 1 ELSE 0 END) as in_use"),
+            DB::raw("SUM(CASE WHEN LOWER({$table}.status) = 'defective' THEN 1 ELSE 0 END) as defective")
+        ];
+
+        // Add the group columns to the SELECT list
+        $selects = array_merge($qualifiedGroupColumns, $selects);
+
+        // 3. Apply SELECT and GROUP BY using the qualified columns
+        $query->select($selects)
+            ->groupBy($qualifiedGroupColumns);
+
+        // Execute query
+        $summary = $query->get();
+
+        // Optional sorting
+        if ($sortColumn && $sortDirection) {
+            $summary = $sortDirection === 'desc'
+                ? $summary->sortByDesc($sortColumn)
+                : $summary->sortBy($sortColumn);
+        }
+
+        // 4. Group the final collection by the primary column (e.g., 'type')
+        return $summary->groupBy($primaryGroupColumn)->toArray();
     }
-
-    /**
-     * Get inventory details with optional filters.
-     */
-    public function getInventoryDetails(
-        string $modelClass,
-        string $groupColumn,
-        array $descriptionColumns,
-        array $filters = []
-    ) {
-        $concatExpr = implode(", ' ', ", array_map(fn($col) => "COALESCE($col,'')", $descriptionColumns));
-
-        $query = $modelClass::select(
-            $groupColumn,
-            DB::raw("CONCAT($concatExpr) as description"),
-            'status'
-        );
-
- 
-        $this->applyFilters($query, $filters);
-
-        return $query
-            ->orderBy($groupColumn)
-            ->get()
-            ->groupBy($groupColumn);
-    }
-
-    
 }

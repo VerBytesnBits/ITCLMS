@@ -5,9 +5,9 @@
 
     <!-- Stats Row -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <x-dashboard.stats-card title="Total Units" :value="$totalUnits" icon="computer" iconBg="bg-green-500" />
-        <x-dashboard.stats-card title="Total Components" :value="$totalComponents" icon="cpu-chip" iconBg="bg-blue-500" />
-        <x-dashboard.stats-card title="Total Peripherals" :value="$totalPeripherals" icon="monitor" iconBg="bg-orange-500" />
+        <x-dashboard.stats-card title="Total Units" :value="$totalUnits" icon="computer" iconBg="bg-green-500" :href="route('units')" />
+        <x-dashboard.stats-card title="Total Components" :value="$totalComponents" icon="cpu-chip" iconBg="bg-blue-500"  :href="route('components')"/>
+        <x-dashboard.stats-card title="Total Peripherals" :value="$totalPeripherals" icon="monitor" iconBg="bg-orange-500" :href="route('peripherals')" />
     </div>
 
 
@@ -35,10 +35,10 @@
 
         <!-- Header -->
         <div class="flex items-center justify-between mb-4"> --}}
-            {{-- <h3 class="text-lg font-semibold flex items-center gap-2 text-zinc-800 dark:text-zinc-100">
+    {{-- <h3 class="text-lg font-semibold flex items-center gap-2 text-zinc-800 dark:text-zinc-100">
 
             </h3> --}}
-            {{-- <flux:heading size="lg" level="1" class="text-lg flex items-center gap-2  text-zinc-600 ">
+    {{-- <flux:heading size="lg" level="1" class="text-lg flex items-center gap-2  text-zinc-600 ">
                 <flux:icon.activity class="w-5 h-5 text-blue-500" />
                 Recent Activity
             </flux:heading>
@@ -47,8 +47,8 @@
             </a>
         </div> --}}
 
-        <!-- Logs List -->
-        {{-- <ul class="divide-y divide-zinc-200 dark:divide-zinc-700">
+    <!-- Logs List -->
+    {{-- <ul class="divide-y divide-zinc-200 dark:divide-zinc-700">
             @forelse($recentLogs as $log)
                 <li class="py-3 text-sm text-zinc-700 dark:text-zinc-300 flex justify-between items-center">
                     <div>

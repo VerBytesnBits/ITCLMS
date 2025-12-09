@@ -11,13 +11,16 @@ use Carbon\Carbon;
 use Milon\Barcode\DNS1D;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use App\Jobs\GenerateAssetCode;
+
 class ComponentParts extends Model
 {
     use HasFactory, LogsActivity, SoftDeletes;
 
     protected $fillable = [
         'system_unit_id',
-        'current_unit_id', // Track current active unit
+        'current_unit_id',
+        'room_id',
         'serial_number',
         'brand',
         'model',
@@ -30,16 +33,13 @@ class ComponentParts extends Model
         'purchase_date',
         'warranty_expires_at',
         'warranty_period_months',
-        'retirement_action',
-        'retirement_notes',
-        'retired_at',
         'barcode_path',
     ];
+
 
     protected $casts = [
         'purchase_date' => 'date',
         'warranty_expires_at' => 'date',
-        'retired_at' => 'datetime',
         'warranty_period_months' => 'integer',
     ];
 
@@ -76,10 +76,30 @@ class ComponentParts extends Model
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logOnly(['serial_number', 'status', 'retirement_action', 'retirement_notes', 'condition', 'system_unit_id', 'current_unit_id'])
+            ->logOnly([
+                'serial_number',
+                'status',
+                'system_unit_id',
+                'current_unit_id',
+            ])
             ->logOnlyDirty()
-            ->useLogName('component');
+            ->useLogName('component')
+            ->setDescriptionForEvent(fn(string $eventName) => match ($eventName) {
+                'created' => 'added a new Component (' . $this->getComponentLabel() . ')',
+                'updated' => 'modified a Component (' . $this->getComponentLabel() . ')',
+                'deleted' => 'removed a Component (' . $this->getComponentLabel() . ')',
+                default => $eventName,
+            });
     }
+    protected function getComponentLabel(): string
+    {
+        return trim(implode(' ', array_filter([
+            $this->brand ?? null,
+            $this->model ?? null,
+            $this->serial_number ? "SN: {$this->serial_number}" : null,
+        ]))) ?: "ID: {$this->id}";
+    }
+
 
     public function getWarrantyExpiresAtAttribute($value)
     {
@@ -152,16 +172,18 @@ class ComponentParts extends Model
 
     /** -------------------- Booted Events -------------------- **/
 
+
     protected static function booted()
     {
         // Warranty calculation
         static::saving(function ($part) {
-            if ($part->purchase_date && $part->warranty_period_months) {
-                // Ensure purchase_date is Carbon instance
-                $purchaseDate = Carbon::parse($part->purchase_date);
-                $part->warranty_expires_at = $purchaseDate->copy()->addMonths($part->warranty_period_months);
-            } else {
-                $part->warranty_expires_at = null;
+            if ($part->isDirty(['purchase_date', 'warranty_period_months'])) {
+                if ($part->purchase_date && $part->warranty_period_months) {
+                    $purchaseDate = Carbon::parse($part->purchase_date);
+                    $part->warranty_expires_at = $purchaseDate->copy()->addMonths($part->warranty_period_months);
+                } else {
+                    $part->warranty_expires_at = null;
+                }
             }
         });
 
@@ -179,18 +201,22 @@ class ComponentParts extends Model
             }
         });
 
-        static::creating(function ($components) {
-            if ($components->serial_number && empty($components->barcode_path)) {
-                $components->barcode_path = self::generateAndSaveBarcode($components->serial_number);
+
+
+        static::created(function ($part) {
+            if ($part->serial_number && empty($part->barcode_path)) {
+                GenerateAssetCode::dispatch(self::class, $part->id, 'barcode');
             }
         });
 
-        static::updating(function ($components) {
-            if ($components->isDirty('serial_number')) {
-                $components->barcode_path = self::generateAndSaveBarcode($components->serial_number);
+        static::updated(function ($part) {
+            if ($part->isDirty('serial_number')) {
+                GenerateAssetCode::dispatch(self::class, $part->id, 'barcode');
             }
         });
+
     }
+
 
 
     protected static function generateAndSaveBarcode($serialNumber)
@@ -212,4 +238,8 @@ class ComponentParts extends Model
         // Return the relative path (for example: storage/barcodes/...)
         return 'storage/' . $fileName;
     }
+
+
+
+
 }

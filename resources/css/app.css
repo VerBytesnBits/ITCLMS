@@ -48,51 +48,52 @@
       ::file-selector-button {
           border-color: var(--color-gray-200, currentColor);
       }
-
-   
-
   }
-
- 
-/* Glass effect for all nav items */
-/* [data-flux-navlist-item] {
-    background-color: rgb(253, 252, 252); 
-    color: black;
-    backdrop-filter: blur(8px); 
-    transition: background-color 0.2s, color 0.2s;
-    margin-bottom: 5px;
-} */
-
-/* Hover effect */
-/* [data-flux-navlist-item]:hover {
-    background-color: rgba(133, 133, 133, 0.233); 
-   
-    border: 2px solid rgb(253, 252, 252); 
-} */
-
-
-/* Active/current state (pressed effect) */
-/* [data-flux-navlist-item][data-current="data-current"] {
-    background-color: rgba(72, 255, 111, 0.486);
-    color: rgb(0, 0, 0);
-    font-weight: 600;
-} */
-
-/* [data-flux-sidebar-item]{
-    margin-bottom: 5px;
+/* Make the toggle sidebar button icon white */
+ui-sidebar-toggle button,
+ui-sidebar-toggle button svg {
+    color: #fff !important;
+    
 }
-[data-flux-sidebar-item][data-current="data-current"]{
-  --brand-yellow: 234,179,8;
-  --brand-green: 22,163,74;
-  --brand-blue: 37,99,235;
+ui-disclosure button,
+ui-disclosure button svg {
+    color: #fff !important;
+    
+}
 
-  background: rgba(var(--brand-blue), 0.03); 
-  color: rgb(var(--brand-blue));
-  font-weight: 600;
-  border-left: 3px solid rgba(var(--brand-blue), 1);
-  padding-left: calc(1rem - 3px); 
-  border-radius: 0 .4rem .4rem 0;
-} */
+/* Make tooltip text white */
+[data-flux-tooltip-content] {
+    color: #fff !important;
+}
+
+
+[data-flux-navlist-item][data-current="data-current"] {
+    --brand-blue-start: 59,130,246; /* Tailwind blue-500 */
+    --brand-blue-end: 37,99,235;    /* Tailwind blue-600 */
+    
+    background: linear-gradient(135deg,
+      rgb(var(--brand-blue-start)) 0%,
+      rgb(var(--brand-blue-end)) 100%
+    );
+    color: white;
+    font-weight: 600;
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.4);
+    transition: all 0.25s ease;
+}
+.dark [data-flux-navlist-item][data-current="data-current"] {
+    --brand-blue-start: 96,165,250; /* Tailwind blue-400 */
+    --brand-blue-end: 59,130,246;   /* Tailwind blue-500 */
+    
+    background: linear-gradient(135deg,
+      rgb(var(--brand-blue-start)) 0%,
+      rgb(var(--brand-blue-end)) 100%
+    );
+    color: white;
+    font-weight: 600;
+    box-shadow: 0 2px 6px rgba(96, 165, 250, 0.4);
+    transition: all 0.25s ease;
+}
+
 /* ----------------------- Light Mode ----------------------- */
 [data-flux-sidebar-item] {
     background-color: #F9FAFB; /* light background */
@@ -171,10 +172,10 @@ select:focus[data-flux-control] {
     @apply outline-hidden ring-2 ring-accent ring-offset-2 ring-offset-accent-foreground;
 }
 
-/* html {
+html {
   font-size: 20px;
   font-family: 'Poppins', sans-serif;
-} */
+}
 @theme {
     --font-sans: Inter, sans-serif;
 }

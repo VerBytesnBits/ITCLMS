@@ -38,7 +38,7 @@
                         <div>
                             <flux:label>Select Component</flux:label>
                             <flux:select wire:model="selectedItemId">
-                                <option value="">-- Choose Component --</option>
+                                <option value="">Choose Component</option>
                                 @foreach ($components as $comp)
                                     <option value="{{ $comp->id }}">
                                         {{ $comp->brand ?? '' }} {{ $comp->model ?? ($comp->type ?? '') }} {{ $comp->capacity ? "({$comp->capacity})" : '' }}
@@ -50,7 +50,7 @@
                         <div>
                             <flux:label>Select Peripheral</flux:label>
                             <flux:select wire:model="selectedItemId">
-                                <option value="">-- Choose Peripheral --</option>
+                                <option value="">Choose Peripheral</option>
                                 @foreach ($peripherals as $periph)
                                     <option value="{{ $periph->id }}">
                                         {{ $periph->brand ?? '' }} {{ $periph->model ?? ($periph->type ?? '') }} {{ $periph->capacity ? "({$periph->capacity})" : '' }}
@@ -64,7 +64,7 @@
                     <div x-data="{ showCustom: @entangle('issueType') === 'Other' }" x-on:change="$event.target.value === 'Other' ? showCustom = true : showCustom = false">
                         <flux:label>Issue Type</flux:label>
                         <flux:select wire:model="issueType">
-                            <option value="">-- Select Issue Type --</option>
+                            <option value="">Select Issue Type</option>
                             <option value="Not Working">Not Working</option>
                             <option value="Overheating">Overheating</option>
                             <option value="Loose Cable">Loose Cable</option>

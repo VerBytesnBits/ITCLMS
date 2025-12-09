@@ -62,16 +62,15 @@ class PeripheralForm extends Component
             'retirement_notes' => ['nullable', 'string'],
             'retired_at' => ['nullable', 'date'],
 
-            // Dynamic fields
-            'screen_size' => ['nullable', 'string'],
-            'switch_type' => ['nullable', 'string'],
-            'dpi' => ['nullable', 'string'],
-            'printer_type' => ['nullable', 'string'],
-            'wattage' => ['nullable', 'string'],
-            'lumens' => ['nullable', 'string'],
-            'resolution' => ['nullable', 'string'],
-            'capacity_va' => ['nullable', 'string'],
-           
+            // Peripheral-specific dynamic fields
+            'screen_size' => ['nullable', 'string'],   // Monitor
+            'switch_type' => ['nullable', 'string'],   // Keyboard
+            'dpi' => ['nullable', 'integer'],          // Mouse
+            'printer_type' => ['nullable', 'string'],  // Printer
+            'wattage' => ['nullable', 'string'],       // Speaker
+          
+            'resolution' => ['nullable', 'string'],    // Webcam
+            'capacity_va' => ['nullable', 'string'],   // AVR / UPS
         ];
     }
 
@@ -95,8 +94,19 @@ class PeripheralForm extends Component
             'retirement_action',
             'retirement_notes',
             'retired_at',
+
+            // Peripheral-specific fields
+            'screen_size',
+            'switch_type',
+            'dpi',
+            'printer_type',
+            'wattage',
+          
+            'resolution',
+            'capacity_va',
         ]);
     }
+
 
     public function mount($id = null)
     {

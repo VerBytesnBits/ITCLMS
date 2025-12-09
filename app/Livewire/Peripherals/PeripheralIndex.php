@@ -15,7 +15,7 @@ use App\Support\StatusConfig;
 use App\Models\Room;
 
 #[Lazy]
-#[Layout('components.layouts.app', ['title' => 'Peripheral'])]
+#[Layout('components.layouts.app', ['title' => 'Peripherals'])]
 class PeripheralIndex extends Component
 {
     use WithPagination, HasInventorySummary;
@@ -61,8 +61,15 @@ class PeripheralIndex extends Component
         }
         return $this->getInventorySummary(
             Peripheral::class,
-            'type', // group peripherals by type (e.g., Mouse, AVR, Printer)
-            ['brand', 'model'],
+            ['type','model'],
+            [
+                'brand',
+                'model',
+                'dpi',
+                'wattage',
+                'resolution',
+                'capacity_va',
+            ],
             $this->sortColumn,
             $this->sortDirection,
             $filters
@@ -237,8 +244,12 @@ class PeripheralIndex extends Component
 
         $peripherals = Peripheral::with(['systemUnit', 'room'])
             ->when($this->roomId, function ($q) {
-                $q->whereHas('systemUnit', function ($unit) {
-                    $unit->where('room_id', $this->roomId);
+                $q->where(function ($sub) {
+                    // Include peripherals that are either:
+                    // 1. linked to a system unit in the selected room
+                    // 2. directly assigned to the selected room
+                    $sub->whereHas('systemUnit', fn($unit) => $unit->where('room_id', $this->roomId))
+                        ->orWhere('room_id', $this->roomId);
                 });
             })
             ->when($this->age, function ($q) {
@@ -254,15 +265,24 @@ class PeripheralIndex extends Component
                 }
             })
             ->when($this->tab && $this->tab !== 'All', fn($q) => $q->where('type', $this->tab))
-            ->when($this->search, fn($q) => $q->whereAny(['serial_number', 'brand', 'model'], 'like', '%' . $this->search . '%'))
+            ->when($this->search, function ($q) {
+                $q->where(function ($sub) {
+                    $sub->where('serial_number', 'like', '%' . $this->search . '%')
+                        ->orWhere('type', 'like', '%' . $this->search . '%')
+                        ->orWhere('brand', 'like', '%' . $this->search . '%')
+                        ->orWhere('model', 'like', '%' . $this->search . '%');
+                });
+            })
+            ->orderBy('id', 'asc')
             ->paginate($this->perPage);
 
         return view('livewire.peripherals.peripheral-index', [
-            'peripherals' => $peripherals,
             'statusColors' => $statusColors,
+            'peripherals' => $peripherals,
             'summary' => $this->peripheralSummary,
             'labs' => $labs,
         ]);
     }
+
 
 }

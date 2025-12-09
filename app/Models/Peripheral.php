@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
+
+use App\Jobs\GenerateAssetCode;
 use Carbon\Carbon;
 use Milon\Barcode\DNS1D;
 use Illuminate\Support\Facades\Storage;
@@ -32,11 +34,15 @@ class Peripheral extends Model
         'purchase_date',
         'warranty_expires_at',
         'warranty_period_months',
-        'retirement_action',
-        'retirement_notes',
-        'retired_at',
+        'screen_size',
+        'switch_type',
+        'dpi',
+        'wattage',
+        'resolution',
+        'capacity_va',
         'barcode_path',
     ];
+
 
     protected $casts = [
         'purchase_date' => 'date',
@@ -75,7 +81,6 @@ class Peripheral extends Model
         return $this->morphMany(Maintenance::class, 'maintainable');
     }
 
-    /** -------------------- Activity Logging -------------------- **/
 
     public function getActivitylogOptions(): LogOptions
     {
@@ -83,27 +88,44 @@ class Peripheral extends Model
             ->logOnly([
                 'serial_number',
                 'status',
-                'retirement_action',
-                'retirement_notes',
-                'condition',
                 'system_unit_id',
                 'current_unit_id',
             ])
             ->logOnlyDirty()
-            ->useLogName('peripheral');
+            ->useLogName('peripheral')
+            ->setDescriptionForEvent(fn(string $eventName) => match ($eventName) {
+                'created' => 'added a new Peripheral (' . $this->getPeripheralLabel() . ')',
+                'updated' => 'modified a Peripheral (' . $this->getPeripheralLabel() . ')',
+                'deleted' => 'removed a Peripheral (' . $this->getPeripheralLabel() . ')',
+                default => $eventName,
+            });
     }
+    protected function getPeripheralLabel(): string
+    {
+        return trim(implode(' ', array_filter([
+            $this->brand ?? null,
+            $this->model ?? null,
+            $this->serial_number ? "SN: {$this->serial_number}" : null,
+        ]))) ?: "ID: {$this->id}";
+    }
+
 
     protected static function booted()
     {
-        // Warranty calculation on save
+        // Warranty calculation
         static::saving(function ($part) {
-            if ($part->purchase_date && $part->warranty_period_months) {
-                $part->warranty_expires_at = $part->purchase_date->copy()
-                    ->addMonths($part->warranty_period_months);
+            if ($part->isDirty(['purchase_date', 'warranty_period_months'])) {
+                if ($part->purchase_date && $part->warranty_period_months) {
+                    $part->warranty_expires_at = Carbon::parse($part->purchase_date)
+                        ->copy()
+                        ->addMonths($part->warranty_period_months);
+                } else {
+                    $part->warranty_expires_at = null;
+                }
             }
         });
 
-        // Log reassignment whenever current_unit_id changes
+        // Log reassignment
         static::updating(function ($part) {
             if ($part->isDirty('current_unit_id')) {
                 activity()
@@ -111,30 +133,36 @@ class Peripheral extends Model
                     ->causedBy(auth()->user())
                     ->withProperties([
                         'from_unit_id' => $part->getOriginal('current_unit_id'),
-                        'to_unit_id' => $part->current_unit_id
+                        'to_unit_id' => $part->current_unit_id,
                     ])
                     ->log('Peripheral reassigned');
             }
         });
 
 
-        static::creating(function ($peripheral) {
+
+        static::created(function ($peripheral) {
             if ($peripheral->serial_number && empty($peripheral->barcode_path)) {
-                $peripheral->barcode_path = self::generateAndSaveBarcode($peripheral->serial_number);
+                GenerateAssetCode::dispatch(self::class, $peripheral->id, 'barcode');
             }
         });
 
-        static::updating(function ($peripheral) {
+        static::updated(function ($peripheral) {
             if ($peripheral->isDirty('serial_number')) {
-                $peripheral->barcode_path = self::generateAndSaveBarcode($peripheral->serial_number);
+                GenerateAssetCode::dispatch(self::class, $peripheral->id, 'barcode');
             }
         });
+
+
     }
 
     /** -------------------- Warranty Helpers -------------------- **/
 
-    public function getWarrantyExpiresAtAttribute()
+    public function getWarrantyExpiresAtAttribute($value)
     {
+        if ($value)
+            return Carbon::parse($value);
+
         if (!$this->purchase_date || !$this->warranty_period_months) {
             return null;
         }
@@ -146,32 +174,20 @@ class Peripheral extends Model
     {
         if (!$this->warranty_expires_at)
             return 'No Warranty';
-
         if (now()->gt($this->warranty_expires_at))
             return 'Expired';
-
         if (now()->diffInDays($this->warranty_expires_at) <= 30)
             return 'Expiring Soon';
-
         return 'Valid';
     }
 
-    /** -------------------- Status / Decommission Helpers -------------------- **/
-
-    public function isDecommissioned(): bool
+    public function getWarrantyRemainingDaysAttribute(): ?int
     {
-        return $this->deleted_at !== null || $this->status === 'Decommissioned';
+        return $this->warranty_expires_at
+            ? now()->diffInDays($this->warranty_expires_at, false)
+            : null;
     }
 
-    public function markDecommissioned(string $action = null, string $notes = null)
-    {
-        $this->status = 'Decommissioned';
-        $this->retirement_action = $action;
-        $this->retirement_notes = $notes;
-        $this->retired_at = now();
-        $this->save();
-        $this->delete(); // Soft delete
-    }
 
     /** -------------------- Restore / Reassign Helpers -------------------- **/
 

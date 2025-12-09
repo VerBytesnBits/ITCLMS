@@ -3,40 +3,11 @@
 
 <head>
     <meta charset="utf-8">
-    <title>Component Summary Report</title>
+    <title>Peripheral Inventory Report</title>
     <style>
         body {
             font-family: DejaVu Sans, sans-serif;
             font-size: 12px;
-        }
-
-        .header-table {
-            width: 100%;
-            margin-bottom: 10px;
-            border: none;
-        }
-
-        .header-table td {
-            text-align: center;
-            vertical-align: middle;
-            border: none;
-        }
-
-        .header-table .left,
-        .header-table .right {
-            width: 80px;
-        }
-
-        .header-table img {
-            width: 80px;
-            height: auto;
-        }
-
-        h2,
-        h3,
-        p {
-            margin: 2px 0;
-            padding: 0;
         }
 
         table {
@@ -56,119 +27,83 @@
             background: #f2f2f2;
         }
 
-        .footer {
-            margin-top: 40px;
-            display: flex;
-            justify-content: flex-end;
-            font-size: 12px;
+        .badge {
+            display: inline-block;
+            padding: 2px 6px;
+            font-size: 10px;
+            font-weight: bold;
+            border-radius: 4px;
+            color: #fff;
+        }
+
+        .red {
+            background: #e74c3c;
+        }
+
+        .yellow {
+            background: #f1c40f;
+            color: #000;
+        }
+
+        .green {
+            background: #2ecc71;
+        }
+
+        h2,
+        h3,
+        p {
+            margin: 2px 0;
+            padding: 0;
         }
     </style>
 </head>
 
 <body>
-    {{-- HEADER --}}
-    <table class="header-table">
-        <tr>
-            <td class="left" style="text-align: left;">
-                <img src="{{ storage_path('app/public/images/PIT.png') }}" alt="Logo" width="100">
 
-            </td>
-            <td class="center">
-                <h2>Palompon Institute of Technology</h2>
-                <p>College of Technology and Engineering</p>
-                <h3>INFORMATION TECHNOLOGY DEPARTMENT</h3>
-                <h2><strong>DETAILED COMPONENT INVENTORY</strong></h2>
-            </td>
-            <td class="right" style="text-align: right;">
-                <img src="{{ storage_path('app/public/images/PIT-RIGHT.png') }}" alt="Logo" width="100">
-            </td>
-        </tr>
-    </table>
-    <table style="width: 100%; margin-bottom: 20px; border: none; border-collapse: collapse;">
-        <tr>
-            <!-- Left Side -->
-            <td style="text-align: left; vertical-align: top; width: 50%; border: none;">
-                <p>
-                    <strong>DATE:</strong>
-                    <span style="text-decoration: underline;">
-                        {{ \Carbon\Carbon::now()->format('m/d/Y') }}
-                    </span>
-                </p>
+    <h2 style="text-align: center;">Detailed Peripheral Inventory</h2>
+    <p><strong>Date:</strong> {{ \Carbon\Carbon::now()->format('m/d/Y') }}</p>
 
-                <p><strong>LABORATORY ROOM:</strong> {{ $roomName }}</p>
+    @php
+        // Sort rooms: Unassigned first, then alphabetical
+        $sortedGrouped = $grouped->sortBy(function ($items, $roomName) {
+            return $roomName === 'Unassigned' ? '' : $roomName;
+        });
+    @endphp
 
-            </td>
-
-            <!-- Right Side -->
-            <td style="text-align: right; vertical-align: top; width: 50%; border: none;">
-                <p><strong>CONDUCTED BY:</strong> <span style="text-decoration: underline;">BENCHITO M. SURALTA</span>
-                </p>
-                <p>Lab. Technician</p>
-                <p>Signature over printed name</p>
-            </td>
-        </tr>
-    </table>
-    {{-- SUMMARY TABLE --}}
-    @foreach ($summary as $part => $items)
-        <h3>{{ $part }}</h3>
+    @foreach ($sortedGrouped as $roomName => $items)
+        <h3>{{ $roomName }}</h3>
         <table>
             <thead>
                 <tr>
                     <th>Description</th>
-                    <th>Quantity</th>
+                    <th>Total</th>
                     <th>Available</th>
                     <th>In Use</th>
                     <th>Defective</th>
-                    {{-- <th>Maintenance</th>
-                    <th>Decommission</th> --}}
-                    {{-- <th>Junk</th> --}}
-                    {{-- <th>Salvaged</th> --}}
                 </tr>
             </thead>
             <tbody>
                 @foreach ($items as $row)
                     <tr>
-                        <td>{{ $row['description'] }}</td>
+                        <td style="text-align:left;">
+                            {{ $row['description'] }}
+                            @if ($row['available'] == 0)
+                                <span class="badge red">Out of stock</span>
+                            @elseif ($row['available'] < 3)
+                                <span class="badge yellow">Low stock</span>
+                            @else
+                                <span class="badge green">In stock</span>
+                            @endif
+                        </td>
                         <td>{{ $row['total'] }}</td>
                         <td>{{ $row['available'] }}</td>
                         <td>{{ $row['in_use'] }}</td>
                         <td>{{ $row['defective'] }}</td>
-                        {{-- <td>{{ $row['maintenance'] }}</td>
-                        <td>{{ $row['decommission'] }}</td> --}}
-                        {{-- <td>{{ $row['salvage'] }}</td> --}}
                     </tr>
                 @endforeach
             </tbody>
         </table>
     @endforeach
-
-    <!-- Footer -->
-    <table style="width: 100%; margin-top: 60px; border: none; border-collapse: collapse;">
-        <tr>
-            <!-- Confirmed By -->
-            <td style="text-align: left; vertical-align: top; width: 20%; border: none;">
-                <p><strong>CONFIRMED BY:</strong></p>
-                <p>_____________________________</p>
-                <span style="text-align: center;">
-                    <p>Laboratory In-charge</p>
-                    <p>IT Department</p>
-                </span>
-            </td>
-            <td style="text-align: center; vertical-align: top; width: 50%; border: none;">
-            </td>
-
-            <!-- Noted By -->
-            <td style="text-align: left; vertical-align: top; width: 20%; border: none;">
-                <p><strong>NOTED BY:</strong></p>
-                <p>_____________________________</p>
-                <span style="text-align: center;">
-                    <p>Chair</p>
-                    <p>IT Department</p>
-                </span>
-
-            </td>
-        </tr>
-    </table>
 
 </body>
 

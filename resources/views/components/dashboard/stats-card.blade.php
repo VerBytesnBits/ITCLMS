@@ -3,9 +3,21 @@
     'value' => 0,
     'icon' => null,
     'iconBg' => 'bg-indigo-500',
+    'href' => null,   // ⬅ added
 ])
 
-<div {{ $attributes->merge(['class' => 'bg-white dark:bg-zinc-800 rounded-2xl shadow p-4 flex items-center justify-between']) }}>
+@php
+$wrapperTag = $href ? 'a' : 'div';
+@endphp
+
+<{{ $wrapperTag }}
+    @if($href) href="{{ $href }}" @endif
+    {{ $attributes->merge([
+        'class' => 'bg-white dark:bg-zinc-800 rounded-2xl shadow p-4 flex items-center justify-between hover:shadow-lg transition cursor-pointer'
+    ]) }}
+>
+{{-- 
+<div {{ $attributes->merge(['class' => 'bg-white dark:bg-zinc-800 rounded-2xl shadow p-4 flex items-center justify-between']) }}> --}}
     <!-- Left: Title + Value -->
     <div class="flex flex-col">
         <h3 class="text-sm font-medium text-zinc-400 dark:text-zinc-500">{{ $title }}</h3>
@@ -58,4 +70,5 @@
             @endswitch
         </div>
     @endif
-</div>
+{{-- </div> --}}
+</{{ $wrapperTag }}>

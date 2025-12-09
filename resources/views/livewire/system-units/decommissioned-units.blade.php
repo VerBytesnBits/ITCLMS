@@ -1,11 +1,11 @@
 <div>
-    <!-- Trigger Button -->
-  
-
-    <button wire:click="toggle"
-        class="group relative flex items-center justify-center w-10 h-10 rounded-full 
-           bg-emerald-600 hover:bg-emerald-700 text-white shadow-md transition duration-200">
-        <flux:icon.archive-restore class="w-5 h-5" />
+    <flux:button wire:click="toggle" 
+         class="text-white bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 
+           hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-yellow-300 
+           dark:focus:ring-yellow-800 shadow-lg shadow-yellow-500/50 
+           dark:shadow-lg dark:shadow-yellow-800/80 
+           font-medium rounded-base text-sm px-4 py-2.5 inline-flex items-center gap-1">
+        <flux:icon.archive-restore class="w-5 h-5 text-white" />
 
         <!-- Tooltip (Left Side) -->
         <span
@@ -15,7 +15,7 @@
                  shadow-lg">
             {{ $show ? 'Close Decommissioned Units' : 'View Decommissioned Units' }}
         </span>
-    </button>
+    </flux:button>
 
 
     <!-- Modal -->

@@ -1,4 +1,5 @@
-<div x-data="{ open: @entangle('modalMode') }">
+<div x-data="{ open: @entangle('modalMode') }" x-on:keydown.escape.window="$dispatch('closeModal')" >
+
     <!-- Modal Backdrop -->
     <div x-show="open" x-transition.opacity.duration.300ms
         class="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 px-4"
@@ -10,10 +11,11 @@
             <div
                 class="px-6 py-4 bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 text-white flex justify-between items-center">
                 <flux:legend class="text-xl font-semibold mb-0 !text-white">
-                    {{ $componentId ? 'Edit Component' : 'Add Component' }}
+                    {{ $componentId ? 'Update Component' : 'Add Component' }}
                 </flux:legend>
-                <button type="button" class="p-2 rounded-lg hover:bg-red-500 transition"
-                    wire:click="$dispatch('closeModal')" title="Close">✕</button>
+                <button wire:click="$dispatch('closeModal')" class="p-2 rounded-full hover:bg-red-500 transition">
+                    <flux:icon.x class="w-5 h-5" />
+                </button>
             </div>
 
             <!-- Body -->
@@ -46,19 +48,25 @@
                                 <option value="Casing">Computer Case</option>
                             </flux:select>
                         @endif
+                        <flux:select label="Room" wire:model="room_id">
+                            <option value="">Unassigned</option>
+                            @foreach ($rooms as $room)
+                                <option value="{{ $room->id }}">{{ $room->name }}</option>
+                            @endforeach
+                        </flux:select>
 
                         {{-- Serial Number --}}
-                        @if ($multiple)
+                        {{-- @if ($multiple)
                             <div
                                 class="text-sm text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-zinc-800 border 
                                 border-gray-200 dark:border-zinc-700 rounded-lg px-3 py-2 mt-2 mb-2">
                                 Serial numbers will be auto-generated for each item.
                             </div>
-                        @else
+                        @else --}}
                             <flux:input label="Serial Number" type="text" wire:model="serial_number" />
-                        @endif
+                        {{-- @endif --}}
 
-                        {{-- Multiple Checkbox --}}
+                        {{-- Multiple Checkbox
                         @if ($modalMode === 'edit')
                             <flux:checkbox wire:model.live="multiple" label="Add more" disabled />
                         @else
@@ -66,15 +74,14 @@
                         @endif
 
                         {{-- Quantity --}}
-                        @if ($multiple)
+                        {{-- @if ($multiple)
                             <label class="block text-sm font-medium">Quantity</label>
                             <flux:input type="number" wire:model="quantity" min="1" />
-                        @endif
+                        @endif --}}
 
                         {{-- Brand & Model --}}
                         <div class="grid grid-cols-2 gap-4">
-                            <flux:input list="brands" label="Brand" wire:model="brand"
-                                placeholder="Intel / AMD / Custom" />
+                            <flux:input list="brands" label="Brand" wire:model="brand" />
                             <datalist id="brands">
                                 <option value="Intel">
                                 <option value="AMD">
@@ -85,8 +92,7 @@
                                 <option value="Kingston">
                             </datalist>
 
-                            <flux:input list="models" label="Model" wire:model="model"
-                                placeholder="Model (e.g. Ryzen, Core)" />
+                            <flux:input list="models" label="Model" wire:model="model" />
                             <datalist id="models">
                                 @if (strtolower($brand) === 'intel')
                                     <option value="Core i5">
@@ -150,14 +156,8 @@
                             </flux:select>
                         @endif
 
-                        {{-- Condition & Status --}}
-                        <div class="grid grid-cols-2 gap-4">
-                            <flux:select label="Condition" wire:model="condition">
-                                <option value="Excellent">Excellent</option>
-                                <option value="Good">Good</option>
-                                <option value="Fair">Fair</option>
-                                <option value="Poor">Poor</option>
-                            </flux:select>
+                        {{--  Status --}}
+                        <div class="grid grid-cols-1 gap-4">
                             <flux:select label="Status" wire:model="status">
                                 <option value="Available">Available</option>
                                 <option value="In Use">In Use</option>
@@ -175,14 +175,14 @@
                                 wire:model="warranty_period_months"
                                 @if ($modalMode === 'edit') disabled @endif />
                         </div>
-                           {{-- Purchase Date & Warranty --}}
+                        {{-- Purchase Date & Warranty --}}
 
                         <div class="grid grid-cols-2 gap-4">
                             <flux:input type="date" label="Purchase Date" wire:model="purchase_date" />
                             <flux:input type="number" label="Warranty Period (months)"
                                 wire:model="warranty_period_months" />
                         </div>
-   
+
                         {{-- Live Preview --}}
                         @if ($purchase_date && $warranty_period_months)
                             <p class="text-sm text-gray-600 mt-2">
@@ -193,7 +193,7 @@
 
                     </flux:fieldset>
                     <!-- Footer -->
-                    <div class="bg-gray-50 dark:bg-zinc-900 flex justify-end space-x-2">
+                    <div class="bg-gray-50 dark:bg-zinc-800 flex justify-end space-x-2">
                         <flux:button variant="filled" wire:click="$dispatch('closeModal')">Cancel</flux:button>
                         <flux:button variant="primary" type="submit">
                             {{ $modalMode === 'create' ? 'Add' : 'Update' }}

@@ -12,8 +12,7 @@
                     <flux:icon.layout-grid class="w-5 h-5" />
                     {{ $roomId ? 'Update Room' : 'Add Room' }}
                 </h2>
-                <button wire:click="$dispatch('closeModal')"
-                    class="text-white/80 hover:bg-red-500 rounded-full hover:text-white transition">
+                <button wire:click="$dispatch('closeModal')" class="p-2 rounded-full hover:bg-red-500 transition">
                     <flux:icon.x class="w-5 h-5" />
                 </button>
             </div>

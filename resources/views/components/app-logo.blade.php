@@ -5,7 +5,7 @@
 >
     <!-- Icon -->
     <div class="relative flex items-center justify-center w-full">
-        <div class="flex items-center justify-center w-13 h-13 rounded-md">
+        <div class="flex items-center justify-center w-20 h-20 rounded-md">
             @include('partials.itclms-logo')
         </div>
     </div>

@@ -7,23 +7,44 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes; // <--- add this
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use App\Jobs\GenerateAssetCode;
 
 class SystemUnit extends Model
 {
     use HasFactory, LogsActivity, SoftDeletes; // <--- include SoftDeletes
 
-    protected $fillable = ['name', 'serial_number', 'status', 'room_id'];
+    protected $fillable = ['name', 'serial_number', 'status', 'room_id', 'qr_code_path'];
 
-    // Optional: log deleted events too
-    protected static $logAttributes = ['name', 'serial_number', 'status', 'room_id'];
- 
+
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
             ->logOnly(['name', 'serial_number', 'status', 'room_id'])
             ->logOnlyDirty()
-            ->useLogName('system_unit');
+            ->useLogName('system_unit')
+            ->setDescriptionForEvent(fn(string $eventName) => match ($eventName) {
+                'created' => 'added a new System Unit (' . $this->getSystemUnitLabel() . ')',
+                'updated' => 'modified a System Unit (' . $this->getSystemUnitLabel() . ')',
+                'deleted' => 'removed a System Unit (' . $this->getSystemUnitLabel() . ')',
+                default => $eventName,
+            });
     }
+
+    protected function getSystemUnitLabel(): string
+    {
+        return trim(implode(' ', array_filter([
+            $this->name ?? null,
+            $this->serial_number ? "SN: {$this->serial_number}" : null,
+            $this->status ? "({$this->status})" : null,
+            $this->room?->name ? "in Room: {$this->room->name}" : null,
+        ]))) ?: "ID: {$this->id}";
+    }
+
+
+
 
     public function room()
     {
@@ -47,6 +68,9 @@ class SystemUnit extends Model
 
     protected static function booted()
     {
+        parent::booted();
+
+        // --- DELETE / RESTORE LOGIC ---
         static::deleting(function ($unit) {
             if ($unit->isForceDeleting()) {
                 $unit->peripherals()->forceDelete();
@@ -61,43 +85,90 @@ class SystemUnit extends Model
             $unit->peripherals()->withTrashed()->restore();
             $unit->components()->withTrashed()->restore();
         });
+
+
+
+
+        static::created(function ($unit) {
+            if ($unit->serial_number && empty($unit->qr_code_path)) {
+                GenerateAssetCode::dispatch(self::class, $unit->id, 'qr');
+            }
+        });
+
+        static::updated(function ($unit) {
+            if ($unit->isDirty('serial_number')) {
+                GenerateAssetCode::dispatch(self::class, $unit->id, 'qr');
+            }
+        });
+
+
     }
 
-    public function checkOperationalStatus(): string
+    protected static function generateAndSaveQr($serialNumber)
     {
-        $requiredComponents = ['CPU', 'Motherboard', 'RAM', 'PSU', 'Storage'];
+        // Make sure the public disk is linked
+        $fileName = 'qrcodes/' . Str::slug($serialNumber) . '-' . Str::random(6) . '.png';
+
+        // Generate QR data (could be URL or plain text)
+        $qrContent = url('/units/' . urlencode($serialNumber));
+        // Or simply: $qrContent = $serialNumber;
+
+        // Create QR code PNG
+        $qrImage = QrCode::format('png')
+            ->size(250)
+            ->margin(2)
+            ->generate($qrContent);
+
+        // Save to storage/app/public/qrcodes/
+        Storage::disk('public')->put($fileName, $qrImage);
+
+        // Return the path accessible from browser
+        return 'storage/' . $fileName;
+    }
+
+    public function checkOperationalStatus(): array
+    {
+        $requiredComponents = ['CPU', 'Motherboard', 'RAM', 'Casing', 'Storage'];
         $requiredPeripherals = ['Monitor', 'Keyboard', 'Mouse'];
 
-        // Default to operational
-        $newStatus = 'Operational';
+        $missingComponents = [];
+        $missingPeripherals = [];
 
         // Check components
         foreach ($requiredComponents as $type) {
-            $component = $this->components->firstWhere('part', $type); // collection
+            $component = $this->components->firstWhere('part', $type);
             if (!$component || $component->status !== 'In Use') {
-                $newStatus = 'Non-operational';
-                break; // no need to check further
+                $missingComponents[] = $type;
             }
         }
 
-        // Check peripherals only if still operational
-        if ($newStatus === 'Operational') {
-            foreach ($requiredPeripherals as $type) {
-                $peripheral = $this->peripherals->firstWhere('type', $type); // collection
-                if (!$peripheral || $peripheral->status !== 'In Use') {
-                    $newStatus = 'Non-operational';
-                    break;
-                }
+        // Check peripherals
+        foreach ($requiredPeripherals as $type) {
+            $peripheral = $this->peripherals->firstWhere('type', $type);
+            if (!$peripheral || $peripheral->status !== 'In Use') {
+                $missingPeripherals[] = $type;
             }
         }
 
-        // Update the status in the database if it changed
-        if ($this->status !== $newStatus) {
-            $this->update(['status' => $newStatus]);
+        $status = (empty($missingComponents) && empty($missingPeripherals))
+            ? 'Operational'
+            : 'Non-operational';
+
+        // Auto-update DB if needed
+        if ($this->status !== $status) {
+            $this->update(['status' => $status]);
         }
 
-        return $newStatus;
+        return [
+            'status' => $status,
+            'missing' => [
+                'components' => $missingComponents,
+                'peripherals' => $missingPeripherals
+            ]
+        ];
     }
+
+
 
 
 

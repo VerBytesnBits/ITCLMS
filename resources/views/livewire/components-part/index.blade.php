@@ -28,12 +28,26 @@
                         <p>Click (View Component Statistics) to expand detailed summary of component inventory.</p>
                     </flux:tooltip.content>
                 </flux:tooltip>
-                {{-- gerating component summary report --}}
+                <flux:tooltip hoverable>
+                    <flux:button icon="printer" size="sm" variant="primary"
+                        :href="route('components-part.components-parts-report')" wire:navigate
+                        class="text-white bg-gradient-to-r from-gray-400 via-gray-500 to-gray-600 
+           hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-gray-300 
+           dark:focus:ring-gray-800 shadow-lg shadow-gray-500/50 
+           dark:shadow-lg dark:shadow-gray-800/80 
+           font-medium rounded-base text-sm px-4 py-2.5 inline-flex items-center gap-1">
+                        Component Reports
+                    </flux:button>
+                    <flux:tooltip.content class="max-w-[20rem] space-y-2">
+                        <p>Component Reports</p>
+                    </flux:tooltip.content>
+                </flux:tooltip>
+                {{-- gerating component summary report
                 <livewire:components-part.component-summary-report :room-id="$roomId" :age="$age" :tab="$tab"
-                    :key="$roomId . '-' . $age . '-' . $tab" />
+                    :key="$roomId . '-' . $age . '-' . $tab" /> --}}
             </flux:heading>
 
-            <span class="text-xl font-bold text-zinc-700">
+            <span class="text-xl font-bold text-zinc-400">
                 {{ collect($this->componentSummary)->flatten(1)->sum('total') }} </span>
         </div>
         <button @click="toggle()"
@@ -41,7 +55,7 @@
            text-zinc-500 dark:text-zinc-200 
            bg-zinc-50 dark:bg-zinc-800 
            hover:bg-zinc-100 dark:hover:bg-zinc-700 
-           rounded-lg transition">
+            transition">
             <flux:text size="sm"><span
                     x-text="open ? 'Hide Component Statistics' : 'View Component Statistics'"></span></flux:text>
 
@@ -121,7 +135,8 @@
                                             <!-- Description -->
                                             <td class="px-6 py-3 align-middle">
                                                 <div class="flex items-center gap-2">
-                                                    <span>{{ $item['description'] }}</span>
+                                                    <span>{{ $item['description'] ?? '—' }}</span>
+
                                                     @if ($item['available'] == 0)
                                                         <span
                                                             class="px-2 py-0.5 text-xs font-semibold text-white bg-red-600 rounded-full">
@@ -225,7 +240,7 @@
             {{-- <p class="text-sm text-gray-500 dark:text-gray-400">Search, filter, and add components</p> --}}
         </div>
 
-       
+
         <!-- Card Body -->
         <div class="p-4 space-y-6">
             <!-- Filters Row -->
@@ -236,7 +251,7 @@
                     <label for="barcodeInput"
                         class="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-1 flex items-center gap-2">
 
-                        Scan Barcode
+                        Barcode
                     </label>
                     <div x-data x-init="$nextTick(() => $refs.barcodeInput.focus())" x-on:scan-complete.window="$refs.barcodeInput.focus()">
                         <flux:input id="barcodeInput" x-ref="barcodeInput" wire:model.lazy="scannedCode"
@@ -272,11 +287,11 @@
                     </flux:select>
                 </div>
 
-                <!-- Add Peripheral Button -->
+                <!-- Add Component Button -->
                 <div class="flex items-end w-full sm:w-auto">
-                    <flux:button icon="plus" variant="primary" color="green" wire:click="openCreateModal"
-                        class="w-full sm:w-auto rounded-xl shadow-md hover:shadow-lg transition">
-                        Add Peripheral
+                    <flux:button icon="circle-plus" variant="primary" color="green" wire:click="openCreateModal"
+                        class="text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-green-300 dark:focus:ring-green-800 font-medium rounded-base text-sm px-4 py-2.5 text-center leading-5">
+                        Add Component
                     </flux:button>
                 </div>
             </div>
@@ -310,98 +325,124 @@
                     <th class="px-4 py-3">Serial Number</th>
                     <th class="px-4 py-3">Category</th>
                     <th class="px-4 py-3">Status</th>
+                    <th class="px-4 py-3">PC :: Room</th>
                     <th class="px-4 py-3 text-center">Actions</th>
                 </tr>
             </thead>
 
             <tbody class="divide-y divide-zinc-200">
-                @forelse($components as $component)
-                    <tr wire:key="component-row-{{ $component->id }}"
+                @forelse($components as $comp)
+                    <tr
                         class="hover:bg-zinc-50 dark:hover:bg-zinc-800/50 odd:bg-white even:bg-zinc-200 dark:odd:bg-zinc-800 dark:even:bg-zinc-700">
 
                         <!-- Row Checkbox -->
                         <td class="px-4 py-3">
-                            <x-checkbox :value="$component->id" wire:model.live="selectedComponents" />
+                            <x-checkbox :value="$comp->id" wire:model.live="selectedComponents" />
 
 
                         </td>
 
-                        <td class="px-4 py-3">{{ $component->serial_number }}</td>
-                        <td class="px-4 py-3">{{ $component->part }}</td>
+                        <td class="px-4 py-3">{{ $comp->serial_number }}</td>
+                        <td class="px-4 py-3">{{ $comp->part }}</td>
                         <td class="px-4 py-3">
                             <span
-                                class="px-2 py-1 text-xs font-semibold rounded-full {{ $statusColors[$component->status] ?? 'bg-gray-100 text-gray-700' }}">
-                                {{ $component->status }}
+                                class="px-2 py-1 text-base font-semibold rounded-full {{ $statusColors[$comp->status] ?? 'bg-gray-100 text-gray-700' }}">
+                                {{ $comp->status }}
                             </span>
-                        </td>
-                        <td class="px-4 py-3 text-center space-x-2">
-                            <!-- Actions -->
-                            <div x-data="{ open: false }" class="relative inline-flex w-full sm:w-auto">
-                                <!-- Main Action -->
-                                <button wire:click="openViewModal({{ $component->id }})"
-                                    class="inline-flex items-center justify-center px-3 py-2 text-xs md:text-sm font-medium
-                    border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800
-                    text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-zinc-700
-                    focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2
-                    rounded-l-md flex-1 sm:flex-none">
-                                    <flux:icon.eye />
-                                </button>
 
-                                <!-- Dropdown Toggle -->
-                                <button @click="open = !open" x-ref="toggleBtn" type="button"
-                                    class="inline-flex items-center justify-center px-2 py-2 border border-gray-300 dark:border-zinc-700
-                        bg-white dark:bg-zinc-800 text-gray-500 hover:bg-gray-50 dark:hover:bg-zinc-700
-                        focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2
-                        rounded-r-md border-l-0 flex-1 sm:flex-none">
-                                    <svg class="h-4 w-4 md:h-5 md:w-5" xmlns="http://www.w3.org/2000/svg"
-                                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        </td>
+                        <td class="px-4 py-3">
+                            <span class="text-base">{{ optional($comp->systemUnit)->name ?? '—' }}</span>::
+                            <span class="text-base">{{ optional($comp->room)->name ?? '—' }}</span>
+                        </td>
+                        <td class="px-4 py-3 text-center">
+
+                            <div x-data="{ open: false }" class="relative inline-flex">
+
+                                <!-- Desktop Buttons -->
+                                <div class="hidden sm:flex gap-2">
+                                    <flux:tooltip hoverable>
+                                        <!-- View -->
+                                        <flux:button wire:click="openViewModal({{ $comp->id }})"
+                                            variant="primary" icon="eye"
+                                            class="text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 
+                       hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 
+                       dark:focus:ring-blue-800 shadow-lg shadow-blue-500/50 
+                       dark:shadow-lg dark:shadow-blue-800/80 
+                       font-medium rounded-base text-sm px-4 py-2.5 inline-flex items-center gap-1">
+                                        </flux:button>
+                                        <flux:tooltip.content class="max-w-[20rem] ">
+                                            <p>View</p>
+                                        </flux:tooltip.content>
+                                    </flux:tooltip>
+
+                                    <flux:tooltip hoverable>
+                                        <!-- Edit -->
+                                        <flux:button wire:click="openEditModal({{ $comp->id }})"
+                                            variant="primary" icon="pencil"
+                                            class="text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 
+                       hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-green-300 
+                       dark:focus:ring-green-800 shadow-lg shadow-green-500/50 
+                       dark:shadow-lg dark:shadow-green-800/80 
+                       font-medium rounded-base text-sm px-4 py-2.5 inline-flex items-center gap-1">
+                                        </flux:button>
+                                        <flux:tooltip.content class="max-w-[20rem] ">
+                                            <p>Modify</p>
+                                        </flux:tooltip.content>
+                                    </flux:tooltip>
+
+
+                                    <!-- Delete -->
+                                    <flux:button
+                                        wire:click="$dispatch('open-delete-modal', [{{ $comp->id }}, 'ComponentParts'])"
+                                        variant="primary" icon="trash"
+                                        class="text-white bg-gradient-to-r from-red-400 via-red-500 to-red-600 
+                       hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-red-300 
+                       dark:focus:ring-red-800 shadow-lg shadow-red-500/50 
+                       dark:shadow-lg dark:shadow-red-800/80 
+                       font-medium rounded-base text-sm px-4 py-2.5 inline-flex items-center gap-1">
+                                    </flux:button>
+                                </div>
+
+                                <!-- Mobile Dropdown Button -->
+                                <button @click="open = !open"
+                                    class="sm:hidden inline-flex items-center justify-center w-9 h-9 rounded-md border border-gray-300 
+                   dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-700 dark:text-gray-200">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M19 9l-7 7-7-7" />
+                                            d="M12 6v0m0 6v0m0 6v0" />
                                     </svg>
                                 </button>
 
-                                <!-- Dropdown Menu (Teleported) -->
-                                <template x-teleport="body">
-                                    <div x-show="open" x-transition @click.away="open = false" x-cloak x-data
-                                        x-init="$watch('open', value => {
-                                            if (value) {
-                                                let btn = $refs.toggleBtn.getBoundingClientRect();
-                                                $el.style.position = 'absolute';
-                                                $el.style.top = (btn.bottom + window.scrollY) + 'px';
-                                                $el.style.left = (btn.left + window.scrollX) + 'px';
-                                            }
-                                        })"
-                                        class="z-50 mt-1 w-30 rounded-md shadow-lg bg-white dark:bg-zinc-800 ring-1 ring-black ring-opacity-5">
-                                        <div class="py-1">
-                                            <button wire:click="openEditModal({{ $component->id }})"
-                                                @click="open = false"
-                                                class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-zinc-700">
-                                                <flux:icon.pencil class="h-4 w-4" />
-                                                <span>Edit</span>
-                                            </button>
+                                <!-- Mobile Dropdown Menu -->
+                                <div x-show="open" @click.away="open = false" x-cloak
+                                    class="absolute right-0 mt-2 w-36 bg-white dark:bg-zinc-800 shadow-lg rounded-md z-50 sm:hidden">
 
-                                            {{-- <button wire:click="deleteComponent({{ $component->id }})"
-                                                @click="open = false"
-                                                class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-700">
-                                                <flux:icon.trash class="h-4 w-4" />
-                                                <span>Delete</span>
-                                            </button> --}}
-                                            <!-- Or for component parts -->
-                                            <button
-                                                wire:click="$dispatch('open-delete-modal', [{{ $component->id }}, 'ComponentParts'])"
-                                                @click="open = false"
-                                                class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-700">
-                                                <flux:icon.trash class="h-4 w-4" />
-                                                Delete
-                                            </button>
-                                            <!-- Child Livewire component -->
-                                            {{-- <livewire:manage-item :model-class="App\Models\ComponentParts::class" :item-id="$component->id"
-                                                :key="'manage-item-' . $component->id" /> --}}
-                                        </div>
-                                    </div>
-                                </template>
+                                    <button wire:click="openViewModal({{ $comp->id }})" @click="open = false"
+                                        icon="eye"
+                                        class="w-full flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-zinc-700">
+                                        View
+                                    </button>
+
+                                    <button wire:click="openEditModal({{ $comp->id }})" @click="open = false"
+                                        icon="pencil"
+                                        class="w-full flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-zinc-700">
+                                        Edit
+                                    </button>
+
+                                    <button
+                                        wire:click="$dispatch('open-delete-modal', [{{ $comp->id }}, 'ComponentParts'])"
+                                        icon="trash" @click="open = false"
+                                        class="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-700/30">
+                                        Delete
+                                    </button>
+
+                                </div>
+
                             </div>
+
                         </td>
+
                     </tr>
                 @empty
                     <tr>

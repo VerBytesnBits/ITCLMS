@@ -4,7 +4,7 @@
         class="relative focus:outline-none"
         @click="$wire.markAllAsRead()"  {{--  mark as read when dropdown opens --}}
     >
-        <flux:icon name="bell" class="w-6 h-6 text-zinc-500 dark:text-zinc-400 hover:text-zinc-700" />
+        <flux:icon name="bell" variant="mini" class=" text-white dark:text-zinc-400 hover:text-zinc-700" />
 
         @if ($unreadCount > 0)
             <span

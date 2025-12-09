@@ -6,7 +6,7 @@
     @if ($rooms->count())
         <div class="flex justify-end items-center mb-6">
             <flux:button variant="primary" color="green" wire:click="openCreateModal"
-                class="px-5 py-2 rounded-full shadow-md hover:shadow-lg transition">
+                class="text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-green-300 dark:focus:ring-green-800 font-medium rounded-base text-sm px-4 py-2.5 text-center leading-5">
                 + Add Room
             </flux:button>
         </div>
@@ -154,26 +154,27 @@
 
                     <!-- Right side: action buttons -->
                     <div class="flex items-center gap-2">
-                        <button wire:click="openEditModal({{ $room->id }})"
-                            class="flex items-center justify-center gap-1 px-3 py-1.5 text-xs font-medium 
-                   rounded-md border border-yellow-400/40 
-                   text-yellow-600 hover:bg-yellow-100 
-                   dark:border-yellow-400/30 dark:hover:bg-yellow-900/30 
-                   transition-all">
-                            <flux:icon.pencil class="w-4 h-4" />
-                            {{-- <span>Edit</span> --}}
-                        </button>
+                        <flux:button wire:click="openEditModal({{ $room->id }})" icon="pencil" variant="primary"
+                            size="sm"
+                            class="text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 
+           hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-green-300 
+           dark:focus:ring-green-800 shadow-lg shadow-green-500/50 
+           dark:shadow-lg dark:shadow-green-800/80 
+           font-medium rounded-base text-sm px-4 py-2.5 inline-flex items-center gap-1">
 
-                        <button wire:click.prevent="confirmDeleteRoom({{ $room->id }})"
-                            class="flex items-center justify-center gap-1 px-3 py-1.5 text-xs font-medium 
-                   rounded-md border border-red-400/40 
-                   text-red-600 hover:bg-red-100 
-                   dark:border-red-400/30 dark:hover:bg-red-900/30 
-                   transition-all">
-                            <flux:icon.trash class="w-4 h-4" />
-                            {{-- <span>Delete</span> --}}
-                        </button>
-                      
+                            {{-- <span>Edit</span> --}}
+                        </flux:button>
+
+                        <flux:button wire:click.prevent="confirmDeleteRoom({{ $room->id }})" variant="primary"
+                            icon="trash" size="sm"
+                            class="text-white bg-gradient-to-r from-red-400 via-red-500 to-red-600 
+           hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-red-300 
+           dark:focus:ring-red-800 shadow-lg shadow-red-500/50 
+           dark:shadow-lg dark:shadow-red-800/80 
+           font-medium rounded-base text-sm px-4 py-2.5 inline-flex items-center gap-1">
+
+                        </flux:button>
+
 
                     </div>
                 </div>

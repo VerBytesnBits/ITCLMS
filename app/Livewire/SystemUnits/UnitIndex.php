@@ -66,16 +66,16 @@ class UnitIndex extends Component
             $query->where('room_id', $this->selectedRoom);
         }
 
-        if (!$user->hasAnyRole(['chairman', 'Tester'])) {
+        if (!$user->hasAnyRole(['chairman'])) {
             $roomIds = $user->rooms->pluck('id');
             $query->whereIn('room_id', $roomIds);
         }
 
-        // Dynamically update status of all units in this query
-        $units = $query->get();
-        foreach ($units as $unit) {
-            $unit->checkOperationalStatus(); // updates status in DB if changed
-        }
+        // // Dynamically update status of all units in this query
+        // $units = $query->get();
+        // foreach ($units as $unit) {
+        //     $unit->checkOperationalStatus(); // updates status in DB if changed
+        // }
 
         // Use clone queries for counts as before
         $this->operationalCount = (clone $query)->where('status', 'Operational')->count();
@@ -88,7 +88,7 @@ class UnitIndex extends Component
         $units = SystemUnit::with(['components', 'peripherals'])->get();
 
         foreach ($units as $unit) {
-            $unit->status = $unit->checkOperationalStatus();
+            // $unit->status = $unit->checkOperationalStatus();
             $unit->save();
         }
 
@@ -103,6 +103,7 @@ class UnitIndex extends Component
     public function refreshUnits()
     {
         $this->resetPage();
+        $this->updateUnitStatuses();
         $this->updateUnitCounts();
     }
 
@@ -131,13 +132,13 @@ class UnitIndex extends Component
         );
 
         // Fetch paginated results
-        $units = $query->orderBy('id', 'asc')->paginate(10);
+        $units = $query->orderBy('id', 'desc')->paginate(10);
 
-        // Dynamically calculate operational status for each unit
-        $units->getCollection()->transform(function ($unit) {
-            $unit->status = $unit->checkOperationalStatus(); // method in SystemUnit model
-            return $unit;
-        });
+        // // Dynamically calculate operational status for each unit
+        // $units->getCollection()->transform(function ($unit) {
+        //     $unit->status = $unit->checkOperationalStatus(); // method in SystemUnit model
+        //     return $unit;
+        // });
 
         // Apply status filter after dynamic status calculation
         if ($this->statusFilter) {
@@ -189,8 +190,11 @@ class UnitIndex extends Component
 
     public function render()
     {
+        $this->updateUnitCounts(); // recalc counts every render
+
         return view('livewire.system-units.unit-index', [
             'units' => $this->units,
         ]);
     }
+
 }

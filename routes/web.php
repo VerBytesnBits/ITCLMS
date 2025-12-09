@@ -44,7 +44,12 @@ Route::middleware(['auth', '2fa'])->group(function () {
     Route::get('report-issue', QrScanner::class)->middleware('can:view.reports')->name('report-issue');
 
 
-    Route::get('/reports/unit', UnitReport::class)->name('reports.unit');
+    Route::get('units/generate-report', UnitReport::class)->name('units.report');
+    Route::get('peripherals/report-preview', \App\Livewire\Peripherals\PeripheralsReport::class)
+        ->name('peripherals.report-preview');
+    Route::get('components/report-preview', \App\Livewire\ComponentsPart\ComponentsPartsReport::class)
+        ->name('components-part.components-parts-report');
+
 
     Route::redirect('settings', 'settings/profile');
     Route::get('settings/profile', Profile::class)->name('settings.profile');

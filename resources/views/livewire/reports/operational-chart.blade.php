@@ -8,7 +8,7 @@
 >
     <!-- Card -->
     <div
-        class="bg-white dark:bg-zinc-800 backdrop-blur-md rounded-2xl shadow-lg hover:shadow-2xl
+        class="bg-white dark:bg-zinc-300 backdrop-blur-md rounded-2xl shadow-lg hover:shadow-2xl
                transition transform hover:-translate-y-1 border border-zinc-200 dark:border-zinc-700
                p-6 flex flex-col h-full"
     >

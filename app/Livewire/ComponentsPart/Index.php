@@ -62,7 +62,7 @@ class Index extends Component
 
         return $this->getInventorySummary(
             ComponentParts::class,
-            'part',
+            ['part','brand', 'model', 'speed', 'capacity', 'type'],
             ['brand', 'model', 'speed', 'capacity', 'type'],
             $this->sortColumn,
             $this->sortDirection,
@@ -233,14 +233,18 @@ class Index extends Component
     {
         $labs = Room::all();
         $statusColors = StatusConfig::statuses();
+
         $components = ComponentParts::with(['systemUnit', 'room'])
             ->when($this->roomId, function ($q) {
-                $q->whereHas('systemUnit', function ($unit) {
-                    $unit->where('room_id', $this->roomId);
+                $q->where(function ($sub) {
+                    // Include components that are either:
+                    // 1. linked to a system unit in the selected room
+                    // 2. directly assigned to the selected room
+                    $sub->whereHas('systemUnit', fn($unit) => $unit->where('room_id', $this->roomId))
+                        ->orWhere('room_id', $this->roomId);
                 });
             })
             ->when($this->age, function ($q) {
-                // applyFilters logic here
                 if ($this->age === 'new') {
                     $q->where(function ($sub) {
                         $sub->where('warranty_expires_at', '>=', now())
@@ -252,9 +256,7 @@ class Index extends Component
                     $q->where('purchase_date', '<', now()->sub($unit, $amount));
                 }
             })
-            ->when($this->tab && $this->tab !== 'All', function ($q) {
-                $q->where('part', $this->tab);
-            })
+            ->when($this->tab && $this->tab !== 'All', fn($q) => $q->where('part', $this->tab))
             ->when($this->search, function ($q) {
                 $q->where(function ($sub) {
                     $sub->where('serial_number', 'like', '%' . $this->search . '%')
@@ -262,16 +264,17 @@ class Index extends Component
                         ->orWhere('model', 'like', '%' . $this->search . '%');
                 });
             })
+            ->orderBy('id', 'asc') // Use valid column to avoid SQL error
             ->paginate($this->perPage);
-
 
         return view('livewire.components-part.index', [
             'statusColors' => $statusColors,
             'components' => $components,
             'summary' => $this->componentSummary,
-            'labs' => $labs
+            'labs' => $labs,
         ]);
     }
+
 
 
 }

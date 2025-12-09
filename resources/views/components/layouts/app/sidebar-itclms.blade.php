@@ -25,7 +25,7 @@
 
             {{-- Computer Units --}}
             @can('view.unit')
-                <flux:sidebar.item icon="computer-desktop" :href="route('units')" :current="request()->routeIs('units')"
+                <flux:sidebar.item icon="computer-desktop" :href="route('units')" :current="request()->is('units*')"
                     wire:navigate>
                     {{ __('Computer Units') }}
                 </flux:sidebar.item>
@@ -36,15 +36,15 @@
             @canany(['view.component', 'view.peripheral'])
                 <flux:sidebar.group expandable icon="warehouse" heading="Inventory" class="grid">
                     @can('view.component')
-                        <flux:sidebar.item icon="cpu-chip" :href="route('components')"
-                            :current="request()->routeIs('components')" wire:navigate>
+                        <flux:sidebar.item icon="cpu-chip" :href="route('components')" :current="request()->is('components*')"
+                            wire:navigate>
                             {{ __('Components') }}
                         </flux:sidebar.item>
                     @endcan
 
                     @can('view.peripheral')
                         <flux:sidebar.item icon="cube" :href="route('peripherals')"
-                            :current="request()->routeIs('peripherals')" wire:navigate>
+                            :current="request()->is('peripherals*')" wire:navigate>
                             {{ __('Peripherals') }}
                         </flux:sidebar.item>
                     @endcan
@@ -124,9 +124,9 @@
 
         <flux:sidebar.nav>
             <flux:sidebar.item icon="cog-6-tooth" :href="route('settings.profile')"
-                :current="request()->routeIs('settings.profile')" wire:navigate>
+                :current="request()->is('settings*')" wire:navigate>
                 {{ __('Settings') }}</flux:sidebar.item>
-            <flux:sidebar.item icon="information-circle" href="#">Help</flux:sidebar.item>
+            {{-- <flux:sidebar.item icon="information-circle" href="#">Help</flux:sidebar.item> --}}
             <form method="POST" action="{{ route('logout') }}" class="w-full">
                 @csrf
                 <flux:sidebar.item as="button" type="submit" icon="arrow-right-start-on-rectangle" class="w-full">
@@ -142,7 +142,7 @@
            dark:from-gray-900 dark:to-gray-800 dark:border-zinc-700 drop-shadow-lg">
 
         <!-- Sidebar Toggle -->
-        <flux:sidebar.collapse icon="bars-3" inset="left" />
+        <flux:sidebar.collapse icon="bars-3" inset="left"/>
 
         <flux:spacer />
 

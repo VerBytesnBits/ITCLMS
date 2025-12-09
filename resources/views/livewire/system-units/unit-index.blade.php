@@ -30,23 +30,31 @@
             <div class="flex items-center gap-3">
                 <!-- Printer Button with matching tooltip style -->
                 <div class="relative group inline-block">
-                    <button wire:navigate href="/reports/unit"
-                        class="flex items-center justify-center w-10 h-10 rounded-full 
-               bg-gray-400 hover:bg-gray-700 text-white shadow-md transition duration-200">
-                        <flux:icon.printer class="w-5 h-5" />
-                    </button>
+                    <flux:tooltip hoverable>
+                        <flux:button :href="route('units.report')" wire:navigate icon="printer" variant="primary"
+                            class="text-white bg-gradient-to-r from-gray-400 via-gray-500 to-gray-600 
+           hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-gray-300 
+           dark:focus:ring-gray-800 shadow-lg shadow-gray-500/50 
+           dark:shadow-lg dark:shadow-gray-800/80 
+           font-medium rounded-base text-sm px-4 py-2.5 inline-flex items-center gap-1">
 
-                    <!-- Tooltip -->
-                    <div
-                        class="absolute left-[-7rem] top-1/2 -translate-y-1/2 
-               bg-gray-800 text-white text-xs rounded px-2 py-1 
-               opacity-0 group-hover:opacity-100 transition duration-200 
-               pointer-events-none shadow-lg whitespace-nowrap">
-                        Print Unit Reports
-                    </div>
+                            Unit Reports
+                        </flux:button>
+                        <flux:tooltip.content class="max-w-[20rem] space-y-2">
+                            <p>Unit Reports</p>
+                        </flux:tooltip.content>
+                    </flux:tooltip>
+
+
+
                 </div>
+                <flux:tooltip hoverable>
+                    <livewire:system-units.decommissioned-units />
+                    <flux:tooltip.content class="max-w-[20rem] space-y-2">
+                        <p>Decommisioned Unit</p>
+                    </flux:tooltip.content>
+                </flux:tooltip>
 
-                <livewire:system-units.decommissioned-units />
             </div>
         </div>
 
@@ -95,8 +103,8 @@
                     <option value="Needs Repair">Needs Repair</option>
                 </flux:select>
 
-                <flux:button icon="plus" variant="primary" color="green" wire:click="create"
-                    class="w-full sm:w-auto rounded-xl shadow-md hover:shadow-lg transition">
+                <flux:button icon="circle-plus" variant="primary" color="green" wire:click="create"
+                    class="text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-green-300 dark:focus:ring-green-800 font-medium rounded-base text-sm px-4 py-2.5 text-center leading-5">
                     Add Unit
                 </flux:button>
             </div>
@@ -110,6 +118,7 @@
             <thead class="bg-blue-500 text-xs uppercase text-zinc-100">
                 <tr>
                     {{-- <th class="px-6 py-4 text-left font-semibold">#</th> --}}
+
                     <th class="px-4 py-3">Name</th>
                     <th class="px-4 py-3 text-center">Room</th>
                     <th class="px-4 py-3 text-center">Status</th>
@@ -124,41 +133,146 @@
                         <td class="px-4 py-3 font-medium text-zinc-800 dark:text-white">{{ $unit->name }}</td>
                         <td class="px-6 py-4 text-center">{{ $unit->room?->name ?? 'N/A' }}</td>
 
-                        <!-- Status Badge -->
                         <td class="px-4 py-3 text-center">
                             <span
-                                class="px-3 py-1 text-xs rounded-full font-semibold 
-                                       {{ $statusColors[$unit->status] ?? 'bg-gray-200 dark:bg-zinc-700 text-gray-800 dark:text-gray-200' }}">
+                                class="px-3 py-1 text-base rounded-full font-semibold
+               {{ $statusColors[$unit->status] ?? 'bg-gray-200 dark:bg-zinc-700 text-gray-800 dark:text-gray-200' }}">
                                 {{ $unit->status }}
                             </span>
+
+                            @php
+                                $check = $unit->checkOperationalStatus();
+                                $missing = $check['missing'];
+                            @endphp
+
+                            @if ($check['status'] === 'Operational')
+                                <span class="text-green-600 font-semibold text-sm block mt-1"></span>
+                            @else
+                                <div class="flex flex-wrap gap-1 justify-center mt-1">
+                                    @foreach ($missing['components'] as $item)
+                                        <span
+                                            class="bg-red-100 text-red-700 px-2 py-0.5 rounded text-xs flex items-center gap-1">
+                                            <flux:icon.triangle-alert variant="micro"/>
+                                            {{ $item }}
+                                        </span>
+                                    @endforeach
+
+                                    @foreach ($missing['peripherals'] as $item)
+                                        <span
+                                            class="bg-red-100 text-red-700 px-2 py-0.5 rounded text-xs flex items-center gap-1">
+                                            <flux:icon.triangle-alert variant="micro"/>
+                                            {{ $item }}
+                                        </span>
+                                    @endforeach
+                                </div>
+                            @endif
                         </td>
 
-                        <!-- Actions -->
-                        <td class="px-4 py-3 text-center space-x-2">
+                        <td class="px-4 py-3 text-center justify-center">
 
-                            <div x-data="{ open: false }" class="relative inline-flex w-full sm:w-auto">
+                            <!-- DESKTOP BUTTONS (md and up) -->
+                            <div class="hidden md:flex text-center justify-center space-x-1">
+
                                 <!-- View -->
-                                <button wire:click="view({{ $unit->id }})"
-                                    class="inline-flex items-center justify-center px-3 py-2 text-xs md:text-sm font-medium border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-zinc-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 rounded-l-md flex-1 sm:flex-none">
-                                    <flux:icon.eye />
-                                </button>
-                                <!-- Dropdown -->
+                                <flux:tooltip hoverable>
+                                    <flux:button wire:click="view({{ $unit->id }})" icon="eye"
+                                        variant="primary"
+                                        class="text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 
+           hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 
+           dark:focus:ring-blue-800 shadow-lg shadow-blue-500/50 
+           dark:shadow-lg dark:shadow-blue-800/80 
+           font-medium rounded-base text-sm px-4 py-2.5 inline-flex items-center gap-1">
+                                        {{-- <flux:icon.eye class="w-5 h-5 text-white" /> --}}
+                                    </flux:button>
+                                    <flux:tooltip.content class="max-w-[20rem] ">
+                                        <p>View</p>
+                                    </flux:tooltip.content>
+                                </flux:tooltip>
+
+                                <flux:tooltip hoverable>
+                                    <!-- Edit -->
+                                    <flux:button wire:click="edit({{ $unit->id }})" icon="pencil"
+                                        variant="primary"
+                                        class="text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 
+           hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-green-300 
+           dark:focus:ring-green-800 shadow-lg shadow-green-500/50 
+           dark:shadow-lg dark:shadow-green-800/80 
+           font-medium rounded-base text-sm px-4 py-2.5 inline-flex items-center gap-1">
+                                        {{-- <flux:icon.pencil class="w-5 h-5 text-white" /> --}}
+                                    </flux:button>
+                                    <flux:tooltip.content class="max-w-[20rem] ">
+                                        <p>Modify</p>
+                                    </flux:tooltip.content>
+                                </flux:tooltip>
+
+                                <flux:tooltip hoverable>
+                                    <!-- View QR -->
+                                    <flux:button x-data
+                                        @click="$dispatch('open-qr-modal', { qr: '{{ asset($unit->qr_code_path) }}', serial: '{{ $unit->serial_number }}' })"
+                                        icon="qr-code" variant="primary"
+                                        class="text-white bg-gradient-to-r from-cyan-400 via-cyan-500 to-cyan-600 
+           hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-cyan-300 
+           dark:focus:ring-cyan-800 shadow-lg shadow-cyan-500/50 
+           dark:shadow-lg dark:shadow-cyan-800/80 
+           font-medium rounded-base text-sm px-4 py-2.5 inline-flex items-center gap-1">
+                                        {{-- <flux:icon.qr-code class="w-5 h-5 text-white" /> --}}
+                                    </flux:button>
+                                    <flux:tooltip.content class="max-w-[20rem] ">
+                                        <p>View QR</p>
+                                    </flux:tooltip.content>
+                                </flux:tooltip>
+
+                                <flux:tooltip hoverable>
+                                    <!-- Report Issue -->
+                                    <flux:button x-data
+                                        @click="$dispatch('openReportIssue', { systemUnitId: {{ $unit->id }} })"
+                                        icon="triangle-alert" variant="primary"
+                                        class="text-white bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 
+           hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-yellow-300 
+           dark:focus:ring-yellow-800 shadow-lg shadow-yellow-500/50 
+           dark:shadow-lg dark:shadow-yellow-800/80 
+           font-medium rounded-base text-sm px-4 py-2.5 inline-flex items-center gap-1">
+                                        {{-- <flux:icon.triangle-alert class="w-5 h-5 text-white" /> --}}
+                                    </flux:button>
+                                    <flux:tooltip.content class="max-w-[20rem] ">
+                                        <p>Report Issue</p>
+                                    </flux:tooltip.content>
+                                </flux:tooltip>
+
+
+                                <!-- Delete -->
+                                <flux:button x-data
+                                    @click="$dispatch('confirm-delete-system-unit', { id: {{ $unit->id }} })"
+                                    icon="trash" variant="primary"
+                                    class="text-white bg-gradient-to-r from-red-400 via-red-500 to-red-600 
+           hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-red-300 
+           dark:focus:ring-red-800 shadow-lg shadow-red-500/50 
+           dark:shadow-lg dark:shadow-red-800/80 
+           font-medium rounded-base text-sm px-4 py-2.5 inline-flex items-center gap-1">
+                                    {{-- <flux:icon.trash class="w-5 h-5 text-white" /> --}}
+                                </flux:button>
+
+
+                            </div>
+
+
+                            <div class="md:hidden" x-data="{ open: false }">
                                 <button @click="open = !open" x-ref="toggleBtn" type="button"
-                                    class="inline-flex items-center justify-center px-2 py-2 border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-500 hover:bg-gray-50 dark:hover:bg-zinc-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 rounded-r-md border-l-0 flex-1 sm:flex-none">
-                                    <svg class="h-4 w-4 md:h-5 md:w-5" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                    class="inline-flex items-center justify-center px-3 py-2 border rounded-md bg-white dark:bg-zinc-800 text-gray-700 dark:text-gray-200">
+                                    Actions
+                                    <svg class="h-4 w-4 ml-1" xmlns="http://www.w3.org/2000/svg" fill="none"
                                         viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M19 9l-7 7-7-7" />
                                     </svg>
                                 </button>
 
-                                <!-- Dropdown Menu -->
                                 <template x-teleport="body">
                                     <div x-show="open" x-transition @click.away="open = false" x-cloak
                                         x-init="$watch('open', value => {
                                             if (value) {
                                                 let btn = $refs.toggleBtn.getBoundingClientRect();
-                                                let dropdownHeight = $el.offsetHeight || 125; // fallback height
+                                                let dropdownHeight = $el.offsetHeight || 270;
                                                 let spaceBelow = window.innerHeight - btn.bottom;
                                                 let spaceAbove = btn.top;
                                         
@@ -166,53 +280,51 @@
                                                 $el.style.left = (btn.left + window.scrollX) + 'px';
                                         
                                                 if (spaceBelow < dropdownHeight && spaceAbove > dropdownHeight) {
-                                                    // place above
                                                     $el.style.top = (btn.top + window.scrollY - dropdownHeight) + 'px';
                                                 } else {
-                                                    // place below
                                                     $el.style.top = (btn.bottom + window.scrollY) + 'px';
                                                 }
                                             }
                                         })"
-                                        class="z-50 mt-1 w-30 rounded-md shadow-lg bg-white dark:bg-zinc-800 ring-1 ring-black ring-opacity-5">
+                                        class="z-50 mt-1 w-40 rounded-md shadow-lg bg-white dark:bg-zinc-800 ring-1 ring-black ring-opacity-5">
+
                                         <div class="py-1">
-                                            <!-- actions -->
+                                            <!-- View -->
+                                            <button wire:click="view({{ $unit->id }})"
+                                                class="flex items-center gap-2 w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-zinc-700">
+                                                <flux:icon.eye class="h-4 w-4" /> View
+                                            </button>
                                             <button wire:click="edit({{ $unit->id }})" @click="open = false"
-                                                class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-zinc-700">
-                                                <flux:icon.pencil class="h-4 w-4" />
-                                                <span>Edit</span>
+                                                class="flex items-center gap-2 w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-zinc-700">
+                                                <flux:icon.pencil class="h-4 w-4" /> Edit
                                             </button>
-                                            {{-- <button wire:click="report({{ $unit->id }})" @click="open = false"
-                                                class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-zinc-700">
-                                                <flux:icon.triangle-alert class="h-4 w-4" />
-                                                <span>Report</span>
-                                            </button> --}}
-                                            {{-- <button x-data
-                                                @click="$dispatch('open-modal', { component: 'issues.report-issue', { id: {{ $unit->id }} }); open = false"
-                                                class="px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">
-                                                Report Issue
-                                            </button> --}}
-                                            <button x-data
+
+                                            <button
+                                                @click="$dispatch('open-qr-modal', { qr: '{{ asset($unit->qr_code_path) }}', serial: '{{ $unit->serial_number }}' }); open = false"
+                                                class="flex items-center gap-2 w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-zinc-700">
+                                                <flux:icon.qr-code class="h-4 w-4" /> View QR
+                                            </button>
+
+                                            <button
                                                 @click="$dispatch('openReportIssue', { systemUnitId: {{ $unit->id }} }); open = false"
-                                                class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-zinc-700">
-                                                <flux:icon.triangle-alert class="h-4 w-4" />
-                                                Report
+                                                class="flex items-center gap-2 w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-zinc-700">
+                                                <flux:icon.triangle-alert class="h-4 w-4" /> Report
                                             </button>
 
-                                            <button x-data
+                                            <button
                                                 @click="$dispatch('confirm-delete-system-unit', { id: {{ $unit->id }} }); open = false"
-                                                class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-700">
-                                                <flux:icon.trash class="h-4 w-4" />
-                                                <span>Delete</span>
+                                                class="flex items-center gap-2 w-full px-4 py-2 text-left text-red-600 hover:bg-red-50 dark:hover:bg-red-700/30">
+                                                <flux:icon.trash class="h-4 w-4" /> Delete
                                             </button>
-
-
                                         </div>
                                     </div>
                                 </template>
-
                             </div>
+
+
+
                         </td>
+
                     </tr>
                 @empty
                     <tr>
@@ -230,7 +342,35 @@
     <livewire:issues.report-issue />
     <livewire:system-units.delete-modal />
 
+    <!-- Modal Component -->
+    <div x-data="{ open: false, qr: '', serial: '' }"
+        x-on:open-qr-modal.window="open = true; qr = $event.detail.qr; serial = $event.detail.serial" x-show="open"
+        x-cloak class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 px-2 sm:px-4">
+        <div x-show="open" @click.away="open = false" x-transition
+            class="bg-white dark:bg-zinc-900 rounded-2xl shadow-xl w-full max-w-sm mx-4 p-6 text-center relative">
+            <!-- Close Button -->
+            <button @click="open = false" class="absolute top-3 right-3 text-gray-400 hover:text-gray-700">
+                ✕
+            </button>
 
+            <!-- QR Code Image -->
+            <template x-if="qr">
+                <img :src="qr" alt="QR Code" class="h-48 w-48 mx-auto mb-3">
+            </template>
+
+            <!-- Serial Number -->
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                Serial Number
+            </h3>
+            <p class="text-sm text-gray-600 dark:text-gray-400" x-text="serial"></p>
+
+            <!-- Download Button -->
+            <a :href="qr" download
+                class="mt-4 inline-block px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                Download QR
+            </a>
+        </div>
+    </div>
 
     <!-- Modals -->
     @if ($showModal)

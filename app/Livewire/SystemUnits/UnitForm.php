@@ -6,21 +6,77 @@ use Livewire\Component;
 use App\Models\SystemUnit;
 use App\Models\Room;
 use Illuminate\Validation\Rule;
+use App\Models\ComponentParts;
+use App\Models\Peripheral;
+use Illuminate\Support\Facades\DB;
+use Livewire\Attributes\On;
 
 class UnitForm extends Component
 {
     public bool $show = false;
     public string $mode = 'create'; // create | edit
     public ?int $unitId = null;
-   
+
     public ?string $category = null;
     public ?string $name = null;
     public ?string $serial_number = null;
-    public string $status = 'Non-operational';
-    public string $condition = 'Good'; // ✅ corrected default
+    public ?string $status = null;
+    public ?string $condition = null;
     public ?int $room_id = null;
-    public int $quantity = 1;
-    public bool $multiple = false;
+
+    public $quantity = 1;
+
+    public $unit = [
+        'unit_name' => null,
+        'room_id' => null,
+        'status' => 'In Use',
+    ];
+
+    //  Temp arrays for child component data
+    public $tempComponents = [];
+    public $tempPeripherals = [];
+
+    protected $listeners = [
+
+        'remove-temp-component' => 'removeTempComponent',
+        'remove-temp-peripheral' => 'removeTempPeripheral',
+        'peripheralTypeSelected' => 'setPeripheralType',
+    ];
+
+    /** Child listener handlers */
+    #[On('tempComponentAdded')]
+    public function addTempComponent(array $component)
+    {
+        $this->tempComponents[] = $component;
+    }
+
+    #[On('tempPeripheralAdded')]
+    public function addTempPeripheral(array $peripheral)
+    {
+        $this->tempPeripherals[] = $peripheral;
+    }
+
+
+    public function removeTempComponent($index)
+    {
+        if (!is_numeric($index)) {
+            return; // prevents illegal offset crash
+        }
+
+        unset($this->tempComponents[(int) $index]);
+        $this->tempComponents = array_values($this->tempComponents);
+    }
+
+    public function removeTempPeripheral($index)
+    {
+        if (!is_numeric($index)) {
+            return;
+        }
+
+        unset($this->tempPeripherals[(int) $index]);
+        $this->tempPeripherals = array_values($this->tempPeripherals);
+    }
+
 
     protected function rules(): array
     {
@@ -33,22 +89,11 @@ class UnitForm extends Component
                 Rule::unique('system_units', 'serial_number')->ignore($this->unitId),
             ],
             'status' => 'required|string',
-            'condition' => 'nullable|string',
             'room_id' => 'required|exists:rooms,id',
             'quantity' => 'required|integer|min:1',
         ];
     }
-    protected function formData(): array
-    {
-        return $this->only([
-            'name',
-            'serial_number',
-            'status',
-            'room_id',
-        ]);
-    }
 
-    /** ---------- Modal Control ---------- */
     public function create()
     {
         $this->resetValidation();
@@ -60,14 +105,15 @@ class UnitForm extends Component
             'status',
             'condition',
             'room_id',
-            'quantity'
+            'quantity',
         ]);
 
-        $this->status = 'Operational';
-        $this->condition = 'Good';
-        $this->multiple = false;
         $this->mode = 'create';
         $this->show = true;
+
+        // clear temp arrays
+        $this->tempComponents = [];
+        $this->tempPeripherals = [];
     }
 
     public function mount(?int $unitId = null, string $mode = 'create', bool $show = false)
@@ -77,7 +123,8 @@ class UnitForm extends Component
         $this->show = $show;
 
         if ($unitId && $mode === 'edit') {
-            $unit = SystemUnit::findOrFail($unitId);
+            $unit = SystemUnit::with(['components', 'peripherals'])->findOrFail($unitId);
+
             $this->fill([
                 'unitId' => $unit->id,
                 'name' => $unit->name,
@@ -86,128 +133,184 @@ class UnitForm extends Component
                 'category' => preg_replace('/\d+$/', '', $unit->name),
                 'room_id' => $unit->room_id,
             ]);
+
+            // pre-load components/peripherals into temp arrays for editing
+            foreach ($unit->components as $component) {
+                $this->tempComponents[] = $component->toArray();
+            }
+            foreach ($unit->peripherals as $peripheral) {
+                $this->tempPeripherals[] = $peripheral->toArray();
+            }
         }
     }
 
-    public function close(): void
-    {
-        $this->show = false;
-    }
+    // public $inlineSelectedPartFromChild;
 
-    public function messages()
-    {
-        return [
-            'room_id.required' => 'Please select a room.',
-            'room_id.exists' => 'The selected room does not exist.',
-        ];
-    }
-
-    public function updated($field)
-    {
-        $this->validateOnly($field);
-    }
-    /** ---------- Save Logic ---------- */
+    // public function setPeripheralType($value)
+    // {
+    //     $this->inlineSelectedPartFromChild = $value;
+    // }
+ 
     public function save()
     {
-        try {
-            $this->validate();
+        $this->validate();
+
+        if ($this->mode === 'create' && count($this->tempComponents) === 0) {
+            $this->addError('components', 'At least one component is required.');
+            return;
+        }
+
+        DB::transaction(function () {
 
             [$startNumber] = $this->getNextIndex();
 
-            if ($this->mode === 'create') {
-                if ($this->multiple) {
-                    for ($i = 0; $i < $this->quantity; $i++) {
-                        $unitNumber = $startNumber + $i;
-                        $unitName = $this->category . $unitNumber;
-                        $serial = $this->generateSerial($unitNumber);
+            // MULTIPLE UNIT CREATION
+            if ($this->mode === 'create' && $this->quantity > 1) {
+                for ($i = 0; $i < $this->quantity; $i++) {
+                    $unitNumber = $startNumber + $i;
+                    $unitName = $this->category . $unitNumber;
+                    $serial = $this->generateSerialSequential($unitNumber);
 
-                        SystemUnit::create([
-                            'name' => $unitName,
-                            'category' => $this->category,
-                            'serial_number' => $serial,
-                            'status' => $this->status,
-
-                            'room_id' => $this->room_id,
-                        ]);
-                    }
-
-                    $this->dispatch('swal', [
-                        'toast' => true,
-                        'icon' => 'success',
-                        'title' => "{$this->quantity} system units created successfully",
-                        'timer' => 3000,
-                    ]);
-                } else {
-                    $unitName = $this->name ?: $this->category . $startNumber;
-                    $serial = $this->serial_number ?: $this->generateSerial();
-
-                    SystemUnit::create([
+                    $unit = SystemUnit::create([
                         'name' => $unitName,
                         'category' => $this->category,
                         'serial_number' => $serial,
                         'status' => $this->status,
-
                         'room_id' => $this->room_id,
                     ]);
 
-                    $this->dispatch('swal', [
-                        'toast' => true,
-                        'icon' => 'success',
-                        'title' => 'System unit created successfully',
-                        'timer' => 3000,
-                    ]);
+                    // ASSIGN TEMP COMPONENTS
+                    foreach ($this->tempComponents as $component) {
+                        $component['system_unit_id'] = $unit->id;
+                        $component['room_id'] = $unit->room_id;
+                        $component['status'] = 'In Use';
+                        ComponentParts::create($component);
+                    }
+
+                    // ASSIGN TEMP PERIPHERALS
+                    foreach ($this->tempPeripherals as $peripheral) {
+                        $peripheral['system_unit_id'] = $unit->id;
+                        $peripheral['room_id'] = $unit->room_id;
+                        $peripheral['status'] = 'In Use';
+                        Peripheral::create($peripheral);
+                    }
                 }
 
-                $this->dispatch('unitCreated');
-            } else {
+                $this->dispatch('swal', [
+                    'toast' => true,
+                    'icon' => 'success',
+                    'title' => "{$this->quantity} system units created with components & peripherals",
+                    'timer' => 3000,
+                ]);
+            }
+
+            // SINGLE UNIT CREATION
+            elseif ($this->mode === 'create') {
+                $unitName = $this->name ?: $this->category . $startNumber;
+                $serial = $this->serial_number ?: $this->generateSerialSequential($startNumber);
+
+                $unit = SystemUnit::create([
+                    'name' => $unitName,
+                    'category' => $this->category,
+                    'serial_number' => $serial,
+                    'status' => $this->status,
+                    'room_id' => $this->room_id,
+                ]);
+
+                foreach ($this->tempComponents as $component) {
+                    $component['system_unit_id'] = $unit->id;
+                    $component['room_id'] = $unit->room_id;
+                    $component['status'] = 'In Use';
+                    ComponentParts::create($component);
+                }
+
+                foreach ($this->tempPeripherals as $peripheral) {
+                    $peripheral['system_unit_id'] = $unit->id;
+                    $peripheral['room_id'] = $unit->room_id;
+                    $peripheral['status'] = 'In Use';
+                    Peripheral::create($peripheral);
+                }
+
+                // ✅ Get Lab Name (Optional but Recommended)
+                $labName = optional($unit->room)->name ?? 'Lab';
+
+                // ✅ Correct Swal Message
+                $this->dispatch('swal', [
+                    'toast' => true,
+                    'icon' => 'success',
+                    'title' => "{$unitName} - {$labName} added successfully!",
+                    'timer' => 3000,
+                ]);
+            }
+
+            // UPDATE MODE
+            else {
+                $unitName = $this->name ?: $this->category . $startNumber;
                 $unit = SystemUnit::findOrFail($this->unitId);
                 $unit->update([
                     'name' => $this->name,
                     'serial_number' => $this->serial_number,
                     'status' => $this->status,
-
                     'room_id' => $this->room_id,
                 ]);
 
+                // Update / assign components & peripherals
+                foreach ($this->tempComponents as $component) {
+                    if (isset($component['id'])) {
+                        $existing = ComponentParts::find($component['id']);
+                        $existing->update($component);
+                    } else {
+                        $component['system_unit_id'] = $unit->id;
+                        $component['room_id'] = $unit->room_id;
+                        $component['status'] = 'In Use';
+                        ComponentParts::create($component);
+                    }
+                }
+
+                foreach ($this->tempPeripherals as $peripheral) {
+                    if (isset($peripheral['id'])) {
+                        $existing = Peripheral::find($peripheral['id']);
+                        $existing->update($peripheral);
+                    } else {
+                        $peripheral['system_unit_id'] = $unit->id;
+                        $peripheral['room_id'] = $unit->room_id;
+                        $peripheral['status'] = 'In Use';
+
+                        // ✅ PULLED FROM CHILD COMPONENT
+                        $peripheral['type'] = $this->inlineSelectedPartFromChild
+                            ?? $peripheral['type']
+                            ?? 'unknown';
+
+                        Peripheral::create($peripheral);
+                    }
+                }
+
+
+                $labName = optional($unit->room)->name ?? 'Lab';
                 $this->dispatch('swal', [
                     'toast' => true,
                     'icon' => 'success',
-                    'title' => 'System unit updated successfully',
+                    'title' => "{$unitName} - {$labName} updated successfully",
                     'timer' => 3000,
                 ]);
-
-                $this->dispatch('unitUpdated');
             }
 
-            // Close modal
-            $this->dispatch('closeModal');
+        });
 
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            $this->setErrorBag($e->validator->errors());
-            $errors = $e->validator->errors()->all();
+        // Clear temp arrays
+        $this->tempComponents = [];
+        $this->tempPeripherals = [];
 
-            $this->dispatch('swal', [
-                'toast' => true,
-                'icon' => 'error',
-                'title' => implode(' ', $errors),
-                'timer' => 3000,
-            ]);
-        } catch (\Exception $e) {
-            $this->dispatch('swal', [
-                'toast' => true,
-                'icon' => 'error',
-                'title' => 'Something went wrong: ' . $e->getMessage(),
-                'timer' => 3000,
-            ]);
-        }
+        $this->dispatch($this->mode === 'create' ? 'unitCreated' : 'unitUpdated');
+        // $this->dispatch('closeModal');
     }
 
+    /** ---- Helpers ---- */
 
-    /** ---------- Helpers ---------- */
     private function getNextIndex(): array
     {
         $lastUnit = SystemUnit::where('room_id', $this->room_id)
-            ->where('name', 'LIKE', $this->category . '%')
+            ->where('name', 'LIKE', "{$this->category}%")
             ->orderByRaw("CAST(SUBSTRING(name, LENGTH(?) + 1) AS UNSIGNED) DESC", [$this->category])
             ->first();
 
@@ -217,87 +320,53 @@ class UnitForm extends Component
         return [$startNumber, $lastUnit];
     }
 
-
-    protected function generateSerial(int $i = 0, ?int $startNumber = null): string
+    protected function generateSerialSequential(int $i): string
     {
         $room = Room::find($this->room_id);
-
-        // Category prefix (e.g. PC, LAP, SER)
-        $categoryPrefix = strtoupper(substr($this->category ?? 'PC', 0, 3));
-
-        // Build room prefix (e.g. LAB-1 → L1)
+        $catPrefix = strtoupper(substr($this->category, 0, 3));
         $roomPrefix = '';
+
         if ($room && !empty($room->name)) {
             $name = strtoupper($room->name);
-            if (preg_match('/^([A-Z])[A-Z]*[- ]?(\d+)$/', $name, $matches)) {
-                $roomPrefix = $matches[1] . $matches[2];
+            if (preg_match('/^([A-Z])[A-Z]*[- ]?(\d+)$/', $name, $m)) {
+                $roomPrefix = $m[1] . $m[2];
             } else {
                 $roomPrefix = substr(str_replace([' ', '-'], '', $name), 0, 2);
             }
         }
 
-        // Final prefix e.g. "PCL1"
-        $prefix = $categoryPrefix . $roomPrefix;
-
-        // 🔑 If no startNumber given → get max suffix from existing serials
-        if ($startNumber === null) {
-            $lastNumber = SystemUnit::where('room_id', $this->room_id)
-                ->where('serial_number', 'like', "{$prefix}-%")
-                ->selectRaw("MAX(CAST(SUBSTRING_INDEX(serial_number, '-', -1) AS UNSIGNED)) as max_num")
-                ->value('max_num');
-
-            $startNumber = $lastNumber ? $lastNumber + 1 : 1;
-        }
-
-        $counter = $startNumber + $i;
-        $candidate = sprintf('%s-%03d', $prefix, $counter);
-
-        // Ensure uniqueness
-        while (SystemUnit::where('serial_number', $candidate)->exists()) {
-            $counter++;
-            $candidate = sprintf('%s-%03d', $prefix, $counter);
-        }
-
-        return $candidate;
+        return sprintf('%s%s-%03d', $catPrefix, $roomPrefix, $i);
     }
 
-
-    public function updatedCategory(): void
+    public function updatedCategory()
+    {
+        $this->generateUnitName();
+    }
+    public function updatedRoomId()
     {
         $this->generateUnitName();
     }
 
-    public function updatedRoomId(): void
+    public function generateUnitName(): void
     {
-        $this->generateUnitName();
-    }
-
-    protected function generateUnitName(): void
-    {
-        if (!$this->category || !$this->room_id) {
-            $this->name = null;
+        $this->name = null;
+        if (!$this->category || !$this->room_id)
             return;
-        }
 
         [$nextNumber] = $this->getNextIndex();
         $this->name = $this->category . $nextNumber;
 
-        if (!$this->multiple) {
-
-            $this->serial_number = $this->generateSerial();
+        if ($this->quantity === 1) {
+            $this->serial_number = $this->generateSerialSequential($nextNumber);
         }
     }
 
-
-    public function updatedMultiple($value)
+    public function updatedQuantity()
     {
-        if ($value) {
+        if ($this->quantity > 1) {
             $this->serial_number = null;
         } else {
-            if ($this->category && $this->room_id) {
-                [$nextNumber] = $this->getNextIndex();
-                $this->serial_number = $this->generateSerial($nextNumber);
-            }
+            $this->generateUnitName();
         }
     }
 

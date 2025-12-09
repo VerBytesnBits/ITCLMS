@@ -5,7 +5,9 @@ namespace App\Livewire\Settings;
 use Auth;
 use Livewire\Component;
 use PragmaRX\Google2FA\Google2FA;
+use Livewire\Attributes\Layout;
 
+#[Layout('components.layouts.app', ['title' => '2FA'])]
 class TwoFactorAuthentication extends Component
 {
     public $user, $urlQRCode, $secret, $otp;

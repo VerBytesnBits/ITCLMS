@@ -49,7 +49,7 @@
 
                 <!-- Submit + Cancel -->
                 <div class="flex justify-end gap-3 mt-4">
-                    <flux:button type="button" variant="primary" color="subtle" wire:click="$dispatch('closeModal')">
+                    <flux:button type="button" color="subtle" wire:click="$dispatch('closeModal')">
                         Cancel
                     </flux:button>
 

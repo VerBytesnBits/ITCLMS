@@ -3,8 +3,9 @@
     x-show="open"
     x-cloak
     x-transition.opacity.duration.200ms
-    class="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/40 backdrop-blur-sm"
+    class="fixed inset-0 w-full h-full z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm overflow-y-auto"
 >
+
     <div
         x-transition.scale.duration.200ms
         class="bg-white dark:bg-zinc-900 w-full max-w-md mx-4 rounded-2xl shadow-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden"

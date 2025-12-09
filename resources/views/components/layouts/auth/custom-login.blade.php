@@ -38,17 +38,17 @@
             <template x-for="b in blobs" :key="b.color">
                 <div
                     :style="`
-                                                                position:absolute;
-                                                                top:${b.y}%;
-                                                                left:${b.x}%;
-                                                                width:${b.size}px;
-                                                                height:${b.size}px;
-                                                                background:${b.color};
-                                                                border-radius:50%;
-                                                                filter: blur(100px);
-                                                                mix-blend-mode: screen;
-                                                                opacity:0.7;
-                                                            `">
+                                                                                                        position:absolute;
+                                                                                                        top:${b.y}%;
+                                                                                                        left:${b.x}%;
+                                                                                                        width:${b.size}px;
+                                                                                                        height:${b.size}px;
+                                                                                                        background:${b.color};
+                                                                                                        border-radius:50%;
+                                                                                                        filter: blur(100px);
+                                                                                                        mix-blend-mode: screen;
+                                                                                                        opacity:0.7;
+                                                                                                    `">
                 </div>
             </template>
         </div>
@@ -67,16 +67,15 @@
 
                 <a href="{{ route('home') }}" class="mb-6 flex flex-col items-center lg:items-start gap-5 font-medium">
 
-                    <!-- Logo -->
                     <div class="relative flex items-center justify-center">
-                        <div class="absolute inset-0 blur-xl opacity-25 bg-emerald-400/40 rounded-full scale-110"></div>
-                        <div
-                            class="relative flex items-center justify-center w-24 h-24 sm:w-28 sm:h-28 lg:w-32 lg:h-32 
-                                rounded-2xl shadow-lg bg-white/10 backdrop-blur-md ring-1 ring-white/20">
-                            @include('partials.itclms-logo', [
-                                'class' => 'w-20 h-20 sm:w-24 sm:h-24 lg:w-28 lg:h-28',
-                            ])
-                        </div>
+
+                        <img src="{{ asset('images/PIT.png') }}" alt="PIT Logo" loading="lazy" {{-- These classes define the responsive size of the logo image itself --}}
+                            class="w-20 h-20  md:w-20 md:h-20 lg:w-24 lg:h-24 flex-shrink-0">
+
+                        <img src="{{ asset('images/ICT-logo1.png') }}" alt="ICT Logo" loading="lazy"
+                            {{-- These classes define the responsive size of the logo image itself --}} class="w-20 h-20  md:w-20 md:h-20 lg:w-24 lg:h-24 flex-shrink-0">
+
+
                     </div>
 
                     <!-- Text Branding -->

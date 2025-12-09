@@ -31,10 +31,26 @@
             color: #555;
         }
 
+        header p {
+            margin: 2px 0 0;
+            font-size: 12px;
+            color: #333;
+        }
+
+        h4.room-title {
+            background: #eaeaea;
+            padding: 6px 10px;
+            margin-top: 25px;
+            margin-bottom: 5px;
+            font-size: 13px;
+            font-weight: bold;
+            border: 1px solid #ccc;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 10px;
+            margin-top: 5px;
         }
 
         th,
@@ -77,86 +93,120 @@
     <header>
         <h2>Palompon Institute of Technology</h2>
         <h3>System Unit Specifications</h3>
+
+       
+        @if (isset($selectedRoom) && $selectedRoom)
+            <p>
+                Room:
+                <strong>
+                    {{ \App\Models\Room::find($selectedRoom)?->name ?? 'Unknown Room' }}
+                </strong>
+            </p>
+        @else
+            <p><em>All Rooms</em></p>
+        @endif
     </header>
 
-    <table>
-        <thead>
-            <tr>
-                <th>#</th>
-                <th>ID</th>
-                @if ($includeComponents)
-                    <th>CPU<br><span class="small-note">(model)</span></th>
-                    <th>MBOARD<br><span class="small-note">(model)</span></th>
-                    <th>RAM<br><span class="small-note">(type & capacity)</span></th>
-                    <th>DRIVE<br><span class="small-note">(type & capacity)</span></th>
-                    <th>CASING<br><span class="small-note">(model)</span></th>
-                @endif
-                @if ($includePeripherals)
-                    <th>Monitor</th>
-                    <th>Mouse</th>
-                    <th>Keyboard</th>
-                    <th>Other Peripherals</th>
-                @endif
-                @if ($includeComponents)
-                    <th>STATUS<br><span class="small-note">(Operational, Needs Repair, etc.)</span></th>
-                @endif
-            </tr>
-        </thead>
-        <tbody>
-            @foreach ($units as $i => $unit)
-                <tr>
-                    <td>{{ $i + 1 }}</td>
-                    <td>{{ $unit->name ?? '—' }}</td>
+   
+    @php
+        $groupedUnits = $units->groupBy(fn($u) => $u->room?->name ?? 'Unassigned');
+    @endphp
 
-                    {{-- Components --}}
+    @foreach ($groupedUnits as $roomName => $roomUnits)
+        <h4 class="room-title">Room: {{ $roomName }}</h4>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>System Unit</th>
+
+                   
                     @if ($includeComponents)
-                        <td>{{ optional($unit->components->firstWhere('part', 'CPU'))->model ?? '' }}</td>
-                        <td>{{ optional($unit->components->firstWhere('part', 'Motherboard'))->model ?? '' }}</td>
-                        @php $ram = $unit->components->firstWhere('part', 'RAM'); @endphp
-                        <td>{{ $ram ? $ram->type . ' ' . $ram->capacity : '' }}</td>
-                        @php $storage = $unit->components->firstWhere('part', 'Storage'); @endphp
-                        <td>{{ $storage ? $storage->type . ' ' . $storage->capacity : '' }}</td>
-                        <td>{{ optional($unit->components->firstWhere('part', 'Casing'))->model ?? '' }}</td>
+                        @php
+                            // Fallback: if no parts selected, show these defaults
+                            $componentPartsToShow = !empty($selectedComponentParts)
+                                ? $selectedComponentParts
+                                : ['CPU', 'Motherboard', 'RAM', 'Storage', 'Casing'];
+                        @endphp
+
+                        @foreach ($componentPartsToShow as $part)
+                            <th>{{ strtoupper($part) }}</th>
+                        @endforeach
                     @endif
 
-                    {{-- Peripherals --}}
+                   
                     @if ($includePeripherals)
                         @php
-                            $monitor = $unit->peripherals->firstWhere('type', 'Monitor');
-                            $mouse = $unit->peripherals->firstWhere('type', 'Mouse');
-                            $keyboard = $unit->peripherals->firstWhere('type', 'Keyboard');
-                            $otherPeripherals = $unit->peripherals->reject(function ($p) {
-                                return in_array($p->type, ['Monitor', 'Mouse', 'Keyboard']);
-                            });
+                            // Fallback: if no types selected, show defaults
+                            $peripheralTypesToShow = !empty($selectedPeripheralTypes)
+                                ? $selectedPeripheralTypes
+                                : ['Monitor', 'Mouse', 'Keyboard', 'Printer', 'Speaker'];
                         @endphp
-                        <td>{{ $monitor ? $monitor->brand . ' ' . $monitor->model : '' }}</td>
-                        <td>{{ $mouse ? $mouse->brand . ' ' . $mouse->model : '' }}</td>
-                        <td>{{ $keyboard ? $keyboard->brand . ' ' . $keyboard->model : '' }}</td>
-                        <td>
-                            @if ($otherPeripherals->isNotEmpty())
-                                <ul style="margin:0;padding-left:15px;">
-                                    @foreach ($otherPeripherals as $peripheral)
-                                        <li>
-                                            {{ $peripheral->type ?? '—' }}
-                                            {{ $peripheral->brand ? ' - ' . $peripheral->brand : '' }}
-                                            {{ $peripheral->model ? ' (' . $peripheral->model . ')' : '' }}
-                                            {{ $peripheral->serial_number ? ' | SN: ' . $peripheral->serial_number : '' }}
-                                        </li>
-                                    @endforeach
-                                </ul>
-                            @endif
-                        </td>
+
+                        @foreach ($peripheralTypesToShow as $type)
+                            <th>{{ ucfirst($type) }}</th>
+                        @endforeach
                     @endif
 
-                    {{-- Status --}}
+                   
                     @if ($includeComponents)
-                        <td>{{ $unit->status ?? '' }}</td>
+                        <th>Status</th>
                     @endif
                 </tr>
-            @endforeach
-        </tbody>
-    </table>
+            </thead>
 
+            <tbody>
+                @foreach ($roomUnits as $i => $unit)
+                    <tr>
+                        <td>{{ $i + 1 }}</td>
+                        <td>{{ $unit->name ?? '—' }}</td>
+
+                        
+                        @if ($includeComponents)
+                            @foreach ($componentPartsToShow as $part)
+                                @php
+                                    $component = $unit->components->firstWhere('part', $part);
+                                @endphp
+                                <td>
+                                    @if ($component)
+                                        @if (in_array($part, ['RAM', 'Storage']))
+                                            {{ $component->type ?? '' }}
+                                            {{ $component->capacity ? ' ' . $component->capacity : '' }}
+                                        @else
+                                            {{ $component->brand ?? '' }} {{ $component->model ?? '' }}
+                                        @endif
+                                    @endif
+                                </td>
+                            @endforeach
+                        @endif
+
+                       
+                        @if ($includePeripherals)
+                            @foreach ($peripheralTypesToShow as $type)
+                                @php
+                                    $periph = $unit->peripherals->firstWhere('type', $type);
+                                @endphp
+                                <td>
+                                    @if ($periph)
+                                        {{ $periph->brand ?? '' }} {{ $periph->model ?? '' }}
+                                        @if ($periph->serial_number)
+                                            <br><span class="small-note">SN: {{ $periph->serial_number }}</span>
+                                        @endif
+                                    @endif
+                                </td>
+                            @endforeach
+                        @endif
+
+                       
+                        @if ($includeComponents)
+                            <td>{{ $unit->status ?? '' }}</td>
+                        @endif
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    @endforeach
 
 </body>
 

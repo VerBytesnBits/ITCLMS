@@ -43,7 +43,7 @@ class Login extends Component
         session()->flash('alert', [
             'type' => 'success',
             'position' => 'top-end',
-            'title' => 'You have successfully logged in!',
+            'title' => 'Logged in successfully!',
         ]);
 
         $this->redirectIntended(route('dashboard'), navigate: true);

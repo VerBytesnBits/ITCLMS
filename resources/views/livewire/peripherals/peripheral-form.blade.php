@@ -1,4 +1,4 @@
-<div x-data="{ open: @entangle('modalMode') }">
+<div x-data="{ open: @entangle('modalMode') }" x-on:keydown.escape.window="$dispatch('closeModal')">
     <!-- Modal Backdrop -->
     <div x-show="open" x-transition.opacity.duration.300ms
         class="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 px-4"
@@ -12,10 +12,11 @@
             <div
                 class="px-6 py-4 bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 text-white flex justify-between items-center">
                 <flux:legend class="text-xl font-semibold mb-0 !text-white">
-                    {{ $peripheralId ? 'Edit Peripheral' : 'Add Peripheral' }}
+                    {{ $peripheralId ? 'Update Peripheral' : 'Add Peripheral' }}
                 </flux:legend>
-                <button type="button" class="p-2 rounded-lg hover:bg-red-500 transition"
-                    wire:click="$dispatch('closeModal')" title="Close">✕</button>
+                <button wire:click="$dispatch('closeModal')" class="p-2 rounded-full hover:bg-red-500 transition">
+                    <flux:icon.x class="w-5 h-5" />
+                </button>
             </div>
 
             <!-- Body -->
@@ -28,14 +29,17 @@
                             <option value="Monitor">Monitor</option>
                             <option value="Keyboard">Keyboard</option>
                             <option value="Mouse">Mouse</option>
-                            <option value="Printer">Printer</option>
                             <option value="Speaker">Speaker</option>
-                            <option value="Projector">Projector</option>
                             <option value="Webcam">Webcam</option>
                             <option value="AVR">AVR</option>
                             <option value="UPS">UPS</option>
                         </flux:select>
-
+                        <flux:select label="Room" wire:model="room_id">
+                            <option value="">Unassigned</option>
+                            @foreach ($rooms as $room)
+                                <option value="{{ $room->id }}">{{ $room->name }}</option>
+                            @endforeach
+                        </flux:select>
                         {{-- Serial Number --}}
                         @if ($multiple)
                             <div
@@ -62,8 +66,8 @@
 
                         {{-- Brand & Model --}}
                         <div class="grid grid-cols-2 gap-4">
-                            <flux:input label="Brand" wire:model="brand" placeholder="HP / Logitech / Epson" />
-                            <flux:input label="Model" wire:model="model" placeholder="Model name" />
+                            <flux:input label="Brand" wire:model="brand" />
+                            <flux:input label="Model" wire:model="model" />
                         </div>
 
                         {{-- Dynamic Fields --}}
@@ -86,21 +90,8 @@
                                     <flux:input label="DPI" wire:model="dpi" placeholder="e.g. 1600" />
                                 @break
 
-                                @case('Printer')
-                                    <flux:select label="Printer Type" wire:model="printer_type">
-                                        <option value="">Select</option>
-                                        <option value="Inkjet">Inkjet</option>
-                                        <option value="Laser">Laser</option>
-                                        <option value="Dot Matrix">Dot Matrix</option>
-                                    </flux:select>
-                                @break
-
                                 @case('Speaker')
                                     <flux:input label="Wattage" wire:model="wattage" placeholder="e.g. 20W" />
-                                @break
-
-                                @case('Projector')
-                                    <flux:input label="Lumens" wire:model="lumens" placeholder="e.g. 3500" />
                                 @break
 
                                 @case('Webcam')
@@ -118,13 +109,8 @@
                         </div>
 
                         {{-- Condition & Status --}}
-                        <div class="grid grid-cols-2 gap-4">
-                            <flux:select label="Condition" wire:model="condition">
-                                <option value="Excellent">Excellent</option>
-                                <option value="Good">Good</option>
-                                <option value="Fair">Fair</option>
-                                <option value="Poor">Poor</option>
-                            </flux:select>
+                        <div class="grid grid-cols-1 gap-4">
+                           
                             <flux:select label="Status" wire:model="status">
                                 <option value="Available">Available</option>
                                 <option value="In Use">In Use</option>
@@ -152,7 +138,7 @@
                     </flux:fieldset>
 
                     <!-- Footer -->
-                    <div class="bg-gray-50 dark:bg-zinc-900 flex justify-end space-x-2">
+                    <div class="bg-gray-50 dark:bg-zinc-800 flex justify-end space-x-2">
                         <flux:button variant="filled" wire:click="$dispatch('closeModal')">Cancel</flux:button>
                         <flux:button variant="primary" type="submit">
                             {{ $modalMode === 'create' ? 'Add' : 'Update' }}
