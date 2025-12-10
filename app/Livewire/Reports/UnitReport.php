@@ -9,6 +9,8 @@ use App\Models\Peripheral;
 use Livewire\Component;
 use Spatie\LaravelPdf\Facades\Pdf;
 use Livewire\Attributes\Layout;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
 
 #[Layout('components.layouts.app', ['title' => 'Units'])]
 class UnitReport extends Component
@@ -17,13 +19,14 @@ class UnitReport extends Component
     public $includePeripherals = false;
     public $includeHistory = false;
     public $pdfUrl = null;
+    protected $previousPdf = null; // 🆕 track last generated PDF
 
-    // 🆕 Filters
+    // Filters
     public $selectedRoom = null;
-    public array $selectedComponentParts = []; // e.g. ['CPU', 'Motherboard']
-    public array $selectedPeripheralTypes = []; // e.g. ['Monitor', 'Mouse']
+    public array $selectedComponentParts = [];
+    public array $selectedPeripheralTypes = [];
 
-    // 🆕 Dropdown data
+    // Dropdown data
     public $rooms = [];
     public $components = [];
     public $peripherals = [];
@@ -68,6 +71,11 @@ class UnitReport extends Component
 
     protected function generatePdf(): string
     {
+        // Delete previous PDF if exists
+        if ($this->previousPdf && Storage::disk('public')->exists($this->previousPdf)) {
+            Storage::disk('public')->delete($this->previousPdf);
+        }
+
         $query = SystemUnit::with(['room', 'components', 'peripherals']);
 
         if ($this->selectedRoom) {
@@ -76,7 +84,7 @@ class UnitReport extends Component
 
         $units = $query->get();
 
-        // Filter inside each system unit’s relations
+        // Filter components & peripherals
         if (!empty($this->selectedComponentParts)) {
             $units->each(function ($unit) {
                 $unit->components = $unit->components
@@ -102,15 +110,18 @@ class UnitReport extends Component
             'selectedPeripheralTypes' => $this->selectedPeripheralTypes,
             'selectedRoom' => $this->selectedRoom,
         ])
-            ->footerHtml(view('pdf.partials.footer')->render())
-            ->format('A4');
+        ->footerHtml(view('pdf.partials.footer')->render())
+        ->format('A4');
 
-        $fileName = 'reports/unit_report.pdf';
+        // Unique file name
+        $fileName = 'reports/unit_report_' . Str::uuid() . '.pdf';
         $pdfBuilder->disk('public')->save($fileName);
+
+        // Store last generated PDF path for deletion next time
+        $this->previousPdf = $fileName;
 
         return $fileName;
     }
-    
 
     public function render()
     {

@@ -15,26 +15,32 @@
             color: #222;
         }
 
-        header {
+        .header-table {
+            width: 100%;
             text-align: center;
-            margin-bottom: 15px;
+            margin-bottom: 5px;
         }
 
-        header h2 {
-            margin: 0;
-            font-size: 16px;
+        .header-table td {
+            vertical-align: middle;
         }
 
-        header h3 {
-            margin: 0;
-            font-size: 13px;
-            color: #555;
+        .header-logo {
+            width: 70px;
+            height: 70px;
+            object-fit: contain;
         }
 
-        header p {
-            margin: 2px 0 0;
-            font-size: 12px;
-            color: #333;
+        .info-table {
+            width: 60%;
+            margin: 0 auto 20px auto;
+            border-collapse: collapse;
+        }
+
+        .info-table td {
+            border: 1px solid #000;
+            padding: 6px 10px;
+            font-size: 11px;
         }
 
         h4.room-title {
@@ -55,7 +61,7 @@
 
         th,
         td {
-            border: 1px solid #000;
+           
             padding: 6px;
             text-align: center;
             vertical-align: middle;
@@ -74,40 +80,56 @@
             font-size: 10px;
             color: #555;
         }
-
-        .peripheral-row {
-            background: #fafafa;
-            font-size: 10px;
-            text-align: left;
-        }
-
-        .peripheral-row ul {
-            margin: 5px 0 0 15px;
-            padding: 0;
-        }
     </style>
 </head>
 
 <body>
 
-    <header>
-        <h2>Palompon Institute of Technology</h2>
-        <h3>System Unit Specifications</h3>
+    <!-- === LOGO HEADER === -->
+    <table class="header-table">
+        <tr>
+            <td style="width: 80px;">
+                <img src="{{ public_path('storage/images/PIT.png') }}" class="header-logo">
 
-       
-        @if (isset($selectedRoom) && $selectedRoom)
-            <p>
-                Room:
-                <strong>
-                    {{ \App\Models\Room::find($selectedRoom)?->name ?? 'Unknown Room' }}
-                </strong>
-            </p>
-        @else
-            <p><em>All Rooms</em></p>
-        @endif
-    </header>
 
-   
+            </td>
+
+            <td>
+                <h2 style="margin:0; font-size:16px;">Palompon Institute of Technology</h2>
+                <h3 style="margin:0; font-size:13px; color:#555;">System Unit Specifications</h3>
+
+                @if (isset($selectedRoom) && $selectedRoom)
+                    <p style="margin:2px 0 0; font-size:12px;">
+                        Room:
+                        <strong>
+                            {{ \App\Models\Room::find($selectedRoom)?->name ?? 'Unknown Room' }}
+                        </strong>
+                    </p>
+                @else
+                    <p style="margin:2px 0 0; font-size:12px;"><em>All Rooms</em></p>
+                @endif
+            </td>
+
+            <td style="width: 80px;">
+                <img src="{{ public_path('storage/images/PIT-right.png') }}" class="header-logo">
+            </td>
+        </tr>
+    </table>
+
+    <!-- === DATE & CONDUCTED BY TABLE === -->
+    <table class="info-table">
+        <tr>
+            <td><strong>Date:</strong></td>
+            <td>{{ $date ?? now()->format('F d, Y') }}</td>
+        </tr>
+        <tr>
+            <td><strong>Conducted By:</strong></td>
+            <td>{{ $conductedBy ?? '—' }}</td>
+        </tr>
+    </table>
+
+
+    <!-- === GROUPED SYSTEM UNITS === -->
     @php
         $groupedUnits = $units->groupBy(fn($u) => $u->room?->name ?? 'Unassigned');
     @endphp
@@ -121,10 +143,8 @@
                     <th>#</th>
                     <th>System Unit</th>
 
-                   
                     @if ($includeComponents)
                         @php
-                            // Fallback: if no parts selected, show these defaults
                             $componentPartsToShow = !empty($selectedComponentParts)
                                 ? $selectedComponentParts
                                 : ['CPU', 'Motherboard', 'RAM', 'Storage', 'Casing'];
@@ -135,10 +155,8 @@
                         @endforeach
                     @endif
 
-                   
                     @if ($includePeripherals)
                         @php
-                            // Fallback: if no types selected, show defaults
                             $peripheralTypesToShow = !empty($selectedPeripheralTypes)
                                 ? $selectedPeripheralTypes
                                 : ['Monitor', 'Mouse', 'Keyboard', 'Printer', 'Speaker'];
@@ -149,7 +167,6 @@
                         @endforeach
                     @endif
 
-                   
                     @if ($includeComponents)
                         <th>Status</th>
                     @endif
@@ -162,7 +179,6 @@
                         <td>{{ $i + 1 }}</td>
                         <td>{{ $unit->name ?? '—' }}</td>
 
-                        
                         @if ($includeComponents)
                             @foreach ($componentPartsToShow as $part)
                                 @php
@@ -181,7 +197,6 @@
                             @endforeach
                         @endif
 
-                       
                         @if ($includePeripherals)
                             @foreach ($peripheralTypesToShow as $type)
                                 @php
@@ -198,7 +213,6 @@
                             @endforeach
                         @endif
 
-                       
                         @if ($includeComponents)
                             <td>{{ $unit->status ?? '' }}</td>
                         @endif

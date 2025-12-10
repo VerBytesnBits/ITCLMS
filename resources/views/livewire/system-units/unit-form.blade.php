@@ -142,7 +142,7 @@
 
                 <!-- Right Column: Assign Parts -->
                 <div class="border-t md:border-t-0 md:border-l pt-4 md:pt-0 pl-0 md:pl-6" x-show="showParts" x-transition>
-                    <livewire:system-units.unit-assign-parts :unitId="$unitId" />
+                    <livewire:system-units.unit-assign-parts :unitId="$unitId" :mode="$mode" />
                 </div>
 
             </div>

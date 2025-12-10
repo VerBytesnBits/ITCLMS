@@ -203,7 +203,22 @@ html[style*="padding-right"] {
     animation: fade-in-scale 0.2s ease-out;
   }
 }
+ui-sidebar[data-flux-sidebar-collapsed-desktop] {
+    padding: 0.25rem !important;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 
+    /* New fixes */
+    overflow-x: hidden;       /* hides horizontal scroll */
+    width: auto;              /* prevents fixed overflow */
+    box-sizing: border-box;   /* include padding in width */
+}
 
-
+/* Light mode */
+.in-data-flux-sidebar-collapsed-desktop\:not-in-data-flux-menu\:justify-center {
+    text-align: center;
+    color: #fff !important;
+   
+}
 

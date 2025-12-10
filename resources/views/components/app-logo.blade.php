@@ -4,11 +4,11 @@
     class="flex flex-col justify-center items-center text-center cursor-pointer select-none"
 >
     <!-- Icon -->
-    <div class="relative flex items-center justify-center w-full">
-        <div class="flex items-center justify-center w-20 h-20 rounded-md">
+    
+        <div class="w-15 h-15 rounded-md">
             @include('partials.itclms-logo')
         </div>
-    </div>
+  
 
     <!-- Title -->
     <div>

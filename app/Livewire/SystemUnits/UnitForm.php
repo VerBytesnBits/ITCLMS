@@ -36,12 +36,7 @@ class UnitForm extends Component
     public $tempComponents = [];
     public $tempPeripherals = [];
 
-    protected $listeners = [
 
-        'remove-temp-component' => 'removeTempComponent',
-        'remove-temp-peripheral' => 'removeTempPeripheral',
-        'peripheralTypeSelected' => 'setPeripheralType',
-    ];
 
     /** Child listener handlers */
     #[On('tempComponentAdded')]
@@ -56,7 +51,7 @@ class UnitForm extends Component
         $this->tempPeripherals[] = $peripheral;
     }
 
-
+    #[On('remove-temp-component')]
     public function removeTempComponent($index)
     {
         if (!is_numeric($index)) {
@@ -67,6 +62,7 @@ class UnitForm extends Component
         $this->tempComponents = array_values($this->tempComponents);
     }
 
+    #[On('remove-temp-peripheral')]
     public function removeTempPeripheral($index)
     {
         if (!is_numeric($index)) {
@@ -150,15 +146,39 @@ class UnitForm extends Component
     // {
     //     $this->inlineSelectedPartFromChild = $value;
     // }
- 
+    private function normalizePeripheral(array $peripheral, SystemUnit $unit): array
+    {
+        return [
+            'type' => $peripheral['type'] ?? 'Unknown',
+            'brand' => $peripheral['brand'] ?? null,
+            'model' => $peripheral['model'] ?? null,
+            'serial_number' => $peripheral['serial_number'] ?? null,
+            'connection_type' => $peripheral['connection_type'] ?? null,
+            'status' => 'In Use',
+            'room_id' => $unit->room_id,
+            'system_unit_id' => $unit->id,
+        ];
+    }
+
+
     public function save()
     {
         $this->validate();
 
-        if ($this->mode === 'create' && count($this->tempComponents) === 0) {
-            $this->addError('components', 'At least one component is required.');
+        if (
+            $this->mode === 'create' &&
+            empty($this->tempComponents) &&
+            empty($this->tempPeripherals)
+        ) {
+            $this->dispatch('swal', [
+                'icon' => 'error',
+                'title' => 'Incomplete Setup',
+                'text' => 'Please add at least one component or peripheral.',
+            ]);
             return;
         }
+
+
 
         DB::transaction(function () {
 
@@ -189,10 +209,10 @@ class UnitForm extends Component
 
                     // ASSIGN TEMP PERIPHERALS
                     foreach ($this->tempPeripherals as $peripheral) {
-                        $peripheral['system_unit_id'] = $unit->id;
-                        $peripheral['room_id'] = $unit->room_id;
-                        $peripheral['status'] = 'In Use';
-                        Peripheral::create($peripheral);
+                        Peripheral::create(
+                            $this->normalizePeripheral($peripheral, $unit)
+                        );
+
                     }
                 }
 
@@ -225,10 +245,10 @@ class UnitForm extends Component
                 }
 
                 foreach ($this->tempPeripherals as $peripheral) {
-                    $peripheral['system_unit_id'] = $unit->id;
-                    $peripheral['room_id'] = $unit->room_id;
-                    $peripheral['status'] = 'In Use';
-                    Peripheral::create($peripheral);
+                    Peripheral::create(
+                        $this->normalizePeripheral($peripheral, $unit)
+                    );
+
                 }
 
                 // ✅ Get Lab Name (Optional but Recommended)
@@ -273,15 +293,10 @@ class UnitForm extends Component
                         $existing->update($peripheral);
                     } else {
                         $peripheral['system_unit_id'] = $unit->id;
-                        $peripheral['room_id'] = $unit->room_id;
-                        $peripheral['status'] = 'In Use';
+                        Peripheral::create(
+                            $this->normalizePeripheral($peripheral, $unit)
+                        );
 
-                        // ✅ PULLED FROM CHILD COMPONENT
-                        $peripheral['type'] = $this->inlineSelectedPartFromChild
-                            ?? $peripheral['type']
-                            ?? 'unknown';
-
-                        Peripheral::create($peripheral);
                     }
                 }
 
@@ -302,7 +317,7 @@ class UnitForm extends Component
         $this->tempPeripherals = [];
 
         $this->dispatch($this->mode === 'create' ? 'unitCreated' : 'unitUpdated');
-        // $this->dispatch('closeModal');
+        $this->dispatch('closeModal');
     }
 
     /** ---- Helpers ---- */

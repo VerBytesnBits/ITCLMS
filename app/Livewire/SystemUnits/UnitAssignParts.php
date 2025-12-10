@@ -15,6 +15,7 @@ class UnitAssignParts extends Component
 {
     use WithPagination;
 
+    public $mode = '';
     protected $queryString = [];
     public $searchPeripherals = '';
     public $searchComponents = '';
@@ -187,14 +188,22 @@ class UnitAssignParts extends Component
             }
 
             // Search
+            // if ($this->searchComponents) {
+            //     $search = "%{$this->searchComponents}%";
+            //     $query->where(function ($q) use ($search) {
+            //         $q->where('brand', 'like', $search)
+            //             ->orWhere('model', 'like', $search)
+            //             ->orWhere('capacity', 'like', $search)
+            //             ->orWhere('serial_number', 'like', $search);
+            //     });
+            // }
             if ($this->searchComponents) {
                 $search = "%{$this->searchComponents}%";
-                $query->where(function ($q) use ($search) {
-                    $q->where('brand', 'like', $search)
-                        ->orWhere('model', 'like', $search)
-                        ->orWhere('capacity', 'like', $search)
-                        ->orWhere('serial_number', 'like', $search);
-                });
+                $query->whereAny(
+                    ['brand', 'model', 'serial_number'],
+                    'like',
+                    $search
+                );
             }
 
             // Pagination

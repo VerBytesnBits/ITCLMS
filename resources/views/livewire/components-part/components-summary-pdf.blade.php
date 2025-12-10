@@ -60,7 +60,7 @@
 
 <body>
 
-    <h2 style="text-align: center;">Detailed Peripheral Inventory</h2>
+    <h2 style="text-align: center;">Component Inventory</h2>
     <p><strong>Date:</strong> {{ \Carbon\Carbon::now()->format('m/d/Y') }}</p>
 
     @php

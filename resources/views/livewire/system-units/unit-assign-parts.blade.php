@@ -36,7 +36,7 @@
                 <button wire:click="removeTempComponent({{ $index }})" class="text-red-600 text-sm">
                     ✕
                 </button>
-            </div>  
+            </div>
         @endforeach
     </div>
 
@@ -90,7 +90,7 @@
                         } elseif ($isAssigned) {
                             $classes .= 'bg-green-100 text-green-800';
                         } else {
-                            $classes .= 'hover:bg-gray-100 dark:hover:bg-zinc-800 text-gray-700 dark:text-gray-300';
+                            $classes .= 'hover:bg-gray-50 dark:hover:bg-zinc-800 text-gray-700 dark:text-gray-700 bg-gray-100 dark:bg-gray-300';
                         }
                     @endphp
 
@@ -144,11 +144,12 @@
                     @endif
 
                     <!-- TITLE -->
-                    <div class="flex flex-row gap-4">
+                    <div class="flex items-center justify-between mb-3">
                         <h3 class="text-lg font-medium text-gray-800 dark:text-gray-100 mb-3">
                             Available {{ ucfirst($selectedType) }}
                         </h3>
-                        <flux:button icon="circle-plus" wire:click="addInlineForm('peripheral', '{{ $selectedType }}')">
+                        <flux:button wire:click="addInlineForm('peripheral', '{{ $selectedType }}')" variant="primary" color="green">
+                            <flux:icon.circle-plus class="h-4 w-4" />
                             @if ($this->isTempAdded('peripheral', $type))
                                 <span
                                     class="absolute -top-2 -right-2 bg-green-600 text-white text-[10px] px-2 py-[2px] rounded-full">
@@ -159,9 +160,8 @@
                     </div>
 
                     <!-- SEARCH -->
-                   <flux:input wire:model.live.debounce.500ms="searchPeripherals"
-                            placeholder="Search components..."
-                            autofocus />
+                    <flux:input wire:model.live.debounce.500ms="searchPeripherals" placeholder="Search components..."
+                        autofocus />
 
                     <div class="mt-3 space-y-2">
                         @if ($available && $available->count())
@@ -174,7 +174,12 @@
                                             {{ $peripheral->serial_number }})</span>
                                     </span>
                                     <button wire:click="assignSelected('{{ $selectedType }}', {{ $peripheral->id }})"
-                                        class="px-3 py-1 bg-blue-600 text-white rounded-md text-xs">Assign</button>
+                                        @if ($mode === 'create') disabled @endif
+                                        class="px-3 py-1 text-xs rounded-md
+                                         {{ $mode === 'create' ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700' }}">
+                                        Assign
+                                    </button>
+
                                 </div>
                             @endforeach
 
@@ -211,11 +216,11 @@
                             'flex items-center justify-between px-4 py-3 rounded-lg cursor-pointer transition text-sm mb-2 ';
 
                         if ($isSelected) {
-                            $classes .= 'bg-blue-100 dark:bg-blue-900 text-blue-700 font-semibold';
+                            $classes .= 'bg-blue-100 dark:bg-blue-800 text-blue-700 dark:text-blue-300 font-semibold';
                         } elseif ($isAssigned) {
                             $classes .= 'bg-green-100 text-green-700';
                         } else {
-                            $classes .= 'hover:bg-gray-100 dark:hover:bg-zinc-800 text-gray-700 dark:text-gray-300';
+                            $classes .= 'hover:bg-gray-50 dark:hover:bg-zinc-800 text-gray-700 dark:text-gray-700 bg-gray-100 dark:bg-gray-300';
                         }
                     @endphp
 
@@ -273,24 +278,30 @@
                         </div>
                     @endif
 
-                    <!-- TITLE -->
-                    <h3 class="text-lg font-medium text-gray-800 dark:text-gray-100 mb-3">
-                        Available {{ ucfirst($selectedPart) }}
-                    </h3>
-                    <flux:button icon="circle-plus" wire:click="addInlineForm('component', '{{ $selectedPart }}')">
-                        @if ($this->isTempAdded('component', $part))
-                            <span
-                                class="absolute -top-2 -right-2 bg-green-600 text-white text-[10px] px-2 py-[2px] rounded-full">
-                                Added
-                            </span>
-                        @endif
-                    </flux:button>
+                    <div class="flex items-center justify-between mb-3">
+                        <!-- TITLE -->
+                        <h3 class="text-lg font-medium text-gray-800 dark:text-gray-100">
+                            Available {{ ucfirst($selectedPart) }}
+                        </h3>
+
+                        <!-- BUTTON -->
+                        <div class="relative">
+                            <flux:button wire:click="addInlineForm('component', '{{ $selectedPart }}')" variant="primary" color="green">
+                                <flux:icon.circle-plus class="h-4 w-4" />
+                                @if ($this->isTempAdded('component', $selectedPart))
+                                    <span
+                                        class="absolute -top-2 -right-2 bg-green-600 text-white text-[10px] px-2 py-[2px] rounded-full">
+                                        Added
+                                    </span>
+                                @endif
+                            </flux:button>
+                        </div>
+                    </div>
 
 
-                  
-                    <flux:input wire:model.live.debounce.500ms="searchComponents"
-                            placeholder="Search components..."
-                            autofocus />
+
+                    <flux:input wire:model.live.debounce.500ms="searchComponents" placeholder="Search components..."
+                        autofocus />
                     <!-- LIST -->
                     <div class="mt-3 space-y-2">
                         @if ($available && $available->count())
@@ -307,7 +318,13 @@
                                         </span>
                                     </span>
                                     <button wire:click="assignComponent('{{ $selectedPart }}', {{ $component->id }})"
-                                        class="px-3 py-1 bg-blue-600 text-white rounded-md text-xs">Assign</button>
+                                        @if ($mode === 'create') disabled @endif
+                                        class="px-3 py-1 text-xs rounded-md
+                                         {{ $mode === 'create' ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700' }}">
+                                        Assign
+                                    </button>
+
+
                                 </div>
                             @endforeach
 
@@ -325,77 +342,90 @@
             </div>
         </div>
     @endif
-
-    <!-- OFF CANVAS ADD FORM -->
-    <div x-data="{ open: @entangle('showInlineForm') }" x-show="open" x-transition class="fixed inset-0 z-50 flex justify-end"
-        style="display: none;">
-
-        <!-- Overlay -->
-        <div class="absolute inset-0 bg-black/40" @click="open = false"></div>
-
-        <!-- Panel -->
-        <div class="relative w-full max-w-md h-full bg-white dark:bg-zinc-900 shadow-xl p-5 overflow-y-auto">
-            <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">
-                Add New {{ ucfirst($inlineSelectedPart) }} ({{ ucfirst($inlineModelType) }})
-            </h3>
-
-            <!-- FORM -->
-            <div class="space-y-3">
-
-                <!-- COMMON FIELDS -->
-                <input type="text" wire:model.defer="inline_brand" placeholder="Brand"
-                    class="w-full px-3 py-2 border rounded-lg dark:bg-zinc-800">
-
-                <input type="text" wire:model.defer="inline_model" placeholder="Model"
-                    class="w-full px-3 py-2 border rounded-lg dark:bg-zinc-800">
-
-                <input type="text" wire:model.defer="inline_serial_number" placeholder="Serial Number"
-                    class="w-full px-3 py-2 border rounded-lg dark:bg-zinc-800">
+    <div x-data="{ open: @entangle('showInlineForm') }" x-show="open" x-transition:enter="transition duration-500 ease-out"
+        class="fixed inset-0 z-50 flex justify-end" style="display: none;">
 
 
 
-                <!-- COMPONENT FIELDS -->
+        <div x-transition:enter="transform transition duration-500 ease-out"
+            x-transition:enter-start="translate-x-full scale-95" x-transition:enter-end="translate-x-0 scale-100"
+            x-transition:leave="transform transition duration-300 ease-in"
+            x-transition:leave-start="translate-x-0 scale-100" x-transition:leave-end="translate-x-full scale-95"
+            class="relative w-full max-w-md h-full bg-white dark:bg-zinc-900 shadow-xl rounded-l-2xl p-6 overflow-y-auto flex flex-col">
+
+            <div class="flex items-center justify-between mb-6 border-b border-gray-100 dark:border-zinc-800 pb-4">
+                <h3 class="text-xl font-bold text-gray-800 dark:text-gray-100">
+                    Add New {{ ucfirst($inlineSelectedPart) }} ({{ ucfirst($inlineModelType) }})
+                </h3>
+                <button @click="open = false"
+                    class="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition duration-150 rounded-full hover:bg-gray-100 dark:hover:bg-zinc-800">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <div class="space-y-4 flex-1 overflow-y-auto pr-2 -mr-2">
+
+                {{-- Brand --}}
+                <flux:input wire:model.defer="inline_brand" label="Brand" placeholder="Brand" />
+
+                {{-- Model --}}
+                <flux:input wire:model.defer="inline_model" label="Model" placeholder="Model" />
+
+                {{-- Serial Number --}}
+                <flux:input wire:model.defer="inline_serial_number" label="Serial Number"
+                    placeholder="Serial Number" />
+
+                {{-- COMPONENT FIELDS --}}
                 @if ($inlineModelType === 'component')
+
+                    {{-- Capacity (RAM / Storage) --}}
                     @if (in_array($inlineSelectedPart, ['RAM', 'Storage']))
-                        <input type="text" wire:model.defer="inline_capacity" placeholder="Capacity (GB)"
-                            class="w-full px-3 py-2 border rounded-lg dark:bg-zinc-800">
+                        <flux:input wire:model.defer="inline_capacity" label="Capacity (GB)"
+                            placeholder="Capacity (GB)" type="number" />
                     @endif
 
+                    {{-- CPU Clock Speed --}}
                     @if ($inlineSelectedPart === 'CPU')
-                        {{-- <input type="text" wire:model.defer="inline_clock_speed" placeholder="Clock Speed (GHz)"
-                            class="w-full px-3 py-2 border rounded-lg dark:bg-zinc-800"> --}}
-                        <flux:select label="Speed" wire:model.defer="inline_clock_speed">
-                            <option value="">Select Speed</option>
+                        <flux:select wire:model.defer="inline_clock_speed" label="Clock Speed"
+                            placeholder="Select Speed">
                             <option value="2.5GHz">2.5GHz</option>
                             <option value="3.2GHz">3.2GHz</option>
                             <option value="3.6GHz">3.6GHz</option>
                             <option value="3.9GHz">3.9GHz</option>
                         </flux:select>
                     @endif
+
                 @endif
 
-                <!-- PERIPHERAL FIELDS -->
+                {{-- PERIPHERAL FIELDS --}}
                 @if ($inlineModelType === 'peripheral')
-                    <input type="text" wire:model.defer="inline_size" placeholder="Size (optional)"
-                        class="w-full px-3 py-2 border rounded-lg dark:bg-zinc-800">
+                    {{-- Size --}}
+                    <flux:input wire:model.defer="inline_size" label="Size" placeholder="Size (optional)" />
 
-                    <input type="text" wire:model.defer="inline_connection_type" placeholder="Connection Type"
-                        class="w-full px-3 py-2 border rounded-lg dark:bg-zinc-800">
+                    {{-- Connection Type --}}
+                    <flux:input wire:model.defer="inline_connection_type" label="Connection Type"
+                        placeholder="Connection Type" />
                 @endif
+
             </div>
 
-            <!-- ACTIONS -->
-            <div class="mt-6 flex gap-3">
+
+            <div class="mt-8 pt-4 border-t border-gray-100 dark:border-zinc-800 flex gap-3">
                 <button wire:click="saveInlineItem"
-                    class="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md text-sm">
-                    Save
+                    class="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg text-base shadow-md transition duration-200 transform hover:scale-[1.02]">
+                    Save Item
                 </button>
 
                 <button @click="open = false"
-                    class="flex-1 px-4 py-2 bg-gray-300 dark:bg-zinc-700 text-gray-800 dark:text-white rounded-md text-sm">
+                    class="flex-1 px-4 py-2 bg-gray-200 dark:bg-zinc-700 text-gray-700 dark:text-gray-200 font-medium rounded-lg text-base hover:bg-gray-300 dark:hover:bg-zinc-600 transition duration-200">
                     Cancel
                 </button>
             </div>
+
         </div>
     </div>
 
