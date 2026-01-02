@@ -128,6 +128,20 @@ class SystemUnit extends Model
 
     public function checkOperationalStatus(): array
     {
+        // If unit name does NOT contain "PC" → manual status, no missing
+        if (stripos($this->name, 'pc') === false) {
+            return [
+                'status' => $this->status,
+                'missing' => [
+                    'components' => [],
+                    'peripherals' => []
+                ]
+            ];
+        }
+
+
+
+        // Required for desktops / system units
         $requiredComponents = ['CPU', 'Motherboard', 'RAM', 'Casing', 'Storage'];
         $requiredPeripherals = ['Monitor', 'Keyboard', 'Mouse'];
 
@@ -154,7 +168,7 @@ class SystemUnit extends Model
             ? 'Operational'
             : 'Non-operational';
 
-        // Auto-update DB if needed
+        // Auto-update DB only for desktops
         if ($this->status !== $status) {
             $this->update(['status' => $status]);
         }

@@ -165,18 +165,21 @@ class UnitForm extends Component
     {
         $this->validate();
 
+  
         if (
             $this->mode === 'create' &&
+            $this->category !== 'LAPTOP' &&
             empty($this->tempComponents) &&
             empty($this->tempPeripherals)
         ) {
             $this->dispatch('swal', [
                 'icon' => 'error',
                 'title' => 'Incomplete Setup',
-                'text' => 'Please add at least one component or peripheral.',
+                'text' => 'Please add the required component and peripheral for this unit.',
             ]);
             return;
         }
+
 
 
 

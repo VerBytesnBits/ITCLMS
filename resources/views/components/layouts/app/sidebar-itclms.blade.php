@@ -65,7 +65,7 @@
             @can('view.laboratories')
                 <flux:sidebar.item icon="home" :href="route('rooms')" :current="request()->routeIs('rooms')"
                     wire:navigate>
-                    {{ __('Rooms') }}
+                    {{ __('Lab. Rooms') }}
                 </flux:sidebar.item>
             @endcan
 

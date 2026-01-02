@@ -62,7 +62,7 @@ class Index extends Component
 
         return $this->getInventorySummary(
             ComponentParts::class,
-            ['part','brand', 'model', 'speed', 'capacity', 'type'],
+            ['part', 'brand', 'model', 'speed', 'capacity', 'type'],
             ['brand', 'model', 'speed', 'capacity', 'type'],
             $this->sortColumn,
             $this->sortDirection,
@@ -178,8 +178,7 @@ class Index extends Component
     }
 
 
-    protected $listeners = ['confirm-bulk-delete' => 'bulkDelete'];
-
+    #[On('confirm-bulk-delete')]
     public function bulkDelete($payload)
     {
         if ($payload['model'] !== 'ComponentParts')
@@ -237,9 +236,7 @@ class Index extends Component
         $components = ComponentParts::with(['systemUnit', 'room'])
             ->when($this->roomId, function ($q) {
                 $q->where(function ($sub) {
-                    // Include components that are either:
-                    // 1. linked to a system unit in the selected room
-                    // 2. directly assigned to the selected room
+
                     $sub->whereHas('systemUnit', fn($unit) => $unit->where('room_id', $this->roomId))
                         ->orWhere('room_id', $this->roomId);
                 });
@@ -264,7 +261,7 @@ class Index extends Component
                         ->orWhere('model', 'like', '%' . $this->search . '%');
                 });
             })
-            ->orderBy('id', 'asc') // Use valid column to avoid SQL error
+            ->orderBy('id', 'desc') // Use valid column to avoid SQL error
             ->paginate($this->perPage);
 
         return view('livewire.components-part.index', [

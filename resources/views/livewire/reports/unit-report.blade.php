@@ -1,22 +1,22 @@
 <div>
     <div>
-        <livewire:dashboard-heading title="System Unit Report Generator"/>
-        
+        <livewire:dashboard-heading title="System Unit Report Generator" />
+
 
         <div
             class="grid grid-cols-1 gap-4 p-4 bg-gray-50 dark:bg-zinc-700 rounded-xl border border-gray-200 dark:border-zinc-600 
                     md:grid-cols-3 md:items-end">
             <div>
-                <label class="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">Select Room</label>
+                <label class="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">Select Lab. Room</label>
                 <flux:select wire:model="selectedRoom" class="w-full">
-                    <option value="">All Rooms</option>
+                    <option value="">All Lab. Rooms</option>
                     @foreach ($rooms as $room)
                         <option value="{{ $room->id }}">{{ $room->name }}</option>
                     @endforeach
                 </flux:select>
             </div>
 
-            <div x-data="{ open: false }" class="relative">
+            {{-- <div x-data="{ open: false }" class="relative">
                 <label class="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">Component Selection <span
                         class="text-gray-500 dark:text-gray-400">(Optional)</span></label>
                 <button @click="open = !open"
@@ -59,7 +59,7 @@
                     </div>
 
                 </div>
-            </div>
+            </div> --}}
 
             <div>
                 <label class="block text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">Report Options <span
@@ -72,13 +72,15 @@
                 </div>
             </div>
 
+            <div class="text-center pt-4">
+                <flux:button variant="primary" wire:click="previewReport" icon="document-text">
+                    Generate Preview
+                </flux:button>
+            </div>
+
+
         </div>
 
-        <div class="text-center pt-4">
-            <flux:button variant="primary" wire:click="previewReport" icon="document-text">
-                Generate Preview
-            </flux:button>
-        </div>
 
     </div>
 

@@ -13,8 +13,7 @@
                     <label for="roleName" class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
                         Role Name
                     </label>
-                    <input type="text" wire:model.defer="roleName" id="roleName" placeholder="e.g. Lab Technician"
-                        class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-zinc-700 dark:border-zinc-600 dark:text-white" />
+                    <flux:input  wire:model.defer="roleName" id="roleName" placeholder="e.g. Lab Technician" readonly/>
                     @error('roleName')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror

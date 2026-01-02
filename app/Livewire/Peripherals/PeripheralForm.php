@@ -127,39 +127,10 @@ class PeripheralForm extends Component
         }
     }
 
-    public function updatedType($value)
-    {
-        if ($this->modalMode === 'create' && !$this->multiple) {
-            $this->serial_number = $this->generateSerial($value);
-        } else {
-            $this->serial_number = null;
-        }
-    }
-
-    public function updatedMultiple($value)
-    {
-        if ($value) {
-            $this->serial_number = null;
-        } elseif ($this->type) {
-            $this->serial_number = $this->generateSerial($this->type);
-        }
-    }
-
-    private function generateSerial(string $prefix): string
-    {
-        do {
-            $serial = strtoupper(Str::slug($prefix, '')) . '-' . strtoupper(Str::random(5)) . rand(1000, 9999);
-        } while (Peripheral::where('serial_number', $serial)->exists());
-
-        return $serial;
-    }
+   
 
     public function save()
     {
-        if ($this->modalMode === 'create' && $this->multiple) {
-            $this->serial_number = $this->generateSerial($this->type);
-        }
-
         $this->validate();
 
         $data = $this->formData();
@@ -169,21 +140,19 @@ class PeripheralForm extends Component
         }
 
         if ($this->modalMode === 'create') {
-            $count = $this->multiple ? $this->quantity : 1;
+            // Create the peripheral
+            $peripheral = Peripheral::create($data);
 
-            for ($i = 0; $i < $count; $i++) {
-                $data['serial_number'] = $this->multiple
-                    ? $this->generateSerial($this->type)
-                    : $this->serial_number;
-
-                Peripheral::create($data);
-            }
-
-            $title = $count > 1 ? "{$count} Peripherals added!" : "Peripheral added!";
+            // Get the serial number
+            $serialNumber = $peripheral->serial_number ?? 'N/A';
+            $title = "Peripheral Added: {$peripheral->type} (SN: $serialNumber)";
             $event = 'peripheralCreated';
         } else {
+            // Update the peripheral
             $this->peripheral->update($data);
-            $title = 'Peripheral updated!';
+
+            $serialNumber = $this->peripheral->serial_number ?? 'N/A';
+            $title = "Peripheral Updated: {$this->peripheral->type} (SN: $serialNumber)";
             $event = 'peripheralUpdated';
         }
 
@@ -191,6 +160,7 @@ class PeripheralForm extends Component
         $this->dispatch('swal', toast: true, icon: 'success', title: $title, timer: 3000);
         $this->dispatch('closeModal');
     }
+
 
     public function render()
     {

@@ -1,4 +1,4 @@
-<div x-data="{ open: @entangle('modalMode') }" x-on:keydown.escape.window="$dispatch('closeModal')" >
+<div x-data="{ open: @entangle('modalMode') }" x-on:keydown.escape.window="$dispatch('closeModal')">
 
     <!-- Modal Backdrop -->
     <div x-show="open" x-transition.opacity.duration.300ms
@@ -34,18 +34,19 @@
                                 <option value="GPU" {{ $part === 'GPU' ? 'selected' : '' }}>GPU</option>
                                 <option value="Storage" {{ $part === 'Storage' ? 'selected' : '' }}>Storage</option>
                                 <option value="PSU" {{ $part === 'PSU' ? 'selected' : '' }}>PSU</option>
-                                <option value="Casing" {{ $part === 'Casing' ? 'selected' : '' }}>Computer Case</option>
+                                <option value="Casing" {{ $part === 'Casing' ? 'selected' : '' }}>Casing</option>
                             </flux:select>
                         @else
-                            <flux:select label="Category" wire:model.live="part">
-                                <option value="">Select Category Type</option>
+                            <flux:select label="Category{{ $part ? ': ' . $part : '' }}" wire:model.live="part"
+                                size="6">
+                        
                                 <option value="CPU">CPU</option>
                                 <option value="Motherboard">Motherboard</option>
                                 <option value="RAM">RAM</option>
                                 <option value="GPU">GPU</option>
                                 <option value="Storage">Storage</option>
                                 <option value="PSU">PSU</option>
-                                <option value="Casing">Computer Case</option>
+                                <option value="Casing">Casing</option>
                             </flux:select>
                         @endif
                         <flux:select label="Room" wire:model="room_id">
@@ -63,7 +64,7 @@
                                 Serial numbers will be auto-generated for each item.
                             </div>
                         @else --}}
-                            <flux:input label="Serial Number" type="text" wire:model="serial_number" />
+                        <flux:input label="Serial Number" type="text" wire:model="serial_number" />
                         {{-- @endif --}}
 
                         {{-- Multiple Checkbox
@@ -110,22 +111,10 @@
 
                         {{-- Conditional Fields --}}
                         @if ($part === 'CPU')
-                            <flux:select label="Speed" wire:model="speed">
-                                <option value="">Select Speed</option>
-                                <option value="2.5GHz">2.5GHz</option>
-                                <option value="3.2GHz">3.2GHz</option>
-                                <option value="3.6GHz">3.6GHz</option>
-                                <option value="3.9GHz">3.9GHz</option>
-                            </flux:select>
+                            <flux:input label="Speed/GHz" wire:model="speed" mask="9.9GHz"  />
                         @elseif ($part === 'RAM')
                             <div class="grid grid-cols-2 gap-4">
-                                <flux:select label="Capacity" wire:model="capacity">
-                                    <option value="">Select Capacity</option>
-                                    <option value="4GB">4GB</option>
-                                    <option value="8GB">8GB</option>
-                                    <option value="16GB">16GB</option>
-                                    <option value="32GB">32GB</option>
-                                </flux:select>
+                                <flux:input label="Capacity" wire:model="capacity" mask="99GB"  />
                                 <flux:select label="Type" wire:model="type">
                                     <option value="">Select Type</option>
                                     <option value="DDR3">DDR3</option>
@@ -148,12 +137,7 @@
                                 </flux:select>
                             </div>
                         @elseif ($part === 'GPU')
-                            <flux:select label="Capacity" wire:model="capacity">
-                                <option value="">Select VRAM</option>
-                                <option value="4GB">4GB</option>
-                                <option value="6GB">6GB</option>
-                                <option value="8GB">8GB</option>
-                            </flux:select>
+                            <flux:input label="Capacity" wire:model="capacity" mask="9GB"  />
                         @endif
 
                         {{--  Status --}}

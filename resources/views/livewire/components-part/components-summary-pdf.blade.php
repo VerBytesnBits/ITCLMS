@@ -3,11 +3,47 @@
 
 <head>
     <meta charset="utf-8">
-    <title>Peripheral Inventory Report</title>
+    <title>Component Inventory Report</title>
     <style>
         body {
             font-family: DejaVu Sans, sans-serif;
             font-size: 12px;
+        }
+
+        /* ================= HEADER ================= */
+        .header {
+            width: 100%;
+            border-bottom: 2px solid #000;
+            margin-bottom: 15px;
+        }
+
+        .header td {
+            vertical-align: middle;
+        }
+
+        .logo {
+            width: 75px;
+            height: 75px;
+        }
+
+        .school-text {
+            text-align: center;
+        }
+
+        .school-name {
+            font-size: 14px;
+            font-weight: bold;
+            letter-spacing: 0.3px;
+        }
+
+        .college {
+            font-size: 12px;
+        }
+
+        .department {
+            font-size: 11px;
+            font-weight: bold;
+            margin-top: 2px;
         }
 
         table {
@@ -18,7 +54,7 @@
 
         th,
         td {
-            border: 1px solid #000;
+
             padding: 6px;
             text-align: center;
         }
@@ -59,7 +95,23 @@
 </head>
 
 <body>
+    <table class="header">
+        <tr>
+            <td style="width:20%;">
+                <img src="{{ public_path('storage/images/PIT.png') }}" class="logo">
+            </td>
 
+            <td style="width:60%;" class="school-text">
+                <div class="school-name">PALOMPON INSTITUTE OF TECHNOLOGY</div>
+                <div class="college">College of Technology and Engineering</div>
+                <div class="department">INFORMATION TECHNOLOGY DEPARTMENT</div>
+            </td>
+
+            <td style="width:20%;">
+                <img src="{{ public_path('storage/images/PIT-RIGHT.png') }}" class="logo">
+            </td>
+        </tr>
+    </table>
     <h2 style="text-align: center;">Component Inventory</h2>
     <p><strong>Date:</strong> {{ \Carbon\Carbon::now()->format('m/d/Y') }}</p>
 
@@ -75,17 +127,17 @@
         <table>
             <thead>
                 <tr>
-                    <th>Description</th>
-                    <th>Total</th>
-                    <th>Available</th>
-                    <th>In Use</th>
-                    <th>Defective</th>
+                    <th style="border: 1px solid #000;">Description</th>
+                    <th style="border: 1px solid #000;">Total</th>
+                    <th style="border: 1px solid #000;">Available</th>
+                    <th style="border: 1px solid #000;">In Use</th>
+                    <th style="border: 1px solid #000;">Defective</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach ($items as $row)
                     <tr>
-                        <td style="text-align:left;">
+                        <td style="text-align:left; border: 1px solid #000;">
                             {{ $row['description'] }}
                             @if ($row['available'] == 0)
                                 <span class="badge red">Out of stock</span>
@@ -95,10 +147,10 @@
                                 <span class="badge green">In stock</span>
                             @endif
                         </td>
-                        <td>{{ $row['total'] }}</td>
-                        <td>{{ $row['available'] }}</td>
-                        <td>{{ $row['in_use'] }}</td>
-                        <td>{{ $row['defective'] }}</td>
+                        <td style="border: 1px solid #000;">{{ $row['total'] }}</td>
+                        <td style="border: 1px solid #000;">{{ $row['available'] }}</td>
+                        <td style="border: 1px solid #000;">{{ $row['in_use'] }}</td>
+                        <td style="border: 1px solid #000;">{{ $row['defective'] }}</td>
                     </tr>
                 @endforeach
             </tbody>

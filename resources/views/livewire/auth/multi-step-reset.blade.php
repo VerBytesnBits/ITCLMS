@@ -62,7 +62,7 @@
         {{-- STEP 1: Enter Email --}}
         @if ($step === 1)
             <flux:input wire:model="email" label="Email Address" type="email" required autofocus />
-            <flux:button wire:click="submitEmail" variant="primary" class="w-full mt-3">
+            <flux:button wire:click="submitEmail" variant="primary" color="yellow" class="w-full mt-3">
                 Continue
             </flux:button>
 
@@ -103,7 +103,7 @@
                 <flux:button wire:click="$set('step', 1)" variant="outline" class="w-1/2 sm:w-auto">
                     Back
                 </flux:button>
-                <flux:button wire:click="submitVerificationOption" variant="primary" class="w-1/2 sm:w-auto">
+                <flux:button wire:click="submitVerificationOption" variant="primary" color="yellow" class="w-1/2 sm:w-auto">
                     Continue
                 </flux:button>
             </div>
@@ -131,7 +131,7 @@
                     variant="outline">
                     Back
                 </flux:button>
-                <flux:button wire:click="submitSecurity" variant="primary">
+                <flux:button wire:click="submitSecurity" variant="primary" color="yellow">
                     Continue
                 </flux:button>
             </div>
@@ -143,7 +143,7 @@
                 <flux:input wire:model="password_confirmation" label="Confirm Password" type="password" required viewable />
             </div>
 
-            <flux:button wire:click="resetPassword" variant="primary" class="w-full mt-4">
+            <flux:button wire:click="resetPassword" variant="primary" color="yellow" class="w-full mt-4">
                 Reset Password
             </flux:button>
         @endif

@@ -1,6 +1,6 @@
 <div>
 
-    <livewire:dashboard-heading title="Rooms" subtitle="Manage all laboratories/rooms" icon="home"
+    <livewire:dashboard-heading title="Lab. Rooms" subtitle="Manage all laboratory rooms" icon="home"
         gradient-from-color="#7d4173" gradient-to-color="#cc6166" icon-color="text-red-300" />
 
     @if ($rooms->count())

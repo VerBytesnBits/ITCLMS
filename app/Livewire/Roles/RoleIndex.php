@@ -16,6 +16,8 @@ class RoleIndex extends Component
     public ?int $id = null;
 
     public $roles;
+    public $deleteRoleId = null;
+
 
     public function mount()
     {
@@ -49,12 +51,24 @@ class RoleIndex extends Component
         $this->roles = Role::get();
     }
 
-    public function deleteUser($id)
+    public function confirmDeleteRole($id)
     {
-        Role::findOrFail($id)->delete();
-        $this->dispatch('swal', toast: true, icon: 'success', title: 'Deleted successfully', timer: 3000);
-        $this->dispatch('roleDeleted');
+        $this->deleteRoleId = $id;
+        $this->dispatch('delete-role-confirm');
     }
+
+   #[On('deleteRoleConfirmed')]
+   public function deleteRole()
+    {
+        Role::findOrFail($this->deleteRoleId)->delete();
+
+        $this->dispatch('roleDeleted');
+       
+    }
+
+
+ 
+
 
     public function render()
     {

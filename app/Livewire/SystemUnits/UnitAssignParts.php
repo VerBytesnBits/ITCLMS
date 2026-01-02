@@ -8,13 +8,16 @@ use App\Models\Peripheral;
 use App\Models\ComponentParts;
 use Livewire\WithPagination;
 use Illuminate\Support\Facades\Auth;
-use Spatie\Activitylog\Models\Activity;
+use Illuminate\Validation\ValidationException;
 use function activity;
 
 class UnitAssignParts extends Component
 {
     use WithPagination;
 
+    // -----------------------------------------------------------------------
+    // GENERAL STATE
+    // -----------------------------------------------------------------------
     public $mode = '';
     protected $queryString = [];
     public $searchPeripherals = '';
@@ -26,26 +29,40 @@ class UnitAssignParts extends Component
     public ?string $selectedType = null;
     public ?string $selectedPart = null;
 
-    // Assignments (temporary in create mode)
+    // -----------------------------------------------------------------------
+    // TEMP SELECTIONS (CREATE MODE)
+    // -----------------------------------------------------------------------
     public $selectedPeripherals = []; // [type => peripheral_id]
     public $selectedComponents = [];  // [part => component_id]
 
     // -----------------------------------------------------------------------
-    // INLINE FORM PROPERTIES
+    // INLINE FORM STATE (CREATE COMPONENT / PERIPHERAL)
     // -----------------------------------------------------------------------
     public bool $showInlineForm = false;
-    public ?string $inlineModelType = null;      // 'component' or 'peripheral'
-    public ?string $inlineSelectedPart = null;   // Part name / type
+
+    // Determines model being created
+    public ?string $inlineModelType = null; // 'component' | 'peripheral'
+
+    // Selected part or peripheral type (CPU, Monitor, etc.)
+    public ?string $inlineSelectedPart = null;
+
+    // Shared fields
     public $inline_brand;
     public $inline_model;
     public $inline_serial_number;
     public $inline_room_id;
+
+    // Component-only fields
     public $inline_capacity;
     public $inline_clock_speed;
     public $inline_size;
+
+    // Peripheral-only fields
     public $inline_connection_type;
 
-    // Temporary storage for inline-created items before saving parent unit
+    // -----------------------------------------------------------------------
+    // TEMP STORAGE (saved only when parent unit is saved)
+    // -----------------------------------------------------------------------
     public $tempComponents = [];
     public $tempPeripherals = [];
 
@@ -53,8 +70,10 @@ class UnitAssignParts extends Component
         'showAssignModal' => 'open'
     ];
 
+    // -----------------------------------------------------------------------
+    // ICON MAP
+    // -----------------------------------------------------------------------
     public $partIcons = [
-        //components
         'CPU' => 'images/icons/CPU.png',
         'RAM' => 'images/icons/ram.png',
         'PSU' => 'images/icons/PSU.png',
@@ -66,7 +85,6 @@ class UnitAssignParts extends Component
         'Casing' => 'images/icons/CASE.png',
         'Cooler' => 'images/icons/Cooler.png',
 
-        //peripherals
         'Monitor' => 'images/icons/display.png',
         'Keyboard' => 'images/icons/keyboard.png',
         'Mouse' => 'images/icons/mouse.png',
@@ -77,29 +95,6 @@ class UnitAssignParts extends Component
 
     public $allPeripheralTypes = ['Monitor', 'Keyboard', 'Mouse', 'Headset', 'Speaker', 'UPS', 'AVR'];
     public $allComponentParts = ['CPU', 'Motherboard', 'RAM', 'GPU', 'PSU', 'Storage', 'Casing', 'Cooler'];
-
-    // -----------------------------------------------------------------------
-    // EVENT EMITTERS FOR PARENT FORM
-    // -----------------------------------------------------------------------
-    public function updatedSelectedPeripherals()
-    {
-        if (is_null($this->unitId)) {
-            $this->dispatch('unitAssignmentsUpdated', [
-                'type' => 'peripherals',
-                'data' => $this->selectedPeripherals
-            ]);
-        }
-    }
-
-    public function updatedSelectedComponents()
-    {
-        if (is_null($this->unitId)) {
-            $this->dispatch('unitAssignmentsUpdated', [
-                'type' => 'components',
-                'data' => $this->selectedComponents
-            ]);
-        }
-    }
 
     // -----------------------------------------------------------------------
     // MOUNT
@@ -125,22 +120,18 @@ class UnitAssignParts extends Component
             $this->selectedComponents = [];
         }
     }
-    // Add these to your UnitAssignParts class
-
-
-
     public function getAvailablePeripheralsProperty()
     {
         $available = [];
         $roomId = $this->unitId ? SystemUnit::find($this->unitId)?->room_id : null;
 
-    
+
         foreach ($this->allPeripheralTypes as $type) {
 
             $query = Peripheral::query()
                 ->where('type', $type)
-                ->where('status', 'Available') // ✅ Only show Available
-                ->whereNull('system_unit_id'); // ✅ Must not be assigned to any unit
+                ->where('status', 'Available') //   Only show Available
+                ->whereNull('system_unit_id'); //   Must not be assigned to any unit
 
 
             // room filter
@@ -176,8 +167,8 @@ class UnitAssignParts extends Component
 
             $query = ComponentParts::query()
                 ->where('part', $part)
-                ->where('status', 'Available') // ✅ Only show Available
-                ->whereNull('system_unit_id'); // ✅ Must not be assigned to any unit
+                ->where('status', 'Available') //   Only show Available
+                ->whereNull('system_unit_id'); //   Must not be assigned to any unit
 
             // Room filter
             if ($roomId) {
@@ -187,16 +178,7 @@ class UnitAssignParts extends Component
                 });
             }
 
-            // Search
-            // if ($this->searchComponents) {
-            //     $search = "%{$this->searchComponents}%";
-            //     $query->where(function ($q) use ($search) {
-            //         $q->where('brand', 'like', $search)
-            //             ->orWhere('model', 'like', $search)
-            //             ->orWhere('capacity', 'like', $search)
-            //             ->orWhere('serial_number', 'like', $search);
-            //     });
-            // }
+           
             if ($this->searchComponents) {
                 $search = "%{$this->searchComponents}%";
                 $query->whereAny(
@@ -212,33 +194,61 @@ class UnitAssignParts extends Component
 
         return $available;
     }
-
-
-
-
-
-
     // -----------------------------------------------------------------------
-    // INLINE FORM METHODS
+    // INLINE FORM
     // -----------------------------------------------------------------------
     public function addInlineForm($model, $part)
     {
-        $this->inlineModelType = $model; // component or peripheral
+        $this->inlineModelType = $model;
         $this->inlineSelectedPart = $part;
         $this->showInlineForm = true;
 
-        // Clear previous inputs
-        $this->inline_brand = $this->inline_model = $this->inline_serial_number = null;
-        $this->inline_capacity = $this->inline_clock_speed = $this->inline_size = $this->inline_connection_type = null;
-        $this->inline_room_id = null;
+        // Reset fields
+        $this->reset([
+            'inline_brand',
+            'inline_model',
+            'inline_serial_number',
+            'inline_room_id',
+            'inline_capacity',
+            'inline_clock_speed',
+            'inline_size',
+            'inline_connection_type',
+        ]);
     }
 
     public function saveInlineItem()
     {
+        // -------------------------------------------------------------------
+        // VALIDATION
+        // -------------------------------------------------------------------
+        $this->validate([
+            'inline_serial_number' => 'required|string|max:255',
+            'inline_brand' => 'nullable|string|max:255',
+            'inline_model' => 'nullable|string|max:255',
+        ], [
+            'inline_serial_number.required' => 'Serial number is required.',
+        ]);
+
+        // -------------------------------------------------------------------
+        // DUPLICATE SERIAL CHECK (DB + TEMP)
+        // -------------------------------------------------------------------
+        $serial = trim($this->inline_serial_number);
+
+        $existsInComponents = ComponentParts::where('serial_number', $serial)->exists();
+        $existsInPeripherals = Peripheral::where('serial_number', $serial)->exists();
+
+        $existsInTemp = collect($this->tempComponents)->contains('serial_number', $serial)
+            || collect($this->tempPeripherals)->contains('serial_number', $serial);
+
+        if ($existsInComponents || $existsInPeripherals || $existsInTemp) {
+            throw ValidationException::withMessages([
+                'inline_serial_number' => 'This serial number already exists.',
+            ]);
+        }
         if ($this->inlineModelType === 'component') {
 
             $item = [
-                'part' => $this->inlineSelectedPart,   // ✅ COMPONENT USES part
+                'part' => $this->inlineSelectedPart,   //   COMPONENT USES part
                 'brand' => $this->inline_brand,
                 'model' => $this->inline_model,
                 'serial_number' => $this->inline_serial_number,
@@ -254,7 +264,7 @@ class UnitAssignParts extends Component
         } else {
 
             $item = [
-                'type' => $this->inlineSelectedPart,   // ✅ THIS FIXES YOUR SQL ERROR
+                'type' => $this->inlineSelectedPart,   //   THIS FIXES YOUR SQL ERROR
                 'brand' => $this->inline_brand,
                 'model' => $this->inline_model,
                 'serial_number' => $this->inline_serial_number,
@@ -265,25 +275,24 @@ class UnitAssignParts extends Component
             $this->tempPeripherals[] = $item;
             $this->dispatch('tempPeripheralAdded', $item);
 
-            // ✅ SEND TYPE TO PARENT
+            //   SEND TYPE TO PARENT
             $this->dispatch('peripheralTypeSelected', $this->inlineSelectedPart);
         }
 
-        // ✅ VISUAL FEEDBACK
+        //   VISUAL FEEDBACK
         $this->dispatch('swal', [
             'toast' => true,
             'icon' => 'success',
             'title' => "{$this->inlineSelectedPart} added successfully",
-            'timer' => 2000,
+            'timer' => 4000,
         ]);
 
         $this->showInlineForm = false;
     }
 
-
-
-
-
+    // -----------------------------------------------------------------------
+    // REMOVE TEMP ITEMS
+    // -----------------------------------------------------------------------
     public function isTempAdded(string $model, string $part): bool
     {
         if ($model === 'component') {
@@ -306,7 +315,6 @@ class UnitAssignParts extends Component
         $this->tempPeripherals = array_values($this->tempPeripherals);
         $this->dispatch('remove-temp-peripheral', ['index' => $index]);
     }
-
     // -----------------------------------------------------------------------
     // ASSIGN / UNASSIGN PERIPHERALS & COMPONENTS (same as before)
     // -----------------------------------------------------------------------
@@ -446,7 +454,9 @@ class UnitAssignParts extends Component
             $this->updatedSelectedComponents();
         }
     }
-
+    // -----------------------------------------------------------------------
+    // VERIFY UNIT STATUS AFTER ASSIGNMENTS
+    // -----------------------------------------------------------------------
     public function verifyUnitStatus()
     {
         if (is_null($this->unitId)) {
@@ -483,6 +493,10 @@ class UnitAssignParts extends Component
         ]);
     }
 
+
+    // -----------------------------------------------------------------------
+    // RENDER
+    // -----------------------------------------------------------------------
     public function render()
     {
         return view('livewire.system-units.unit-assign-parts', [

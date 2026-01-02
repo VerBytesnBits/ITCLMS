@@ -3,11 +3,47 @@
 
 <head>
     <meta charset="utf-8">
-    <title>Components Inventory Report</title>
+    <title>Peripheral Inventory Report</title>
     <style>
         body {
             font-family: DejaVu Sans, sans-serif;
             font-size: 12px;
+        }
+
+        /* ================= HEADER ================= */
+        .header {
+            width: 100%;
+            border-bottom: 2px solid #000;
+            margin-bottom: 15px;
+        }
+
+        .header td {
+            vertical-align: middle;
+        }
+
+        .logo {
+            width: 75px;
+            height: 75px;
+        }
+
+        .school-text {
+            text-align: center;
+        }
+
+        .school-name {
+            font-size: 14px;
+            font-weight: bold;
+            letter-spacing: 0.3px;
+        }
+
+        .college {
+            font-size: 12px;
+        }
+
+        .department {
+            font-size: 11px;
+            font-weight: bold;
+            margin-top: 2px;
         }
 
         table {
@@ -18,7 +54,7 @@
 
         th,
         td {
-            border: 1px solid #000;
+
             padding: 6px;
             text-align: center;
         }
@@ -59,7 +95,23 @@
 </head>
 
 <body>
+    <table class="header">
+        <tr>
+            <td style="width:20%;">
+                <img src="{{ public_path('storage/images/PIT.png') }}" class="logo">
+            </td>
 
+            <td style="width:60%;" class="school-text">
+                <div class="school-name">PALOMPON INSTITUTE OF TECHNOLOGY</div>
+                <div class="college">College of Technology and Engineering</div>
+                <div class="department">INFORMATION TECHNOLOGY DEPARTMENT</div>
+            </td>
+
+            <td style="width:20%;">
+                <img src="{{ public_path('storage/images/PIT-RIGHT.png') }}" class="logo">
+            </td>
+        </tr>
+    </table>
     <h2 style="text-align: center;">Peripheral Inventory</h2>
     <p><strong>Date:</strong> {{ \Carbon\Carbon::now()->format('m/d/Y') }}</p>
 

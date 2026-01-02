@@ -273,7 +273,7 @@ class PeripheralIndex extends Component
                         ->orWhere('model', 'like', '%' . $this->search . '%');
                 });
             })
-            ->orderBy('id', 'asc')
+            ->orderBy('id', 'desc')
             ->paginate($this->perPage);
 
         return view('livewire.peripherals.peripheral-index', [

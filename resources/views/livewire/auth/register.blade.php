@@ -70,7 +70,7 @@
                 <flux:input wire:model="email" label="Email Address" type="email" placeholder="john@example.com" required />
             </div>
        
-                <flux:button type="submit" variant="primary">Next</flux:button>
+                <flux:button type="submit" variant="primary" color="yellow">Next</flux:button>
       
         @endif
 

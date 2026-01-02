@@ -1,20 +1,20 @@
 <?php
 
+use App\Livewire\Issues\IssueTable;
 use App\Livewire\Settings\Appearance;
 use App\Livewire\Settings\Password;
 use App\Livewire\Settings\Profile;
 use App\Livewire\Settings\TwoFactorAuthentication;
 use App\Livewire\Auth\TwoFactorAuthentication as TwoFA;
 use Illuminate\Support\Facades\Route;
-// use App\Livewire\Components\ComponentsIndex as components;
+
 use App\Livewire\Peripherals\PeripheralIndex as peripherals;
-use App\Livewire\ComponentsPart\index as components;
+use App\Livewire\ComponentsPart\Index as Components;
 use App\Livewire\SystemUnits\MaintenanceIndex as maintenance;
 use App\Livewire\SystemUnits\UnitIndex as units;
-use App\Livewire\QrManager;
-use App\Livewire\QrScanner;
+use App\Livewire\Issues\ReportIssue;
 use App\Livewire\ActivityLogViewer as activitylogs;
-use App\Livewire\Tracking\Show;
+
 use App\Livewire\Reports\UnitReport;
 use App\Livewire\Reports\Index as ReportsIndex;
 
@@ -34,14 +34,14 @@ Route::middleware(['auth', '2fa'])->group(function () {
     Route::view('rooms', 'rooms')->middleware('can:view.laboratories')->name('rooms');
     Route::get('units', units::class)->middleware('can:view.unit')->name('units');
     Route::get('maintenance', maintenance::class)->name('maintenance');
-    Route::get('components', components::class)->middleware('can:view.component')->name('components');
+    Route::get('components', Components::class)->middleware('can:view.component')->name('components');
     Route::get('peripherals', peripherals::class)->middleware('can:view.peripheral')->name('peripherals');
-    Route::get('qr', QrManager::class)->middleware('can:view.qr')->name('qr-manager');
+
     Route::get('activitylogs', activitylogs::class)->middleware('can:view.activitylogs')->name('activitylogs');
-    Route::get('tracking/{type}/{serial}', Show::class)->name('tracking.show');
+
     Route::get('reports', ReportsIndex::class)->middleware('can:view.reports')->name('reports');
 
-    Route::get('report-issue', QrScanner::class)->middleware('can:view.reports')->name('report-issue');
+    Route::get('report-issue', IssueTable::class)->middleware('can:view.reports')->name('report-issue');
 
 
     Route::get('units/generate-report', UnitReport::class)->name('units.report');

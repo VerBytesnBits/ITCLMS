@@ -7,26 +7,26 @@ use App\Models\SystemUnit;
 use App\Models\Room;
 use App\Models\Peripheral;
 use Livewire\Component;
-use Spatie\LaravelPdf\Facades\Pdf;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Livewire\Attributes\Layout;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
+use App\Models\User;
+
 
 #[Layout('components.layouts.app', ['title' => 'Units'])]
 class UnitReport extends Component
 {
     public $includeComponents = false;
     public $includePeripherals = false;
-    public $includeHistory = false;
     public $pdfUrl = null;
-    protected $previousPdf = null; // 🆕 track last generated PDF
+    protected $previousPdf = null;
 
-    // Filters
     public $selectedRoom = null;
     public array $selectedComponentParts = [];
     public array $selectedPeripheralTypes = [];
 
-    // Dropdown data
     public $rooms = [];
     public $components = [];
     public $peripherals = [];
@@ -44,7 +44,6 @@ class UnitReport extends Component
             in_array($propertyName, [
                 'includeComponents',
                 'includePeripherals',
-                'includeHistory',
                 'selectedRoom',
                 'selectedComponentParts',
                 'selectedPeripheralTypes'
@@ -56,7 +55,7 @@ class UnitReport extends Component
 
     public function previewReport()
     {
-        if (!($this->includeComponents || $this->includePeripherals || $this->includeHistory)) {
+        if (!($this->includeComponents || $this->includePeripherals)) {
             $this->dispatch('swal', [
                 'icon' => 'warning',
                 'title' => 'No Selection',
@@ -71,7 +70,7 @@ class UnitReport extends Component
 
     protected function generatePdf(): string
     {
-        // Delete previous PDF if exists
+        // Delete previous PDF
         if ($this->previousPdf && Storage::disk('public')->exists($this->previousPdf)) {
             Storage::disk('public')->delete($this->previousPdf);
         }
@@ -86,38 +85,43 @@ class UnitReport extends Component
 
         // Filter components & peripherals
         if (!empty($this->selectedComponentParts)) {
-            $units->each(function ($unit) {
-                $unit->components = $unit->components
-                    ->whereIn('part', $this->selectedComponentParts)
-                    ->values();
-            });
+            $units->each(fn($unit) => $unit->components = $unit->components->whereIn('part', $this->selectedComponentParts)->values());
         }
-
         if (!empty($this->selectedPeripheralTypes)) {
-            $units->each(function ($unit) {
-                $unit->peripherals = $unit->peripherals
-                    ->whereIn('type', $this->selectedPeripheralTypes)
-                    ->values();
-            });
+            $units->each(fn($unit) => $unit->peripherals = $unit->peripherals->whereIn('type', $this->selectedPeripheralTypes)->values());
         }
 
-        $pdfBuilder = Pdf::view('pdf.unit-report', [
+
+
+        $pdf = Pdf::loadView('pdf.unit-report', [
             'units' => $units,
             'includeComponents' => $this->includeComponents,
             'includePeripherals' => $this->includePeripherals,
-            'includeHistory' => $this->includeHistory,
-            'selectedComponentParts' => $this->selectedComponentParts,
-            'selectedPeripheralTypes' => $this->selectedPeripheralTypes,
             'selectedRoom' => $this->selectedRoom,
-        ])
-        ->footerHtml(view('pdf.partials.footer')->render())
-        ->format('A4');
 
-        // Unique file name
+
+            'conductedByName' => Auth::user()->name,
+            'conductedByRole' => Auth::user()->getRoleNames()->first(),
+            'labInCharge' => User::role('lab_incharge')->first(),
+            'chairman' => User::role('chairman')->first(),
+
+            'reportDate' => now()->format('F d, Y'),
+        ])->setPaper('letter', 'landscape')
+            ->setOption('isPhpEnabled', true); // MUST be true
+
+        $canvas = $pdf->getDomPDF()->getCanvas();
+        $canvas->page_script(function ($pageNumber, $pageCount, $canvas, $fontMetrics) {
+            $font = $fontMetrics->get_font("Helvetica", "normal");
+            $x = $canvas->get_width() - 50; // right margin
+            $y = $canvas->get_height() - 30; // bottom margin
+            $canvas->text($x, $y, "System unit inventory $pageNumber of $pageCount", $font, 10, [0, 0, 0]);
+        });
+
+
+        // Save to storage
         $fileName = 'reports/unit_report_' . Str::uuid() . '.pdf';
-        $pdfBuilder->disk('public')->save($fileName);
+        Storage::disk('public')->put($fileName, $pdf->output());
 
-        // Store last generated PDF path for deletion next time
         $this->previousPdf = $fileName;
 
         return $fileName;

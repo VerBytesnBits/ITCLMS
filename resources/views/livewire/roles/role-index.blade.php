@@ -2,11 +2,11 @@
     <livewire:dashboard-heading title="Roles/Permission" subtitle="Manage all roles/permission" icon="link-slash"
         gradient-from-color="#6e2e87" gradient-to-color="#ab2e87" icon-color="text-purple-300" />
 
-    <div class="flex justify-end mb-4">
+    {{-- <div class="flex justify-end mb-4">
         <flux:button wire:click="openCreateModal" icon="circle-plus" variant="primary" color="green"
             class="text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-green-300 dark:focus:ring-green-800 font-medium rounded-base text-sm px-4 py-2.5 text-center leading-5">
             Add Role</flux:button>
-    </div>
+    </div> --}}
 
 
     <div
@@ -89,7 +89,7 @@
            font-medium rounded-base text-sm px-4 py-2.5 inline-flex items-center gap-1">
 
                             </flux:button>
-                            <flux:button wire:click="deleteUser({{ $role->id }})" icon="trash" variant="primary"
+                            <flux:button wire:click="confirmDeleteRole({{ $role->id }})" icon="trash" variant="primary"
                                 class="text-white bg-gradient-to-r from-red-400 via-red-500 to-red-600 
            hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-red-300 
            dark:focus:ring-red-800 shadow-lg shadow-red-500/50 

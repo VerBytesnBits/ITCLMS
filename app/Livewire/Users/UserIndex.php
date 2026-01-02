@@ -2,59 +2,52 @@
 
 namespace App\Livewire\Users;
 
-use Livewire\Component;
 use App\Models\User;
-use Livewire\Attributes\Layout;
+use Flux\Flux;
+use Livewire\Component;
+use Livewire\Attributes\On;
+use Livewire\WithPagination;
+use Livewire\WithoutUrlPagination;
+use App\Livewire\UsersTable;
 
-#[Layout('components.layouts.app', ['title' => 'Users'])]
 class UserIndex extends Component
 {
-    public ?string $modal = null;          // which modal is open
-    public ?int $selectedUserId = null;    // user id for modal
+    use WithPagination, WithoutUrlPagination;
 
-    // Open Assign Role modal
-    public function openAssignRoleModal(int $userId): void
+    #[On('refresh-user-listing')]
+    public function refresh()
     {
-        $this->selectedUserId = $userId;
-        $this->modal = 'assign-role';
-    }
-    public function openCreateModal(): void
-    {
-        $this->selectedUserId = null;
-        $this->modal = 'create';
+        $this->resetPage();
+        $this->dispatch('$refresh');
+        
     }
 
-    // Open Edit User modal
-    public function openEditModal(int $userId): void
+
+
+    #[On('delete-user')]
+    public function deleteUser(int $id)
     {
-        $this->selectedUserId = $userId;
-        $this->modal = 'edit';
-    }
-    // Close modal
-    #[\Livewire\Attributes\On('closeModal')]
-    public function closeModal(): void
-    {
-        $this->modal = null;
-        $this->selectedUserId = null;
+        User::findOrFail($id)->delete();
+
+        $this->dispatch('flash', [
+            'message' => 'User deleted successfully!',
+            'type' => 'success',
+        ]);
+
+        $this->dispatch('refresh-user-table')
+            ->to(UsersTable::class);
+
+        Flux::modal('delete-confirmation-modal')->close();
     }
 
-    // // Handle role assigned from child modal
-    // public function roleAssigned(): void
-    // {
-    //     $this->closeModal();
-    //     $this->dispatch('refreshUsers'); // optional, refresh table
-    // }
-    #[\Livewire\Attributes\On('userCreated')]
-    #[\Livewire\Attributes\On('userUpdated')]
-    #[\Livewire\Attributes\On('roleAssigned')]
-    public function refreshTable(): void
-    {
-        $this->closeModal(); // close modal after action
-    }
     public function render()
     {
         return view('livewire.users.user-index', [
-            'users' => User::with('roles')->get(),
+            'users' => User::with('roles')
+                ->orderBy('id', 'DESC')
+                ->paginate(5),
         ]);
     }
 }
+
+
