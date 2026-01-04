@@ -2,6 +2,7 @@
 
 namespace App\Livewire\ComponentsPart;
 
+use App\Livewire\ComponentPartsTable;
 use Livewire\Component;
 use App\Models\ComponentParts;
 use App\Models\SystemUnit;
@@ -156,6 +157,8 @@ class Form extends Component
         $this->dispatch($event);
         $this->dispatch('swal', toast: true, icon: 'success', title: $title, timer: 3000);
         $this->dispatch('closeModal');
+         $this->dispatch('refresh-part-table')
+            ->to(ComponentPartsTable::class);
     }
 
 

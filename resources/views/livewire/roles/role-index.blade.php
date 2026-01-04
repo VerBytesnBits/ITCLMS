@@ -79,7 +79,7 @@
                         </td>
 
 
-                        <td class="px-6 py-4 text-right space-x-3">
+                        <td class="px-6 py-4 text-right">
                             <flux:button wire:click="openEditModal({{ $role->id }})" icon="pencil"
                                 variant="primary"
                                 class="text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 

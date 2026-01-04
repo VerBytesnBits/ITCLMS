@@ -13,6 +13,8 @@ use App\Traits\HasInventorySummary;
 use Livewire\Attributes\Lazy;
 use App\Support\StatusConfig;
 use App\Models\Room;
+use App\Livewire\ComponentPartsTable;
+
 #[Lazy]
 #[Layout('components.layouts.app', ['title' => 'Components'])]
 class Index extends Component
@@ -93,7 +95,7 @@ class Index extends Component
         }
         $this->resetPage();
     }
-
+    #[On(event: 'open-view-modal')]
     public function openViewModal($id)
     {
         $this->id = $id;
@@ -105,7 +107,7 @@ class Index extends Component
         $this->id = null;
         $this->modal = 'create';
     }
-
+    #[On(event: 'open-edit-modal')]
     public function openEditModal($id)
     {
         $this->id = $id;
@@ -126,6 +128,8 @@ class Index extends Component
     public function handleComponentChange()
     {
         $this->resetPage();
+        $this->dispatch('refresh-part-table')
+            ->to(ComponentPartsTable::class);
     }
 
     public function deleteComponent($id)
@@ -202,7 +206,8 @@ class Index extends Component
             'timer' => 2000,
         ]);
 
-        $this->dispatch('$refresh');
+        $this->dispatch('refresh-part-table')
+            ->to(ComponentPartsTable::class);
     }
     public string $scannedCode = '';
     public ?ComponentParts $scannedComponents = null;

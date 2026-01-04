@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\SoftDeletes; // <--- add this
+use Illuminate\Database\Eloquent\SoftDeletes; 
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
@@ -14,8 +14,7 @@ use App\Jobs\GenerateAssetCode;
 
 class SystemUnit extends Model
 {
-    use HasFactory, LogsActivity, SoftDeletes; // <--- include SoftDeletes
-
+    use HasFactory, LogsActivity, SoftDeletes; 
     protected $fillable = ['name', 'serial_number', 'status', 'room_id', 'qr_code_path'];
 
 

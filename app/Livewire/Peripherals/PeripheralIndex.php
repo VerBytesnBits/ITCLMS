@@ -13,6 +13,7 @@ use App\Traits\HasInventorySummary;
 use Livewire\Attributes\Lazy;
 use App\Support\StatusConfig;
 use App\Models\Room;
+use App\Livewire\PeripheralTable;
 
 #[Lazy]
 #[Layout('components.layouts.app', ['title' => 'Peripherals'])]
@@ -61,7 +62,7 @@ class PeripheralIndex extends Component
         }
         return $this->getInventorySummary(
             Peripheral::class,
-            ['type','model'],
+            ['type', 'model'],
             [
                 'brand',
                 'model',
@@ -98,10 +99,17 @@ class PeripheralIndex extends Component
         $this->resetPage();
     }
 
+    #[On(event: 'open-view-modal')]
     public function openViewModal($id)
     {
         $this->id = $id;
         $this->modal = 'view';
+    }
+    #[On(event: 'open-edit-modal')]
+    public function openEditModal($id)
+    {
+        $this->id = $id;
+        $this->modal = 'edit';
     }
 
     public function openCreateModal()
@@ -110,11 +118,7 @@ class PeripheralIndex extends Component
         $this->modal = 'create';
     }
 
-    public function openEditModal($id)
-    {
-        $this->id = $id;
-        $this->modal = 'edit';
-    }
+
 
     #[On('closeModal')]
     public function closeModal()
@@ -130,6 +134,8 @@ class PeripheralIndex extends Component
     public function handlePeripheralChange()
     {
         $this->resetPage();
+         $this->dispatch('refresh-part-table')
+            ->to(PeripheralTable::class);
     }
 
     public function deletePeripheral($id)
@@ -137,6 +143,7 @@ class PeripheralIndex extends Component
         Peripheral::findOrFail($id)->delete();
         $this->dispatch('swal', toast: true, icon: 'success', title: 'Peripheral deleted successfully', timer: 3000);
         $this->dispatch('peripheralDeleted');
+        
     }
 
 
@@ -210,7 +217,8 @@ class PeripheralIndex extends Component
     }
 
 
-    protected $listeners = ['confirm-bulk-delete' => 'bulkDelete'];
+  
+    #[On('confirm-bulk-delete')]
     public function bulkDelete($payload)
     {
         if ($payload['model'] !== 'Peripherals')
@@ -234,7 +242,8 @@ class PeripheralIndex extends Component
             'timer' => 2000,
         ]);
 
-        $this->dispatch('$refresh');
+        $this->dispatch('refresh-part-table')
+            ->to(PeripheralTable::class);
     }
 
     public function render()

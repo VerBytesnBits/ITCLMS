@@ -156,13 +156,13 @@ class UnitIndex extends Component
         $this->modalMode = 'create';
         $this->showModal = true;
     }
-
+    #[On('open-view-modal')]
     public function view($id)
     {
         $this->unitId = $id;
         $this->modalMode = 'view';
     }
-
+    #[On('open-edit-modal')]
     public function edit(SystemUnit $unit)
     {
         $this->selectedUnit = $unit;

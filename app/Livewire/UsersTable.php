@@ -13,6 +13,8 @@ class UsersTable extends DataTableComponent
 {
     protected $model = User::class;
 
+    public string $tableName = 'user_table';
+
     public function configure(): void
     {
         $this->setPrimaryKey('id');

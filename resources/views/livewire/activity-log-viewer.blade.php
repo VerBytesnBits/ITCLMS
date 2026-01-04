@@ -33,7 +33,7 @@
                 <option value="SystemUnit">System Unit</option>
                 <option value="ComponentParts">Component Parts</option>
                 <option value="Peripheral">Peripheral</option>
-                <option value="QrGeneration">QR Generation</option>
+               
             </select>
         </div>
     </div>

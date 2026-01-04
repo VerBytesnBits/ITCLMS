@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Peripherals;
 
+use App\Livewire\PeripheralTable;
 use Livewire\Component;
 use App\Models\Peripheral;
 use App\Models\SystemUnit;
@@ -159,6 +160,8 @@ class PeripheralForm extends Component
         $this->dispatch($event);
         $this->dispatch('swal', toast: true, icon: 'success', title: $title, timer: 3000);
         $this->dispatch('closeModal');
+         $this->dispatch('refresh-part-table')
+            ->to(PeripheralTable::class);
     }
 
 
