@@ -27,10 +27,10 @@ class Form extends Component
     public $warranty_period_months;
 
     public $modalMode = 'create';
-    public $multiple = false;   // for checkbox
-    public $quantity = 1;       // for number input
+    public $multiple = false;  
+    public $quantity = 1;       
     public $room_id = null;
-    public $embedded = false; // when used inside unit form
+    public $embedded = false; 
 
     protected function rules()
     {
@@ -51,9 +51,7 @@ class Form extends Component
         ];
     }
 
-    /**
-     * Get all fillable attributes once
-     */
+  
     protected function formData(): array
     {
         return $this->only([
@@ -102,7 +100,7 @@ class Form extends Component
             $data['warranty_period_months'] = (int) $data['warranty_period_months'];
         }
 
-        // ✅ TEMP MODE (INSIDE SYSTEM UNIT FORM)
+        
         if ($this->embedded) {
 
             $this->dispatch(
@@ -138,7 +136,6 @@ class Form extends Component
             return;
         }
 
-        // ✅ NORMAL DATABASE MODE (STANDALONE)
         if ($this->modalMode === 'create') {
 
             ComponentParts::create($data);

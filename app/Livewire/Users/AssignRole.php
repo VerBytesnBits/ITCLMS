@@ -16,9 +16,9 @@ class AssignRole extends Component
     {
         $this->userId = $userId;
 
-        $this->roles = Role::pluck('name')->toArray(); // Get all roles
+        $this->roles = Role::pluck('name')->toArray();
         $user = User::find($this->userId);
-        $this->selectedRole = $user?->roles->first()?->name; // pre-select existing role
+        $this->selectedRole = $user?->roles->first()?->name;
     }
 
     public function assignRole()
@@ -29,13 +29,13 @@ class AssignRole extends Component
 
         $user = User::find($this->userId);
         if ($user) {
-            $user->syncRoles([$this->selectedRole]); // ensures 1 role only
+            $user->syncRoles([$this->selectedRole]); 
             $this->dispatch('swal:toast', [
                 'title' => 'Role assigned successfully!',
                 'icon' => 'success',
             ]);
-            $this->dispatch('roleAssigned'); // optional: refresh parent table
-            $this->reset(); // close modal if using conditional rendering
+            $this->dispatch('roleAssigned'); 
+            $this->reset();
         }
     }
 

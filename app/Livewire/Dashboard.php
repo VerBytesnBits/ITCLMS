@@ -7,19 +7,19 @@ use App\Models\SystemUnit;
 use App\Models\ComponentParts;
 use App\Models\Peripheral;
 use App\Models\Maintenance;
-use App\Traits\HasInventorySummary; // <-- include the trait
+use App\Traits\HasInventorySummary; 
 use Carbon\Carbon;
 use DB;
 use Spatie\Activitylog\Models\Activity;
 
 class Dashboard extends Component
 {
-    use HasInventorySummary; // <-- use the trait
+    use HasInventorySummary;
 
     public $stats = [];
     public $unitTrends = [];
     public $maintenanceTrends = [];
-    // public $recentLogs = [];
+   
     public $operationalPercentage;
     public $peripheralPercentage;
     public $componentsBelowThreshold;
@@ -36,13 +36,13 @@ class Dashboard extends Component
         $this->recentLogs = Activity::latest()->take(5)->get();
         $this->totalUnits = SystemUnit::count();
 
-        // Total Components
+        
         $this->totalComponents = ComponentParts::count();
 
-        // Total Peripherals
+       
         $this->totalPeripherals = Peripheral::count();
 
-        // =============== Summary Stats ===============
+        
         $this->stats = [
             'units' => [
                 'Operational' => SystemUnit::where('status', 'Operational')->count(),
@@ -58,15 +58,11 @@ class Dashboard extends Component
                 'defective' => Peripheral::where('status', 'defective')->count(),
                 'In use' => Peripheral::whereNotNull('system_unit_id')->count(),
             ],
-            'maintenance' => [
-                'pending' => Maintenance::where('status', 'pending')->count(),
-                'in_progress' => Maintenance::where('status', 'In Progress')->count(),
-                'completed' => Maintenance::where('status', 'completed')->count(),
-            ],
+           
         ];
 
 
-        // =============== Trends ===============
+       
         $this->unitTrends = $this->fillMonths(
             SystemUnit::select(DB::raw("MONTH(created_at) as month"), DB::raw("COUNT(*) as total"))
                 ->where('status', 'Non-operational')
@@ -76,15 +72,9 @@ class Dashboard extends Component
                 ->toArray()
         );
 
-        $this->maintenanceTrends = $this->fillMonths(
-            Maintenance::select(DB::raw("MONTH(created_at) as month"), DB::raw("COUNT(*) as total"))
-                ->whereYear('created_at', Carbon::now()->year)
-                ->groupBy('month')
-                ->pluck('total', 'month')
-                ->toArray()
-        );
+       
 
-        // =============== Operational Percentages ===============
+        
         $totalComponents = ComponentParts::count();
         $operationalComponents = ComponentParts::where('status', 'available')->count();
         $this->operationalPercentage = $totalComponents ? ($operationalComponents / $totalComponents) * 100 : 0;
@@ -93,11 +83,11 @@ class Dashboard extends Component
         $operationalPeripherals = Peripheral::where('status', 'available')->count();
         $this->peripheralPercentage = $totalPeripherals ? ($operationalPeripherals / $totalPeripherals) * 100 : 0;
 
-        // =============== Components Low / Out of Stock using Trait ===============
+    
         $componentsSummary = $this->getInventorySummary(
             ComponentParts::class,
-            'part',            // group by part
-            ['model', 'brand', 'type', 'capacity'] // variant columns to distinguish items
+            'part',           
+            ['model', 'brand', 'type', 'capacity'] 
         );
 
         $lowStock = 0;
@@ -114,11 +104,11 @@ class Dashboard extends Component
         $this->componentsBelowThreshold = $lowStock;
         $this->componentsOutOfStock = $outOfStock;
 
-        // =============== Peripherals Low / Out of Stock using Trait ===============
+        
         $peripheralsSummary = $this->getInventorySummary(
             Peripheral::class,
-            'type',           // group by type
-            ['model', 'brand'] // variant columns
+            'type',          
+            ['model', 'brand'] 
         );
 
         $lowStockPeripherals = 0;

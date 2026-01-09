@@ -70,7 +70,7 @@ class UnitReport extends Component
 
     protected function generatePdf(): string
     {
-        // Delete previous PDF
+        
         if ($this->previousPdf && Storage::disk('public')->exists($this->previousPdf)) {
             Storage::disk('public')->delete($this->previousPdf);
         }
@@ -83,7 +83,6 @@ class UnitReport extends Component
 
         $units = $query->get();
 
-        // Filter components & peripherals
         if (!empty($this->selectedComponentParts)) {
             $units->each(fn($unit) => $unit->components = $unit->components->whereIn('part', $this->selectedComponentParts)->values());
         }
@@ -107,18 +106,17 @@ class UnitReport extends Component
 
             'reportDate' => now()->format('F d, Y'),
         ])->setPaper('letter', 'landscape')
-            ->setOption('isPhpEnabled', true); // MUST be true
+            ->setOption('isPhpEnabled', true); 
 
         $canvas = $pdf->getDomPDF()->getCanvas();
         $canvas->page_script(function ($pageNumber, $pageCount, $canvas, $fontMetrics) {
             $font = $fontMetrics->get_font("Helvetica", "normal");
-            $x = $canvas->get_width() - 50; // right margin
-            $y = $canvas->get_height() - 30; // bottom margin
+            $x = $canvas->get_width() - 50;
+            $y = $canvas->get_height() - 30;
             $canvas->text($x, $y, "System unit inventory $pageNumber of $pageCount", $font, 10, [0, 0, 0]);
         });
 
 
-        // Save to storage
         $fileName = 'reports/unit_report_' . Str::uuid() . '.pdf';
         Storage::disk('public')->put($fileName, $pdf->output());
 

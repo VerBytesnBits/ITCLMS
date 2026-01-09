@@ -72,9 +72,9 @@ class DeleteModal extends Component
                 default => null,
             };
 
-            $this->dispatch('unit-deleted'); // notify parent to refresh
+            $this->dispatch('unit-deleted'); 
 
-            // 🔔 Action-specific success messages
+            
             $messages = [
                 'delete' => 'System Unit permanently deleted.',
                 'decommission' => 'System Unit successfully decommissioned.',
@@ -104,13 +104,13 @@ class DeleteModal extends Component
     {
    
 
-        // Update linked components
+        
         $unit->components()->update(['status' => 'Decommission']);
 
-        // Update linked peripherals
+        
         $unit->peripherals()->update(['status' => 'Decommission']);
 
-        // Soft delete the unit
+       
         $unit->delete();
     }
 

@@ -28,10 +28,10 @@ class Index extends Component
     public ?int $id = null;
 
     #[Url(as: 'q')]
-    public string $search = ''; // For search/filtering
+    public string $search = ''; 
 
     #[Url(as: 'tab')]
-    public ?string $tab = null; // default tab
+    public ?string $tab = null; 
 
     #[Url(as: 'room')]
     public ?int $roomId = null;
@@ -40,7 +40,7 @@ class Index extends Component
     public string $age = '';
 
 
-    public int $perPage = 10; // Items per page
+    public int $perPage = 10; 
     public string $sortColumn = 'available';
     public string $sortDirection = 'asc';
     public $lowStockThreshold = 5;
@@ -77,12 +77,12 @@ class Index extends Component
     public function updatedSearch()
     {
 
-        $this->resetPage(); // Also reset pagination
+        $this->resetPage(); 
     }
 
     public function updatedTab()
     {
-        $this->resetPage(); // reset pagination when switching tabs
+        $this->resetPage();
     }
 
     public function sortBy($column)
@@ -144,7 +144,7 @@ class Index extends Component
     public function updatedSelectAll($value)
     {
         if ($value) {
-            // Get the currently rendered items (already paginated)
+            
             $this->selectedComponents = $this->getRenderedComponentsIds();
         } else {
             $this->selectedComponents = [];
@@ -266,7 +266,7 @@ class Index extends Component
                         ->orWhere('model', 'like', '%' . $this->search . '%');
                 });
             })
-            ->orderBy('id', 'desc') // Use valid column to avoid SQL error
+            ->orderBy('id', 'desc') 
             ->paginate($this->perPage);
 
         return view('livewire.components-part.index', [

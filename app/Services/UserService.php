@@ -8,9 +8,7 @@ use Spatie\Permission\Models\Role;
 
 class UserService
 {
-    /**
-     * Create user
-     */
+    
     public function saveUser(array $userRequest): User
     {
         $user = User::create([
@@ -26,25 +24,19 @@ class UserService
         return $user;
     }
 
-    /**
-     * Get user by ID
-     */
+
     public function getUserById(int $userId): ?User
     {
         return $this->getAllUsers()->find($userId);
     }
 
-    /**
-     * Get users query
-     */
+    
     public function getAllUsers()
     {
         return User::with('roles');
     }
 
-    /**
-     * Update user
-     */
+    
     public function updateUser(int $userId, array $userRequest): bool
     {
         $user = $this->getAllUsers()->find($userId);
@@ -69,9 +61,7 @@ class UserService
         return true;
     }
 
-    /**
-     * Delete user
-     */
+   
     public function deleteUser(int $userId): bool
     {
         $user = $this->getAllUsers()->find($userId);
@@ -83,9 +73,7 @@ class UserService
         return (bool) $user->delete();
     }
 
-    /**
-     * Get available roles
-     */
+   
     public function getRoles(): array
     {
         return Role::where('guard_name', 'web')

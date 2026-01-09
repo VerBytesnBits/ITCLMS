@@ -21,8 +21,8 @@ class Index extends Component
 
     public $perPage = 20;
     public $search = '';
-    public $reportType = 'inventory'; // inventory, qr, activity
-    public $filterModel = ''; // optional filter by model type
+    public $reportType = 'inventory'; 
+    public $filterModel = ''; 
     public $status = '';
     public $room = '';
     public $dateFrom = '';
@@ -73,7 +73,7 @@ class Index extends Component
             'qrs' => $qrs
         ])->setPaper('a4', 'portrait');
 
-        // Return PDF inline for browser preview
+       
         return response($pdf->output(), 200, [
             'Content-Type' => 'application/pdf',
             'Content-Disposition' => 'inline; filename="qr-codes-report.pdf"',
@@ -85,37 +85,37 @@ class Index extends Component
     {
         $query = collect();
 
-        // System Units
+       
         if ($this->filterModel === '' || $this->filterModel === 'SystemUnit') {
             $query = $query->merge(SystemUnit::with('room')->get());
         }
 
-        // Component Parts
+        
         if ($this->filterModel === '' || $this->filterModel === 'ComponentParts') {
             $components = ComponentParts::with('systemUnit.room')->get();
             $query = $query->merge($components);
         }
 
-        // Peripherals
+       
         if ($this->filterModel === '' || $this->filterModel === 'Peripheral') {
             $peripherals = Peripheral::with('systemUnit.room')->get();
             $query = $query->merge($peripherals);
         }
 
-        // Filter by status
+      
         if ($this->status) {
             $query = $query->filter(fn($item) => ($item->status ?? '') === $this->status);
         }
 
-        // Filter by room
+       
         if ($this->room) {
             $query = $query->filter(function ($item) {
-                // SystemUnit has room directly
+              
                 if ($item instanceof SystemUnit) {
                     return $item->room?->id == $this->room;
                 }
 
-                // ComponentParts and Peripheral have room via systemUnit
+              
                 if ($item instanceof ComponentParts || $item instanceof Peripheral) {
                     return $item->systemUnit?->room?->id == $this->room;
                 }
@@ -173,7 +173,7 @@ class Index extends Component
         return $query->orderByDesc('created_at')->paginate($this->perPage);
     }
 
-    // Optional: Export to CSV
+   
     public function exportCsv()
     {
         $data = [];

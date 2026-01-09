@@ -2,6 +2,7 @@
 
 namespace App\Livewire\SystemUnits;
 
+use App\Livewire\UnitTable;
 use Livewire\Component;
 use App\Models\SystemUnit;
 use App\Models\Room;
@@ -14,7 +15,7 @@ use Livewire\Attributes\On;
 class UnitForm extends Component
 {
     public bool $show = false;
-    public string $mode = 'create'; // create | edit
+    public string $mode = 'create'; 
     public ?int $unitId = null;
 
     public ?string $category = null;
@@ -32,13 +33,13 @@ class UnitForm extends Component
         'status' => 'In Use',
     ];
 
-    //  Temp arrays for child component data
+    
     public $tempComponents = [];
     public $tempPeripherals = [];
 
 
 
-    /** Child listener handlers */
+    
     #[On('tempComponentAdded')]
     public function addTempComponent(array $component)
     {
@@ -55,7 +56,7 @@ class UnitForm extends Component
     public function removeTempComponent($index)
     {
         if (!is_numeric($index)) {
-            return; // prevents illegal offset crash
+            return; 
         }
 
         unset($this->tempComponents[(int) $index]);
@@ -107,7 +108,7 @@ class UnitForm extends Component
         $this->mode = 'create';
         $this->show = true;
 
-        // clear temp arrays
+      
         $this->tempComponents = [];
         $this->tempPeripherals = [];
     }
@@ -130,7 +131,7 @@ class UnitForm extends Component
                 'room_id' => $unit->room_id,
             ]);
 
-            // pre-load components/peripherals into temp arrays for editing
+           
             foreach ($unit->components as $component) {
                 $this->tempComponents[] = $component->toArray();
             }
@@ -140,12 +141,7 @@ class UnitForm extends Component
         }
     }
 
-    // public $inlineSelectedPartFromChild;
-
-    // public function setPeripheralType($value)
-    // {
-    //     $this->inlineSelectedPartFromChild = $value;
-    // }
+   
     private function normalizePeripheral(array $peripheral, SystemUnit $unit): array
     {
         return [
@@ -165,7 +161,7 @@ class UnitForm extends Component
     {
         $this->validate();
 
-  
+
         if (
             $this->mode === 'create' &&
             $this->category !== 'LAPTOP' &&
@@ -187,7 +183,7 @@ class UnitForm extends Component
 
             [$startNumber] = $this->getNextIndex();
 
-            // MULTIPLE UNIT CREATION
+           
             if ($this->mode === 'create' && $this->quantity > 1) {
                 for ($i = 0; $i < $this->quantity; $i++) {
                     $unitNumber = $startNumber + $i;
@@ -201,8 +197,7 @@ class UnitForm extends Component
                         'status' => $this->status,
                         'room_id' => $this->room_id,
                     ]);
-
-                    // ASSIGN TEMP COMPONENTS
+                    
                     foreach ($this->tempComponents as $component) {
                         $component['system_unit_id'] = $unit->id;
                         $component['room_id'] = $unit->room_id;
@@ -210,7 +205,7 @@ class UnitForm extends Component
                         ComponentParts::create($component);
                     }
 
-                    // ASSIGN TEMP PERIPHERALS
+                 
                     foreach ($this->tempPeripherals as $peripheral) {
                         Peripheral::create(
                             $this->normalizePeripheral($peripheral, $unit)
@@ -227,7 +222,7 @@ class UnitForm extends Component
                 ]);
             }
 
-            // SINGLE UNIT CREATION
+         
             elseif ($this->mode === 'create') {
                 $unitName = $this->name ?: $this->category . $startNumber;
                 $serial = $this->serial_number ?: $this->generateSerialSequential($startNumber);
@@ -254,10 +249,10 @@ class UnitForm extends Component
 
                 }
 
-                // ✅ Get Lab Name (Optional but Recommended)
+               
                 $labName = optional($unit->room)->name ?? 'Lab';
 
-                // ✅ Correct Swal Message
+                
                 $this->dispatch('swal', [
                     'toast' => true,
                     'icon' => 'success',
@@ -266,7 +261,7 @@ class UnitForm extends Component
                 ]);
             }
 
-            // UPDATE MODE
+           
             else {
                 $unitName = $this->name ?: $this->category . $startNumber;
                 $unit = SystemUnit::findOrFail($this->unitId);
@@ -277,7 +272,7 @@ class UnitForm extends Component
                     'room_id' => $this->room_id,
                 ]);
 
-                // Update / assign components & peripherals
+                
                 foreach ($this->tempComponents as $component) {
                     if (isset($component['id'])) {
                         $existing = ComponentParts::find($component['id']);
@@ -311,19 +306,22 @@ class UnitForm extends Component
                     'title' => "{$unitName} - {$labName} updated successfully",
                     'timer' => 3000,
                 ]);
+
             }
 
         });
 
-        // Clear temp arrays
+       
         $this->tempComponents = [];
         $this->tempPeripherals = [];
 
         $this->dispatch($this->mode === 'create' ? 'unitCreated' : 'unitUpdated');
         $this->dispatch('closeModal');
+        $this->dispatch('refresh-part-table')
+            ->to(UnitTable::class);
     }
 
-    /** ---- Helpers ---- */
+   
 
     private function getNextIndex(): array
     {

@@ -43,7 +43,7 @@ class ComponentParts extends Model
         'warranty_period_months' => 'integer',
     ];
 
-    /** -------------------- Relationships -------------------- **/
+
 
     public function systemUnit()
     {
@@ -66,12 +66,6 @@ class ComponentParts extends Model
         ]);
     }
 
-    public function maintenances()
-    {
-        return $this->morphMany(Maintenance::class, 'maintainable');
-    }
-
-    /** -------------------- Activity Logging -------------------- **/
 
     public function getActivitylogOptions(): LogOptions
     {
@@ -131,7 +125,7 @@ class ComponentParts extends Model
             : null;
     }
 
-    /** -------------------- Status / Decommission Helpers -------------------- **/
+    
 
     public function isDecommissioned(): bool
     {
@@ -145,10 +139,10 @@ class ComponentParts extends Model
         $this->retirement_notes = $notes;
         $this->retired_at = now();
         $this->save();
-        $this->delete(); // soft delete
+        $this->delete(); 
     }
 
-    /** -------------------- Restore / Reassign Helpers -------------------- **/
+
 
     public function restoreToUnit(?int $newUnitId = null)
     {
@@ -170,12 +164,12 @@ class ComponentParts extends Model
             ->log('Component restored and reassigned');
     }
 
-    /** -------------------- Booted Events -------------------- **/
+ 
 
 
     protected static function booted()
     {
-        // Warranty calculation
+        
         static::saving(function ($part) {
             if ($part->isDirty(['purchase_date', 'warranty_period_months'])) {
                 if ($part->purchase_date && $part->warranty_period_months) {
@@ -187,7 +181,6 @@ class ComponentParts extends Model
             }
         });
 
-        // Log reassignment
         static::updating(function ($part) {
             if ($part->isDirty('current_unit_id')) {
                 activity()

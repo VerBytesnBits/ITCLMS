@@ -9,13 +9,13 @@ class DecommissionedUnits extends Component
 {
     public bool $show = false;
 
-    // Always arrays for safe foreach/count
+   
     public array $units = [];
     public array $expandedUnits = [];
     public array $selectedComponents = [];
     public array $selectedPeripherals = [];
 
-    // Toggle visibility
+   
     public function toggle()
     {
         $this->show = !$this->show;
@@ -24,7 +24,6 @@ class DecommissionedUnits extends Component
         }
     }
 
-    // Load decommissioned units with soft-deleted children
     public function loadUnits()
     {
         $user = auth()->user();
@@ -52,10 +51,10 @@ class DecommissionedUnits extends Component
         $this->dispatch("unit-restored");
     }
 
-    // Expand/Collapse unit to show children
+    
     public function toggleUnitExpansion($unitId)
     {
-        // Initialize checkbox arrays for this unit
+        
         $this->selectedComponents[$unitId] = $this->selectedComponents[$unitId] ?? [];
         $this->selectedPeripherals[$unitId] = $this->selectedPeripherals[$unitId] ?? [];
 
@@ -76,12 +75,12 @@ class DecommissionedUnits extends Component
         $peripherals = $this->selectedPeripherals[$unitId] ?? [];
 
         if (!empty($components) || !empty($peripherals)) {
-            // Restore only selected children
+            
             if (!empty($components)) {
                 $unit->components()
                     ->onlyTrashed()
                     ->whereIn('id', $components)
-                    ->update(['status' => 'Available']); // update status in DB
+                    ->update(['status' => 'Available']); 
                 $unit->components()
                     ->onlyTrashed()
                     ->whereIn('id', $components)
@@ -104,14 +103,14 @@ class DecommissionedUnits extends Component
                 'title' => 'Selected components/peripherals restored successfully.'
             ]);
         } else {
-            // Restore parent
+            
             $unit->restore();
 
-            // Restore children first
+           
             $unit->components()->onlyTrashed()->restore();
             $unit->peripherals()->onlyTrashed()->restore();
 
-            // Update all children status
+           
             $unit->components()->update(['status' => 'In Use']);
             $unit->peripherals()->update(['status' => 'In Use']);
 
@@ -122,10 +121,10 @@ class DecommissionedUnits extends Component
             ]);
         }
 
-        // Refresh the decommissioned units list
+        
         $this->loadUnits();
 
-        // Clear selections for this unit
+       
         $this->selectedComponents[$unitId] = [];
         $this->selectedPeripherals[$unitId] = [];
     }

@@ -18,7 +18,7 @@ class ActivityBell extends Component
 
     public function loadActivities()
     {
-        // Example: assuming you have a 'read_at' column
+      
         $this->activities = Activity::latest()->take(10)->get();
         $this->unreadCount = Activity::whereNull('read_at')->count();
     }

@@ -18,7 +18,7 @@ class ActivityLog extends Component
     public function loadHistory($systemUnitId)
     {
         $this->systemUnitId = $systemUnitId;
-        $this->resetPage(); // reset pagination if unit changes
+        $this->resetPage(); 
     }
 
     public function render()

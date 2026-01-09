@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Route;
 
 use App\Livewire\Peripherals\PeripheralIndex as peripherals;
 use App\Livewire\ComponentsPart\Index as Components;
-use App\Livewire\SystemUnits\MaintenanceIndex as maintenance;
+
 use App\Livewire\SystemUnits\UnitIndex as units;
 use App\Livewire\Issues\ReportIssue;
 use App\Livewire\ActivityLogViewer as activitylogs;
@@ -33,7 +33,7 @@ Route::middleware(['auth', '2fa'])->group(function () {
     Route::view('roles', 'roles')->middleware('can:manage.roles')->name('roles');
     Route::view('rooms', 'rooms')->middleware('can:view.laboratories')->name('rooms');
     Route::get('units', units::class)->middleware('can:view.unit')->name('units');
-    Route::get('maintenance', maintenance::class)->name('maintenance');
+  
     Route::get('components', Components::class)->middleware('can:view.component')->name('components');
     Route::get('peripherals', peripherals::class)->middleware('can:view.peripheral')->name('peripherals');
 

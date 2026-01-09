@@ -32,15 +32,13 @@ class FormModal extends Component
     public bool $isView = false;
     public ?int $userId = null;
 
-    /**
-     * Open modal (create / edit / view)
-     */
+    
     #[On('open-user-modal')]
     public function userDetail(string $mode, int $user = null)
     {
         $this->isView = $mode === 'view';
 
-        // Load roles
+        
         $this->roles = Role::where('guard_name', 'web')
             ->pluck('name')
             ->mapWithKeys(fn($name) => [$name => ucwords(str_replace('_', ' ', $name))])
@@ -60,10 +58,7 @@ class FormModal extends Component
         $this->selectedRole = $this->user->roles()->first()?->name;
     }
 
-    /**
-     * Save user (create/update)
-     */
-
+   
 
     public function save(UserService $userService)
     {
@@ -116,9 +111,7 @@ class FormModal extends Component
 
     }
 
-    /**
-     * Reset form
-     */
+    
     protected function resetForm()
     {
         $this->reset([

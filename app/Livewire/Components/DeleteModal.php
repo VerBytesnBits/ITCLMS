@@ -9,7 +9,7 @@ class DeleteModal extends Component
     public $show = false;
     public $modelType;
     public $modelId;
-    public $selectedAction = null; // 'delete' | 'junk'
+    public $selectedAction = null; 
 
     protected $listeners = ['open-delete-modal' => 'openModal'];
 
@@ -29,9 +29,9 @@ class DeleteModal extends Component
 
         $modelClass = "App\\Models\\" . $this->modelType;
 
-        // Handle bulk delete separately
+        
         if ($this->modelId === 'bulk') {
-            // Dispatch event for parent to handle bulk deletion
+            
             $this->dispatch('confirm-bulk-delete', [
                 'model' => $this->modelType,
                 'action' => $this->selectedAction,
@@ -42,7 +42,7 @@ class DeleteModal extends Component
             return;
         }
 
-        // Single delete logic
+        
         $model = $modelClass::find($this->modelId);
         if (!$model)
             return;
