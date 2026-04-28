@@ -257,8 +257,9 @@
     <flux:main>
         {{ $slot }}
     </flux:main>
-
+    
     @fluxScripts
+    @livewireScripts
 </body>
 
 </html>

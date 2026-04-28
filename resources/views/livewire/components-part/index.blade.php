@@ -8,7 +8,7 @@
         </div>
 
         <div class="w-full sm:w-auto ">
-            <flux:button icon="circle-plus" variant="primary" color="green" wire:click="openCreateModal" class="text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-green-300 dark:focus:ring-green-800 font-medium rounded-base text-sm px-4 py-2.5 text-center leading-5">
+            <flux:button icon="circle-plus" variant="primary" color="green" wire:click="openCreateModal" class="text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-green-300 dark:focus:ring-green-800 font-medium rounded-base text-sm px-4 py-2.5 text-center leading-5 cursor-pointer">
                 Add Component
             </flux:button>
         </div>
@@ -47,7 +47,7 @@
            hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-gray-300 
            dark:focus:ring-gray-800 shadow-lg shadow-gray-500/50 
            dark:shadow-lg dark:shadow-gray-800/80 
-           font-medium rounded-base text-sm px-4 py-2.5 inline-flex items-center gap-1">
+           font-medium rounded-base text-sm px-4 py-2.5 inline-flex items-center gap-1 cursor-pointer">
                         Component Reports
                     </flux:button>
                     <flux:tooltip.content class="max-w-[20rem] space-y-2">

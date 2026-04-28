@@ -182,13 +182,15 @@ class PeripheralTable extends DataTableComponent
                 ->hideIf(true),
 
             Column::make("Serial number", "serial_number")
-                ->sortable(),
+                ->sortable()
+                ->searchable(),
             Column::make("Brand", "brand")
                 ->sortable(),
             Column::make("Model", "model")
                 ->sortable(),
 
             Column::make("Type", "type")
+                ->searchable()
                 ->sortable(),
 
             Column::make('Status', 'status')

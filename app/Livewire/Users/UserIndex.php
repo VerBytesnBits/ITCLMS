@@ -9,6 +9,7 @@ use Livewire\Attributes\On;
 use Livewire\WithPagination;
 use Livewire\WithoutUrlPagination;
 use App\Livewire\UsersTable;
+use Masmerise\Toaster\Toaster;
 
 class UserIndex extends Component
 {
@@ -29,10 +30,7 @@ class UserIndex extends Component
     {
         User::findOrFail($id)->delete();
 
-        $this->dispatch('flash', [
-            'message' => 'User deleted successfully!',
-            'type' => 'success',
-        ]);
+        Toaster::success('User deleted successfully!');
 
         $this->dispatch('refresh-user-table')
             ->to(UsersTable::class);

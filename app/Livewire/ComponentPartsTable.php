@@ -200,38 +200,13 @@ class ComponentPartsTable extends DataTableComponent
 
             Column::make('Status', 'status')
                 ->format(function ($value, $row) {
-                    // Get status check
-                    $check = $row->checkOperationalStatus();
-                    $missing = $check['missing'];
+                    $statusColors = StatusConfig::statuses();
+                    $colorClass = $statusColors[$row->status] ?? 'bg-gray-100 text-gray-700';
 
-                    // Color mapping (you can keep StatusConfig if needed)
-                    $statusColors = [
-                        'Operational' => 'bg-green-100 text-green-700',
-                        'Non-operational' => 'bg-red-100 text-red-700',
-                    ];
-
-                    if ($check['status'] === 'Operational') {
-                        $colorClass = $statusColors['Operational'];
-                        return '<span class="px-2 py-1 text-sm font-semibold rounded-full ' . $colorClass . '">Operational</span>';
-                    }
-
-                    // Non-operational → render missing components + peripherals
-                    $componentsHtml = '';
-                    foreach ($missing['components'] as $item) {
-                        $componentsHtml .= '<span class="bg-red-100 text-red-700 px-2 py-0.5 rounded text-xs flex items-center gap-1">
-                <flux:icon.triangle-alert variant="micro" /> ' . e($item) . '</span> ';
-                    }
-
-                    $peripheralsHtml = '';
-                    foreach ($missing['peripherals'] as $item) {
-                        $peripheralsHtml .= '<span class="bg-red-100 text-red-700 px-2 py-0.5 rounded text-xs flex items-center gap-1">
-                <flux:icon.triangle-alert variant="micro" /> ' . e($item) . '</span> ';
-                    }
-
-                    return '<div class="flex flex-wrap gap-1 justify-center">' . $componentsHtml . $peripheralsHtml . '</div>';
+                    return '<span class="px-2 py-1 text-sm font-semibold rounded-full ' . $colorClass . '">' . e($row->status) . '</span>';
                 })
-                ->html()       // Important for rendering badges and HTML
-                ->sortable(),  // Still sortable by your 'status' column
+                ->html()
+                ->sortable(),
 
 
 

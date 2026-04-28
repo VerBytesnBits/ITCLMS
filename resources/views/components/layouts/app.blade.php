@@ -11,3 +11,4 @@
 
 <x-alert />
 <x-scroll-to-up />
+<x-toaster-hub />

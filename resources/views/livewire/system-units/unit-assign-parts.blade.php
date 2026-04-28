@@ -370,13 +370,13 @@
             <div class="space-y-4 flex-1 overflow-y-auto pr-2 -mr-2">
 
                 {{-- Brand --}}
-                <flux:input wire:model.defer="inline_brand" label="Brand" placeholder="Brand" />
+                <flux:input wire:model.defer="inline_brand" label="Brand (required)" placeholder="Brand" />
 
                 {{-- Model --}}
-                <flux:input wire:model.defer="inline_model" label="Model" placeholder="Model" />
+                <flux:input wire:model.defer="inline_model" label="Model (required)" placeholder="Model" />
 
                 {{-- Serial Number --}}
-                <flux:input wire:model.defer="inline_serial_number" label="Serial Number"
+                <flux:input wire:model.defer="inline_serial_number" label="Serial Number (required)"
                     placeholder="Serial Number" />
 
                 {{-- COMPONENT FIELDS --}}
@@ -384,19 +384,13 @@
 
                     {{-- Capacity (RAM / Storage) --}}
                     @if (in_array($inlineSelectedPart, ['RAM', 'Storage']))
-                        <flux:input wire:model.defer="inline_capacity" label="Capacity (GB)"
+                        <flux:input wire:model.defer="inline_capacity" label="Capacity (GB) (required)"
                             placeholder="Capacity (GB)" type="number" />
                     @endif
 
                     {{-- CPU Clock Speed --}}
                     @if ($inlineSelectedPart === 'CPU')
-                        <flux:select wire:model.defer="inline_clock_speed" label="Clock Speed"
-                            placeholder="Select Speed">
-                            <option value="2.5GHz">2.5GHz</option>
-                            <option value="3.2GHz">3.2GHz</option>
-                            <option value="3.6GHz">3.6GHz</option>
-                            <option value="3.9GHz">3.9GHz</option>
-                        </flux:select>
+                        <flux:input label="Speed/GHz (required)" wire:model.defe="inline_clock_speed" mask="9.9GHz" />
                     @endif
 
                 @endif

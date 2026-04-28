@@ -11,7 +11,7 @@ use Illuminate\Validation\Rule;
 use Spatie\Permission\Models\Role;
 use App\Services\UserService;
 use App\Livewire\UsersTable;
-
+use Masmerise\Toaster\Toaster;
 
 class FormModal extends Component
 {
@@ -81,7 +81,8 @@ class FormModal extends Component
                 'role' => $this->selectedRole,
             ]);
 
-            $message = 'User updated successfully!';
+            // $message = 'User updated successfully!';
+            Toaster::success('User updated successfully!');
         } else {
             $userService->saveUser([
                 'name' => $this->name,
@@ -89,16 +90,16 @@ class FormModal extends Component
                 'password' => $this->password,
                 'role' => $this->selectedRole,
             ]);
-
-            $message = 'User created successfully!';
+            Toaster::success('User created successfully!');
+            // $message = 'User created successfully!';
         }
 
         $this->resetForm();
 
-        $this->dispatch('flash', [
-            'message' => $message,
-            'type' => 'success',
-        ]);
+        // $this->dispatch('flash', [
+        //     'message' => $message,
+        //     'type' => 'success',
+        // ]);
 
 
 

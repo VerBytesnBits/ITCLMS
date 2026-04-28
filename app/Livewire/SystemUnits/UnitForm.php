@@ -11,18 +11,19 @@ use App\Models\ComponentParts;
 use App\Models\Peripheral;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\On;
+use Masmerise\Toaster\Toaster;
 
 class UnitForm extends Component
 {
     public bool $show = false;
-    public string $mode = 'create'; 
+    public string $mode = 'create';
     public ?int $unitId = null;
 
     public ?string $category = null;
     public ?string $name = null;
     public ?string $serial_number = null;
     public ?string $status = null;
-    public ?string $condition = null;
+
     public ?int $room_id = null;
 
     public $quantity = 1;
@@ -33,13 +34,13 @@ class UnitForm extends Component
         'status' => 'In Use',
     ];
 
-    
+
     public $tempComponents = [];
     public $tempPeripherals = [];
 
 
 
-    
+
     #[On('tempComponentAdded')]
     public function addTempComponent(array $component)
     {
@@ -56,7 +57,7 @@ class UnitForm extends Component
     public function removeTempComponent($index)
     {
         if (!is_numeric($index)) {
-            return; 
+            return;
         }
 
         unset($this->tempComponents[(int) $index]);
@@ -108,7 +109,7 @@ class UnitForm extends Component
         $this->mode = 'create';
         $this->show = true;
 
-      
+
         $this->tempComponents = [];
         $this->tempPeripherals = [];
     }
@@ -131,7 +132,7 @@ class UnitForm extends Component
                 'room_id' => $unit->room_id,
             ]);
 
-           
+
             foreach ($unit->components as $component) {
                 $this->tempComponents[] = $component->toArray();
             }
@@ -141,7 +142,7 @@ class UnitForm extends Component
         }
     }
 
-   
+
     private function normalizePeripheral(array $peripheral, SystemUnit $unit): array
     {
         return [
@@ -168,11 +169,9 @@ class UnitForm extends Component
             empty($this->tempComponents) &&
             empty($this->tempPeripherals)
         ) {
-            $this->dispatch('swal', [
-                'icon' => 'error',
-                'title' => 'Incomplete Setup',
-                'text' => 'Please add the required component and peripheral for this unit.',
-            ]);
+            // Replaced $this->dispatch('swal', ...) with Toaster
+            Toaster::error('Please add the required component and peripheral for this unit.');
+
             return;
         }
 
@@ -183,7 +182,7 @@ class UnitForm extends Component
 
             [$startNumber] = $this->getNextIndex();
 
-           
+
             if ($this->mode === 'create' && $this->quantity > 1) {
                 for ($i = 0; $i < $this->quantity; $i++) {
                     $unitNumber = $startNumber + $i;
@@ -197,7 +196,7 @@ class UnitForm extends Component
                         'status' => $this->status,
                         'room_id' => $this->room_id,
                     ]);
-                    
+
                     foreach ($this->tempComponents as $component) {
                         $component['system_unit_id'] = $unit->id;
                         $component['room_id'] = $unit->room_id;
@@ -205,7 +204,7 @@ class UnitForm extends Component
                         ComponentParts::create($component);
                     }
 
-                 
+
                     foreach ($this->tempPeripherals as $peripheral) {
                         Peripheral::create(
                             $this->normalizePeripheral($peripheral, $unit)
@@ -220,10 +219,7 @@ class UnitForm extends Component
                     'title' => "{$this->quantity} system units created with components & peripherals",
                     'timer' => 3000,
                 ]);
-            }
-
-         
-            elseif ($this->mode === 'create') {
+            } elseif ($this->mode === 'create') {
                 $unitName = $this->name ?: $this->category . $startNumber;
                 $serial = $this->serial_number ?: $this->generateSerialSequential($startNumber);
 
@@ -249,20 +245,17 @@ class UnitForm extends Component
 
                 }
 
-               
+
                 $labName = optional($unit->room)->name ?? 'Lab';
 
-                
+
                 $this->dispatch('swal', [
                     'toast' => true,
                     'icon' => 'success',
                     'title' => "{$unitName} - {$labName} added successfully!",
                     'timer' => 3000,
                 ]);
-            }
-
-           
-            else {
+            } else {
                 $unitName = $this->name ?: $this->category . $startNumber;
                 $unit = SystemUnit::findOrFail($this->unitId);
                 $unit->update([
@@ -272,7 +265,7 @@ class UnitForm extends Component
                     'room_id' => $this->room_id,
                 ]);
 
-                
+
                 foreach ($this->tempComponents as $component) {
                     if (isset($component['id'])) {
                         $existing = ComponentParts::find($component['id']);
@@ -311,7 +304,7 @@ class UnitForm extends Component
 
         });
 
-       
+
         $this->tempComponents = [];
         $this->tempPeripherals = [];
 
@@ -321,7 +314,7 @@ class UnitForm extends Component
             ->to(UnitTable::class);
     }
 
-   
+
 
     private function getNextIndex(): array
     {

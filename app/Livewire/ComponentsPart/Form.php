@@ -27,10 +27,10 @@ class Form extends Component
     public $warranty_period_months;
 
     public $modalMode = 'create';
-    public $multiple = false;  
-    public $quantity = 1;       
-    public $room_id = null;
-    public $embedded = false; 
+    public $multiple = false;
+    public $quantity = 1;
+    public $room_id = '';
+    public $embedded = false;
 
     protected function rules()
     {
@@ -51,7 +51,7 @@ class Form extends Component
         ];
     }
 
-  
+
     protected function formData(): array
     {
         return $this->only([
@@ -80,7 +80,7 @@ class Form extends Component
             $this->componentId = $this->component->id;
             $this->modalMode = 'edit';
             $this->fill($this->component->only(array_keys($this->formData())));
-
+            $this->room_id = $this->room_id ?? '';
             $this->purchase_date = $this->component->purchase_date
                 ? Carbon::parse($this->component->purchase_date)->format('Y-m-d')
                 : null;
@@ -93,14 +93,14 @@ class Form extends Component
     public function save()
     {
         $this->validate();
-
+        $this->room_id = $this->room_id === '' ? null : $this->room_id;
         $data = $this->formData();
 
         if (!empty($data['warranty_period_months'])) {
             $data['warranty_period_months'] = (int) $data['warranty_period_months'];
         }
 
-        
+
         if ($this->embedded) {
 
             $this->dispatch(
@@ -154,7 +154,7 @@ class Form extends Component
         $this->dispatch($event);
         $this->dispatch('swal', toast: true, icon: 'success', title: $title, timer: 3000);
         $this->dispatch('closeModal');
-         $this->dispatch('refresh-part-table')
+        $this->dispatch('refresh-part-table')
             ->to(ComponentPartsTable::class);
     }
 

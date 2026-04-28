@@ -60,10 +60,10 @@ class SystemUnit extends Model
         return $this->hasMany(ComponentParts::class);
     }
 
-    public function maintenances()
-    {
-        return $this->morphMany(Maintenance::class, 'maintainable');
-    }
+    // public function maintenances()
+    // {
+    //     return $this->morphMany(Maintenance::class, 'maintainable');
+    // }
 
     protected static function booted()
     {

@@ -178,6 +178,7 @@ class UnitTable extends DataTableComponent
             Column::make("Id", "id")
                 ->sortable(),
             Column::make("Name", "name")
+                ->searchable()
                 ->sortable(),
             Column::make('Room')
                 ->label(function ($row) {
@@ -187,6 +188,7 @@ class UnitTable extends DataTableComponent
                 })
                 ->html(),
             Column::make("Serial number", "serial_number")
+                ->searchable()
                 ->sortable(),
 
 

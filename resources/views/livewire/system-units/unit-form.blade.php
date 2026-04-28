@@ -1,5 +1,5 @@
 <div class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 px-2 sm:px-4"
-     x-data="{ showParts: true }" x-cloak x-on:keydown.escape.window="$dispatch('closeModal')">
+     x-data="{ showParts: true }" wire:ignore.self x-cloak x-on:keydown.escape.window="$dispatch('closeModal')">
 
     <!-- Modal -->
     <div class="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl w-full max-w-screen-lg max-h-[95vh] flex flex-col animate-[fade-in-scale_0.2s_ease-out]"
@@ -25,7 +25,7 @@
                           wire:loading.class="opacity-50 pointer-events-none" wire:target="save">
 
                         <!-- Device Category -->
-                        <label class="block text-lg font-semibold text-heading mb-3">Device Category</label>
+                        <label class="block text-lg font-semibold text-heading mb-3">Device Category <span class="text-red-500">*</span></label>
                         <div class="grid grid-cols-2 gap-4 {{ $mode === 'edit' ? 'opacity-60 pointer-events-none select-none' : '' }}">
                             <!-- PC -->
                             <label for="category-pc"
@@ -56,7 +56,7 @@
                         </div>
 
                         <!-- Assign Room -->
-                        <label class="block text-lg font-semibold text-heading mb-3 mt-6">Assign Room</label>
+                        <label class="block text-lg font-semibold text-heading mb-3 mt-6">Assign Room <span class="text-red-500">*</span></label>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             @foreach ($rooms as $room)
                                 <label for="room-{{ $room->id }}"

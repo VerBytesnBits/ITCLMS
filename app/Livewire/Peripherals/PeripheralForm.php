@@ -16,7 +16,7 @@ class PeripheralForm extends Component
 
     public $peripheralId = null;
     public $system_unit_id;
-    public $room_id;
+    public $room_id = '';
     public $serial_number;
     public $brand;
     public $model;
@@ -69,7 +69,7 @@ class PeripheralForm extends Component
             'dpi' => ['nullable', 'integer'],          // Mouse
             'printer_type' => ['nullable', 'string'],  // Printer
             'wattage' => ['nullable', 'string'],       // Speaker
-          
+
             'resolution' => ['nullable', 'string'],    // Webcam
             'capacity_va' => ['nullable', 'string'],   // AVR / UPS
         ];
@@ -102,7 +102,7 @@ class PeripheralForm extends Component
             'dpi',
             'printer_type',
             'wattage',
-          
+
             'resolution',
             'capacity_va',
         ]);
@@ -118,6 +118,9 @@ class PeripheralForm extends Component
 
             $this->fill($this->peripheral->only(array_keys($this->formData())));
 
+          
+            $this->room_id = $this->room_id ?? '';
+
             $this->purchase_date = $this->peripheral->purchase_date
                 ? Carbon::parse($this->peripheral->purchase_date)->format('Y-m-d')
                 : null;
@@ -128,12 +131,14 @@ class PeripheralForm extends Component
         }
     }
 
-   
+
+
 
     public function save()
     {
-        $this->validate();
 
+        $this->validate();
+        $this->room_id = $this->room_id === '' ? null : $this->room_id;
         $data = $this->formData();
 
         if (!empty($data['warranty_period_months'])) {
@@ -159,8 +164,8 @@ class PeripheralForm extends Component
 
         $this->dispatch($event);
         $this->dispatch('swal', toast: true, icon: 'success', title: $title, timer: 3000);
-        $this->dispatch('closeModal');
-         $this->dispatch('refresh-part-table')
+        // $this->dispatch('closeModal');
+        $this->dispatch('refresh-part-table')
             ->to(PeripheralTable::class);
     }
 

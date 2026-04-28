@@ -39,25 +39,13 @@ class RolePermissionSeeder extends Seeder
             'update.laboratories',
             'delete.laboratories',
 
-            // Maintenance
-            'view.maintenance',
-            'create.maintenance',
-            'update.maintenance',
-            'delete.maintenance',
-
             // Reports
             'view.reports',
-            'export.reports',
+            
 
             // Users & Roles
             'manage.users',
             'manage.roles',
-
-
-            // QR Generator
-            'view.qr',
-            'create.qr',
-            'delete.qr',
 
             // Activity Logs
             'view.activitylogs',
@@ -95,15 +83,7 @@ class RolePermissionSeeder extends Seeder
             'create.laboratories',
             'update.laboratories',
 
-            'view.maintenance',
-            'create.maintenance',
-            'update.maintenance',
-
             'view.reports',
-            'export.reports',
-
-            'view.qr',
-            'create.qr',
 
             'view.activitylogs',
         ]);
@@ -121,14 +101,10 @@ class RolePermissionSeeder extends Seeder
 
             'view.laboratories',
 
-            'view.maintenance',
-            'create.maintenance',
-            'update.maintenance',
 
             'view.reports',
 
-            'view.qr',
-
+        
             'view.activitylogs',
         ]);
 

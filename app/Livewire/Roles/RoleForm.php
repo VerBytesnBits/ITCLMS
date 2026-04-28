@@ -6,7 +6,7 @@ use Livewire\Component;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 use Illuminate\Validation\ValidationException;
-
+use Masmerise\Toaster\Toaster;
 class RoleForm extends Component
 {
     public ?Role $role = null;
@@ -31,11 +31,41 @@ class RoleForm extends Component
 
         $this->showModal = true;
     }
+    private function normalizeRoleName($name)
+    {
+        // Convert camelCase → snake_case
+        $name = preg_replace('/(?<!^)[A-Z]/', '_$0', $name);
 
+        // Replace anything not letter/number with underscore
+        $name = preg_replace('/[^a-zA-Z0-9]+/', '_', $name);
+
+        // Lowercase + trim underscores
+        return trim(strtolower($name), '_');
+    }
+    private function normalizeBase($name)
+    {
+        // Remove EVERYTHING except letters and numbers
+        return strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $name));
+    }
     protected function rules()
     {
         return [
-            'roleName' => ['required', 'min:3', 'unique:roles,name,' . $this->roleId],
+            'roleName' => [
+                'required',
+                'min:3',
+                function ($attribute, $value, $fail) {
+                    $inputBase = $this->normalizeBase($value);
+
+                    $exists = Role::all()->contains(function ($role) use ($inputBase) {
+                        return $this->normalizeBase($role->name) === $inputBase
+                            && (!$this->roleId || $role->id != $this->roleId);
+                    });
+
+                    if ($exists) {
+                        $fail('Role already exists.');
+                    }
+                }
+            ],
             'permissions' => ['required']
         ];
     }
@@ -43,44 +73,28 @@ class RoleForm extends Component
 
     public function save()
     {
-        try {
-            $validated = $this->validate();
+        // Normalize FIRST
+       
 
-            if ($this->role) {
-                // Update existing role
-                $this->role->update(['name' => $this->roleName]);
+        // Validate AFTER normalization
+        $this->validate();
 
-                // Sync permissions
-                $this->role->syncPermissions($this->permissions);
+        if ($this->role) {
+            $this->role->update(['name' => $this->roleName]);
+            $this->role->syncPermissions($this->permissions);
 
-                // Show success alert
-                $this->dispatch('swal', toast: true, icon: 'success', title: 'Role Updated successfully', timer: 3000);
-                // Emit event
-                $this->dispatch('roleUpdated');
-            } else {
-                // Create new role
-                $role = Role::create(['name' => $this->roleName]);
+            Toaster::success('Role updated successfully!');
+            $this->dispatch('roleUpdated');
 
-                // Assign permissions
-                $role->syncPermissions($this->permissions);
+        } else {
+            $role = Role::create(['name' => $this->roleName]);
+            $role->syncPermissions($this->permissions);
 
-                // Show success alert
-                $this->dispatch('swal', toast: true, icon: 'success', title: 'Role Created successfully', timer: 3000);
-                // Emit event
-                $this->dispatch('roleCreated');
-            }
-
-            // Close modal or do other post-save actions
-            $this->dispatch('closeModal');
-        } catch (ValidationException $e) {
-            // Manually set errors for Blade validation display
-            $this->setErrorBag($e->validator->errors());
-
-            // Optional: Show error alert
-            $errors = $e->validator->errors()->all();
-            $this->dispatch('swal', toast: true, icon: 'error', title: implode(' ', $errors), timer: 3000);
-            return;
+            Toaster::success('Role created successfully!');
+            $this->dispatch('roleCreated');
         }
+
+        $this->dispatch('closeModal');
     }
     public function closeModal()
     {

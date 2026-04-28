@@ -8,6 +8,7 @@ use App\Livewire\Settings\TwoFactorAuthentication;
 use App\Livewire\Auth\TwoFactorAuthentication as TwoFA;
 use Illuminate\Support\Facades\Route;
 
+
 use App\Livewire\Peripherals\PeripheralIndex as peripherals;
 use App\Livewire\ComponentsPart\Index as Components;
 
@@ -33,7 +34,7 @@ Route::middleware(['auth', '2fa'])->group(function () {
     Route::view('roles', 'roles')->middleware('can:manage.roles')->name('roles');
     Route::view('rooms', 'rooms')->middleware('can:view.laboratories')->name('rooms');
     Route::get('units', units::class)->middleware('can:view.unit')->name('units');
-  
+
     Route::get('components', Components::class)->middleware('can:view.component')->name('components');
     Route::get('peripherals', peripherals::class)->middleware('can:view.peripheral')->name('peripherals');
 
@@ -49,6 +50,7 @@ Route::middleware(['auth', '2fa'])->group(function () {
         ->name('peripherals.report-preview');
     Route::get('components/report-preview', \App\Livewire\ComponentsPart\ComponentsPartsReport::class)
         ->name('components-part.components-parts-report');
+
 
 
     Route::redirect('settings', 'settings/profile');

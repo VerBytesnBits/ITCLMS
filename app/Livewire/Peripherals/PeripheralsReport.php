@@ -6,7 +6,8 @@ use Livewire\Component;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\Peripheral;
 use App\Models\Room;
-
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 class PeripheralsReport extends Component
 {
     public $roomId = null;
@@ -69,7 +70,8 @@ class PeripheralsReport extends Component
         $pdf = Pdf::loadView('livewire.peripherals.peripherals-summary-pdf', [
             'grouped' => $grouped,
             'roomName' => $roomName,
-        ])->setPaper('A4', 'portrait');
+            'conductedByName' => Auth::user()->name,
+        ])->setPaper('letter', 'portrait');
 
         $this->pdfBase64 = base64_encode($pdf->output());
         $this->showPreview = true;

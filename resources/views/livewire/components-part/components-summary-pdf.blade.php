@@ -91,6 +91,7 @@
             margin: 2px 0;
             padding: 0;
         }
+
     </style>
 </head>
 
@@ -113,48 +114,64 @@
         </tr>
     </table>
     <h2 style="text-align: center;">Component Inventory</h2>
-    <p><strong>Date:</strong> {{ \Carbon\Carbon::now()->format('m/d/Y') }}</p>
+    <table width="100%" style="margin-top:60px;">
+        <tr>
+            <td style="text-align:left;">
+                <strong>Date:</strong> {{ \Carbon\Carbon::now()->format('m/d/Y') }}
+            </td>
+
+            <td style="text-align:right;">
+                <p style="display:inline-block; width:300px; text-align:left;">Conducted by:</p>
+                <div style="display:inline-block; width:300px; text-align:center;">
+
+                    <div style="border-bottom:1px solid #000; padding-bottom:4px;">
+                        {{ $conductedByName }}
+                    </div>
+                    <div style="font-size:12px;">Signature over printed name</div>
+                </div>
+            </td>
+        </tr>
+    </table>
 
     @php
-        // Sort rooms: Unassigned first, then alphabetical
-        $sortedGrouped = $grouped->sortBy(function ($items, $roomName) {
-            return $roomName === 'Unassigned' ? '' : $roomName;
-        });
+    // Sort rooms: Unassigned first, then alphabetical
+    $sortedGrouped = $grouped->sortBy(function ($items, $roomName) {
+    return $roomName === 'Unassigned' ? '' : $roomName;
+    });
     @endphp
 
     @foreach ($sortedGrouped as $roomName => $items)
-        <h3>{{ $roomName }}</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th style="border: 1px solid #000;">Description</th>
-                    <th style="border: 1px solid #000;">Total</th>
-                    <th style="border: 1px solid #000;">Available</th>
-                    <th style="border: 1px solid #000;">In Use</th>
-                    <th style="border: 1px solid #000;">Defective</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach ($items as $row)
-                    <tr>
-                        <td style="text-align:left; border: 1px solid #000;">
-                            {{ $row['description'] }}
-                            @if ($row['available'] == 0)
-                                <span class="badge red">Out of stock</span>
-                            @elseif ($row['available'] < 3)
-                                <span class="badge yellow">Low stock</span>
-                            @else
-                                <span class="badge green">In stock</span>
-                            @endif
-                        </td>
-                        <td style="border: 1px solid #000;">{{ $row['total'] }}</td>
-                        <td style="border: 1px solid #000;">{{ $row['available'] }}</td>
-                        <td style="border: 1px solid #000;">{{ $row['in_use'] }}</td>
-                        <td style="border: 1px solid #000;">{{ $row['defective'] }}</td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
+    <h3>{{ $roomName }}</h3>
+    <table>
+        <thead>
+            <tr>
+                <th style="border: 1px solid #000;">Description</th>
+                <th style="border: 1px solid #000;">Total</th>
+                <th style="border: 1px solid #000;">Available</th>
+                <th style="border: 1px solid #000;">In Use</th>
+                <th style="border: 1px solid #000;">Defective</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach ($items as $row)
+            <tr>
+                <td style="text-align:left; border: 1px solid #000;">
+                    {{ $row['description'] }}
+                    @if ($row['available'] == 0)
+                    <span class="badge red">Out of stock</span>
+                    @elseif ($row['available'] < 3) <span class="badge yellow">Low stock</span>
+                        @else
+                        <span class="badge green">In stock</span>
+                        @endif
+                </td>
+                <td style="border: 1px solid #000;">{{ $row['total'] }}</td>
+                <td style="border: 1px solid #000;">{{ $row['available'] }}</td>
+                <td style="border: 1px solid #000;">{{ $row['in_use'] }}</td>
+                <td style="border: 1px solid #000;">{{ $row['defective'] }}</td>
+            </tr>
+            @endforeach
+        </tbody>
+    </table>
     @endforeach
 
 </body>

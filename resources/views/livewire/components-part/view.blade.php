@@ -139,7 +139,7 @@
             
             <div class="flex items-center gap-4 py-2">
                 <div class="flex flex-col items-center">
-                    <img src="{{ asset($component->barcode_path) }}" alt="Barcode" 
+                    <img src="{{ Storage::url($component->barcode_path) }}" alt="Barcode" 
                         class="h-10 w-auto object-contain bg-white p-1 border border-gray-300 rounded" loading="lazy">
                     <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mt-1">
                         Scan to verify
@@ -147,7 +147,7 @@
                 </div>
                 <div class="border-l border-gray-300 dark:border-zinc-700 h-10 hidden sm:block"></div>
                 <p class="text-sm font-medium text-gray-700 dark:text-gray-300 hidden sm:block">
-                    Asset Tag: **{{ $component->serial_number ?? '—' }}**
+                    Asset Tag: {{ $component->serial_number ?? '—' }}
                 </p>
             </div>
 

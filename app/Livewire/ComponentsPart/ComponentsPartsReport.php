@@ -6,7 +6,8 @@ use Livewire\Component;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\ComponentParts;
 use App\Models\Room;
-
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 class ComponentsPartsReport extends Component
 {
     public $roomId = null;
@@ -41,10 +42,12 @@ class ComponentsPartsReport extends Component
             $query->where(function ($q) use ($filters) {
                 // Check for direct room assignment
                 $q->where('room_id', $filters['room_id'])
-                  // OR check for room assignment via SystemUnit
-                  ->orWhereHas('systemUnit', fn($q2) =>
-                      $q2->where('room_id', $filters['room_id'])
-                  );
+                    // OR check for room assignment via SystemUnit
+                    ->orWhereHas(
+                        'systemUnit',
+                        fn($q2) =>
+                        $q2->where('room_id', $filters['room_id'])
+                    );
             });
         }
 
@@ -78,6 +81,7 @@ class ComponentsPartsReport extends Component
         $pdf = Pdf::loadView('livewire.components-part.components-summary-pdf', [
             'grouped' => $grouped,
             'roomName' => $roomName,
+            'conductedByName' => Auth::user()->name,
         ])->setPaper('letter', 'portrait');
 
         $this->pdfBase64 = base64_encode($pdf->output());
@@ -110,22 +114,22 @@ class ComponentsPartsReport extends Component
             $query->where(function ($q) {
                 // Check for direct room assignment
                 $q->where('room_id', $this->roomId)
-                  // OR check for room assignment via SystemUnit
-                  ->orWhereHas(
-                    'systemUnit',
-                    fn($q2) => $q2->where('room_id', $this->roomId)
-                );
+                    // OR check for room assignment via SystemUnit
+                    ->orWhereHas(
+                        'systemUnit',
+                        fn($q2) => $q2->where('room_id', $this->roomId)
+                    );
             });
         }
 
         $items = $query
-           
-            ->select('id', 'brand', 'model', 'type', 'speed' , 'barcode_path', 'room_id', 'system_unit_id')
+
+            ->select('id', 'brand', 'model', 'type', 'speed', 'barcode_path', 'room_id', 'system_unit_id')
             ->get();
 
         return $items->map(function ($item) {
-            
-        
+
+
             $roomName = $item->systemUnit->room->name ?? $item->room->name ?? 'Unknown Room';
 
             if (empty($item->barcode_path)) {

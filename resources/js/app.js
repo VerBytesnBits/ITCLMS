@@ -2,6 +2,7 @@ import './session-alert';
 import './stock-tooltip';
 import './bulkaction.js';
 
+import '../../vendor/masmerise/livewire-toaster/resources/js'; 
 // import qrScanner from './qr-scanner';
 import Chart from 'chart.js/auto';
 import labChart from './labChart.js';

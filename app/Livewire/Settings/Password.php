@@ -8,6 +8,7 @@ use Illuminate\Validation\Rules\Password as PasswordRule;
 use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 use Livewire\Attributes\Layout;
+use Masmerise\Toaster\Toaster;
 
 #[Layout('components.layouts.app', ['title' => 'Password'])]
 class Password extends Component
@@ -39,7 +40,7 @@ class Password extends Component
         ]);
 
         $this->reset('current_password', 'password', 'password_confirmation');
-
+        Toaster::success('Password updated successfully!');
         $this->dispatch('password-updated');
     }
 }

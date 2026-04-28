@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Session;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
 use Livewire\Attributes\Layout;
+use Masmerise\Toaster\Toaster;
 
 #[Layout('components.layouts.app', ['title' => 'Profile'])]
 class Profile extends Component
@@ -52,7 +53,7 @@ class Profile extends Component
         }
 
         $user->save();
-
+        Toaster::success('Profile updated successfully!');
         $this->dispatch('profile-updated', name: $user->name);
     }
 
