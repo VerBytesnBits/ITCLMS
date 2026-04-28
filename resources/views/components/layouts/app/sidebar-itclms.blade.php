@@ -7,7 +7,7 @@
 
 <body class="min-h-screen bg-blue-200 dark:bg-zinc-800">
     <flux:sidebar sticky collapsible
-        class="border-zinc-200 bg-gradient-to-b from-blue-400 to-blue-300 
+        class="border-zinc-200 bg-linear-to-b from-blue-400 to-blue-300 
            dark:from-gray-900 dark:to-gray-800 dark:border-zinc-700 drop-shadow-lg">
 
         <x-app-logo />
@@ -138,7 +138,7 @@
     </flux:sidebar>
 
     <flux:header sticky
-        class="border-zinc-200 bg-gradient-to-r from-blue-400 to-blue-300 
+        class="border-zinc-200 bg-linear-to-r from-blue-400 to-blue-300 
            dark:from-gray-900 dark:to-gray-800 dark:border-zinc-700 drop-shadow-lg">
 
         <!-- Sidebar Toggle -->

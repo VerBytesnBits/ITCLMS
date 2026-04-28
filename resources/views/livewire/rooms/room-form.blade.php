@@ -6,7 +6,7 @@
 
             <!-- Header -->
             <div
-                class="px-6 py-4 bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700
+                class="px-6 py-4 bg-linear-to-r from-blue-500 via-blue-600 to-blue-700
                        text-white border-b border-blue-700 flex items-center justify-between">
                 <h2 class="text-lg font-semibold flex items-center gap-2">
                     <flux:icon.layout-grid class="w-5 h-5" />

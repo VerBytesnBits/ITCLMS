@@ -2,8 +2,8 @@
      x-data="{ showParts: true }" wire:ignore.self x-cloak x-on:keydown.escape.window="$dispatch('closeModal')">
 
     <!-- Modal -->
-    <div class="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl w-full max-w-screen-lg max-h-[95vh] flex flex-col animate-[fade-in-scale_0.2s_ease-out]"
-         :class="showParts ? 'max-w-screen-xl' : 'max-w-screen-md'">
+    <div class="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl w-full max-w-5xl max-h-[95vh] flex flex-col animate-[fade-in-scale_0.2s_ease-out]"
+         :class="showParts ? 'max-w-7xl' : 'max-w-3xl'">
 
         <!-- Header -->
         <div class="flex items-center justify-between px-5 py-3 bg-blue-600 text-white rounded-t-2xl">
@@ -65,7 +65,7 @@
                                        {{ $room_id == $room->id ? 'border border-black shadow-lg' : 'border border-default-medium bg-neutral-primary-soft' }}">
                                     <input id="room-{{ $room->id }}" type="radio" name="room_id" value="{{ $room->id }}"
                                            wire:model.defer="room_id" wire:change="generateUnitName" class="hidden">
-                                    <span class="text-sm font-medium text-heading flex-grow ">{{ $room->name }}</span>
+                                    <span class="text-sm font-medium text-heading grow ">{{ $room->name }}</span>
                                     <div class="w-6 h-6 flex items-center justify-center rounded-full border shrink-0
                                         {{ $room_id == $room->id ? 'bg-yellow-500 border-yellow-500' : 'bg-neutral-primary-soft border-default-medium' }}">
                                         @if ($room_id == $room->id)

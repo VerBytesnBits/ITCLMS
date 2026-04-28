@@ -5,8 +5,8 @@
         <!-- Card Container -->
         <div x-show="open" x-transition.origin.top.duration.300ms.scale.95 class="bg-white dark:bg-zinc-800 shadow-2xl rounded-2xl w-full max-w-xl overflow-hidden">
             <!-- Header -->
-            <div class="px-6 py-4 bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 text-white flex justify-between items-center">
-                <flux:legend class="text-xl font-semibold mb-0 !text-white">
+            <div class="px-6 py-4 bg-linear-to-r from-blue-600 via-blue-700 to-blue-800 text-white flex justify-between items-center">
+                <flux:legend class="text-xl font-semibold mb-0 text-white!">
                     {{ $componentId ? 'Update Component' : 'Add Component' }}
                 </flux:legend>
                 <button wire:click="$dispatch('closeModal')" class="p-2 rounded-full hover:bg-red-500 transition">
@@ -65,30 +65,9 @@
                             </div>
                         </div>
 
-                        {{-- Serial Number --}}
-                        {{-- @if ($multiple)
-                            <div
-                                class="text-sm text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-zinc-800 border 
-                                border-gray-200 dark:border-zinc-700 rounded-lg px-3 py-2 mt-2 mb-2">
-                                Serial numbers will be auto-generated for each item.
-                            </div>
-                        @else --}}
+                    
                         <flux:input label="Serial Number (required)" type="text" wire:model="serial_number" />
-                        {{-- @endif --}}
-
-                        {{-- Multiple Checkbox
-                        @if ($modalMode === 'edit')
-                            <flux:checkbox wire:model.live="multiple" label="Add more" disabled />
-                        @else
-                            <flux:checkbox wire:model.live="multiple" label="Add more" />
-                        @endif
-
-                        {{-- Quantity --}}
-                        {{-- @if ($multiple)
-                            <label class="block text-sm font-medium">Quantity</label>
-                            <flux:input type="number" wire:model="quantity" min="1" />
-                        @endif --}}
-
+                       
                         {{-- Brand & Model --}}
                         <div class="grid grid-cols-2 gap-4 mb-2">
                             <flux:input list="brands" label="Brand" wire:model="brand" />

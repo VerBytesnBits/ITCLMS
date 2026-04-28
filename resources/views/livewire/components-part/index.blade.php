@@ -8,7 +8,7 @@
         </div>
 
         <div class="w-full sm:w-auto ">
-            <flux:button icon="circle-plus" variant="primary" color="green" wire:click="openCreateModal" class="text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-green-300 dark:focus:ring-green-800 font-medium rounded-base text-sm px-4 py-2.5 text-center leading-5 cursor-pointer">
+            <flux:button icon="circle-plus" variant="primary" color="green" wire:click="openCreateModal" class="text-white bg-linear-to-r from-green-400 via-green-500 to-green-600 hover:bg-linear-to-br focus:ring-4 focus:outline-none focus:ring-green-300 dark:focus:ring-green-800 font-medium rounded-base text-sm px-4 py-2.5 text-center leading-5 cursor-pointer">
                 Add Component
             </flux:button>
         </div>
@@ -43,8 +43,8 @@
                     </flux:tooltip.content>
                 </flux:tooltip>
                 <flux:tooltip hoverable>
-                    <flux:button icon="printer" size="sm" variant="primary" :href="route('components-part.components-parts-report')" wire:navigate class="text-white bg-gradient-to-r from-gray-400 via-gray-500 to-gray-600 
-           hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-gray-300 
+                    <flux:button icon="printer" size="sm" variant="primary" :href="route('components-part.components-parts-report')" wire:navigate class="text-white bg-linear-to-r from-gray-400 via-gray-500 to-gray-600 
+           hover:bg-linear-to-br focus:ring-4 focus:outline-none focus:ring-gray-300 
            dark:focus:ring-gray-800 shadow-lg shadow-gray-500/50 
            dark:shadow-lg dark:shadow-gray-800/80 
            font-medium rounded-base text-sm px-4 py-2.5 inline-flex items-center gap-1 cursor-pointer">

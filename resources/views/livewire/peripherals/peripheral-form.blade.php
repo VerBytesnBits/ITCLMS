@@ -7,9 +7,9 @@
         <div x-show="open" x-transition.origin.top.duration.300ms.scale.95 class="bg-white dark:bg-zinc-800 shadow-2xl rounded-2xl w-full max-w-xl overflow-hidden">
 
             <!-- Header -->
-            <div class="px-6 py-4 bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800
+            <div class="px-6 py-4 bg-linear-to-r from-blue-600 via-blue-700 to-blue-800
                        text-white flex justify-between items-center">
-                <flux:legend class="text-xl font-semibold mb-0 !text-white">
+                <flux:legend class="text-xl font-semibold mb-0 text-white!">
                     {{ $peripheralId ? 'Update Peripheral' : 'Add Peripheral' }}
                 </flux:legend>
 
