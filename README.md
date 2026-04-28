@@ -1,8 +1,9 @@
 Install this Requirements : 
-XAMPP
-Composer
-PHP 8.3
-laravel 12
+XAMPP,
+Composer,
+PHP 8.3,
+laravel 12,
+NodeJS
 
 then after done "composer install"  to install all the dependecies 
 
