@@ -48,7 +48,7 @@
                     >
                         <option value="">Select Action</option>
                         <option value="delete">Delete Permanently</option>
-                        <option value="decommission">Decommission</option>
+                        <option value="decommission">Move to Junk</option>
 
                     </select>
                     <flux:icon name="chevron-down" class="w-4 h-4 absolute right-3 top-2.5 text-zinc-400 pointer-events-none" />

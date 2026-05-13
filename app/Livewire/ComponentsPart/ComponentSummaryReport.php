@@ -7,7 +7,8 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\ComponentParts;
 use App\Traits\HasInventorySummary;
 use App\Models\Room;
-
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 class ComponentSummaryReport extends Component
 {
     use HasInventorySummary;
@@ -79,7 +80,11 @@ class ComponentSummaryReport extends Component
         $pdf = Pdf::loadView('livewire.components-part.components-summary-pdf', [
             'summary' => $summary,
             'roomName' => $roomName,
-        ])->setPaper('A4', 'portrait');
+            'conductedByName' => Auth::user()->name,
+            'conductedByRole' => Auth::user()->getRoleNames()->first(),
+            'labInCharge' => User::role('lab_incharge')->first(),
+            'chairman' => User::role('chairman')->first(),
+        ])->setPaper('letter', 'portrait');
 
         $this->pdfBase64 = base64_encode($pdf->output());
         $this->showPreview = true;
@@ -108,6 +113,10 @@ class ComponentSummaryReport extends Component
             echo Pdf::loadView('livewire.components-part.components-summary-pdf', [
                 'summary' => $summary,
                 'roomName' => $roomName,
+                'conductedByName' => Auth::user()->name,
+                'conductedByRole' => Auth::user()->getRoleNames()->first(),
+                'labInCharge' => User::role('lab_incharge')->first(),
+                'chairman' => User::role('chairman')->first(),
             ])->output();
         }, 'component-summary.pdf');
     }

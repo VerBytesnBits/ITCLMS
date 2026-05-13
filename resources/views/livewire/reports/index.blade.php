@@ -1,14 +1,5 @@
 <div class="space-y-6">
-    <!-- Header -->
-    {{-- <div class="flex items-center justify-between">
-        <div>
-            <h2 class="text-2xl font-bold text-zinc-800 dark:text-zinc-100 flex items-center gap-2">
-                <flux:icon.chart-pie class="w-6 h-6 text-indigo-500" />
-                Reports
-            </h2>
-            <p class="text-sm text-zinc-500">Generate and export system reports</p>
-        </div>
-    </div> --}}
+    
     <livewire:dashboard-heading title="Reports" subtitle="Generate and export system reports" icon="cube"
         gradient-from-color="#3b82f7" gradient-to-color="#1e40af" icon-color="text-blue-600" />
     <!-- Filters -->
@@ -95,7 +86,7 @@
                                     {{ $record->status ?? '-' }}
                                 </span>
                             </td>
-                            {{-- <td class="p-3">{{ $record->condition ?? '-' }}</td> --}}
+                           
                         @elseif($reportType == 'qr')
                             <td class="p-3">{{ class_basename($record->item_type) }}</td>
                             <td class="p-3">{{ $record->item->serial_number ?? '-' }}</td>

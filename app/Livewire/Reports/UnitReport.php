@@ -70,7 +70,7 @@ class UnitReport extends Component
 
     protected function generatePdf(): string
     {
-        
+
         if ($this->previousPdf && Storage::disk('public')->exists($this->previousPdf)) {
             Storage::disk('public')->delete($this->previousPdf);
         }
@@ -106,16 +106,9 @@ class UnitReport extends Component
 
             'reportDate' => now()->format('F d, Y'),
         ])->setPaper('letter', 'landscape')
-            ->setOption('isPhpEnabled', true); 
+            ->setOption('isPhpEnabled', true);
 
-        $canvas = $pdf->getDomPDF()->getCanvas();
-        $canvas->page_script(function ($pageNumber, $pageCount, $canvas, $fontMetrics) {
-            $font = $fontMetrics->get_font("Helvetica", "normal");
-            $x = $canvas->get_width() - 50;
-            $y = $canvas->get_height() - 30;
-            $canvas->text($x, $y, "System unit inventory $pageNumber of $pageCount", $font, 10, [0, 0, 0]);
-        });
-
+    
 
         $fileName = 'reports/unit_report_' . Str::uuid() . '.pdf';
         Storage::disk('public')->put($fileName, $pdf->output());

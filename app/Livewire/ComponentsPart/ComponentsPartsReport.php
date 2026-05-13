@@ -82,6 +82,8 @@ class ComponentsPartsReport extends Component
             'grouped' => $grouped,
             'roomName' => $roomName,
             'conductedByName' => Auth::user()->name,
+            'labInCharge' => User::role('lab_incharge')->first(),
+            'chairman' => User::role('chairman')->first(),
         ])->setPaper('letter', 'portrait');
 
         $this->pdfBase64 = base64_encode($pdf->output());

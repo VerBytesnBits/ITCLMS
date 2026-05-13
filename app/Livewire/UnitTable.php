@@ -11,9 +11,11 @@ use Illuminate\Database\Eloquent\Builder;
 use App\Support\StatusConfig;
 use Livewire\Attributes\On;
 use App\Models\SystemUnit;
-
+use App\Traits\SystemUnitQueryTrait;
+use Rappasoft\LaravelLivewireTables\Events\FilterApplied;
 class UnitTable extends DataTableComponent
 {
+    use SystemUnitQueryTrait;
     protected $model = SystemUnit::class;
 
     public string $tableName = 'unit_table';
@@ -41,6 +43,7 @@ class UnitTable extends DataTableComponent
             ->setQueryStringDisabled()
             ->setPerPageAccepted([5, 10, 25, 50])
             ->setPerPage(10);
+   
 
     }
 
@@ -144,9 +147,6 @@ class UnitTable extends DataTableComponent
                 }),
 
 
-
-
-
             SelectFilter::make('Status')
                 ->options([
                     '' => 'All Status',          // default
@@ -159,18 +159,15 @@ class UnitTable extends DataTableComponent
                         $builder->where('status', $value); // simple direct filter
                     }
                 }),
-
-
-
-
         ];
     }
+
     public function builder(): Builder
     {
-        return SystemUnit::query()
-            ->with(['components', 'peripherals']); // ⚡ MUST eager load
+        return $this->baseUnitsQuery();
     }
 
+  
 
     public function columns(): array
     {

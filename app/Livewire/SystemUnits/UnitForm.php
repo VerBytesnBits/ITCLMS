@@ -308,7 +308,8 @@ class UnitForm extends Component
         $this->tempComponents = [];
         $this->tempPeripherals = [];
 
-        $this->dispatch($this->mode === 'create' ? 'unitCreated' : 'unitUpdated');
+       
+        $this->dispatch('unit-saved');
         $this->dispatch('closeModal');
         $this->dispatch('refresh-part-table')
             ->to(UnitTable::class);

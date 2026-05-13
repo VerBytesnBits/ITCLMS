@@ -114,22 +114,22 @@
                     </div>
 
                     <div class="flex flex-wrap gap-2">
-                        @forelse($room->users->where('pivot.role_in_room', 'lab_technician') as $tech)
+                        @forelse($room->users->filter(fn($u) => !in_array($u->pivot->role_in_room, ['lab_incharge', 'chairman'])) as $tech)
                         <span class="flex items-center gap-2 px-3 py-1 rounded-lg text-xs font-medium
-                                    bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300
-                                        group relative">
+                bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300
+                group relative">
 
                             {{ $tech->name }}
+                            <span class="text-indigo-400 dark:text-indigo-500 text-[10px]">({{ $tech->pivot->role_in_room }})</span>
 
                             <button wire:click="removeTechnician({{ $room->id }}, {{ $tech->id }})" class="group-hover:opacity-100 transition-opacity duration-200
-                                           text-gray-500 hover:text-red-700 dark:hover:text-red-400" title="Unassign Lab-Technician">
-                                <flux:icon.x class="w-3.5 h-3.5 " />
+                       text-gray-500 hover:text-red-700 dark:hover:text-red-400" title="Unassign">
+                                <flux:icon.x class="w-3.5 h-3.5" />
                             </button>
                         </span>
                         @empty
                         <span class="text-gray-400 text-sm">—</span>
                         @endforelse
-
                     </div>
                 </div>
 

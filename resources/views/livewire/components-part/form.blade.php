@@ -21,7 +21,10 @@
 
                         {{-- Part --}}
                         @if ($modalMode === 'edit')
-                        <flux:select label="Category" wire:model.live="part" disabled>
+                        <flux:label>
+                            <h1 class="text-xl font-semibold">Category <span class="text-red-500 text-2xl">*</span></h1>
+                        </flux:label>
+                        <flux:select wire:model.live="part" disabled>
                             <option value="">Select Component Category</option>
                             <option value="CPU" {{ $part === 'CPU' ? 'selected' : '' }}>CPU</option>
                             <option value="Motherboard" {{ $part === 'Motherboard' ? 'selected' : '' }}>Motherboard
@@ -33,7 +36,10 @@
                             <option value="Casing" {{ $part === 'Casing' ? 'selected' : '' }}>Casing</option>
                         </flux:select>
                         @else
-                        <flux:select label="Category{{ $part ? ': ' . $part : '' }} (required)" wire:model.live="part" size="6">
+                        <flux:label>
+                            <h1 class="text-xl font-semibold">Category <span class="text-red-500 text-2xl">*</span> {{ $part ? ': ' . $part : '' }}</h1>
+                        </flux:label>
+                        <flux:select wire:model.live="part" size="6">
 
                             <option value="CPU" class="text-2xl">CPU</option>
                             <option value="Motherboard" class="text-2xl">Motherboard</option>
@@ -45,9 +51,9 @@
                         </flux:select>
                         @endif
                         <div class="space-y-2 mb-2">
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                Room (required)
-                            </label>
+                            <flux:label>
+                                <h1 class="text-xl font-semibold">Room <span class="text-red-500 text-2xl">*</span></h1>
+                            </flux:label>
 
                             <div class="grid grid-cols-2 gap-2 ">
                                 {{-- Unassigned (default) --}}
@@ -65,67 +71,129 @@
                             </div>
                         </div>
 
-                    
-                        <flux:input label="Serial Number (required)" type="text" wire:model="serial_number" />
-                       
-                        {{-- Brand & Model --}}
-                        <div class="grid grid-cols-2 gap-4 mb-2">
-                            <flux:input list="brands" label="Brand" wire:model="brand" />
-                            <datalist id="brands">
-                                <option value="Intel">
-                                <option value="AMD">
-                                <option value="Asus">
-                                <option value="Samsung">
-                                <option value="Western Digital">
-                                <option value="Seagate">
-                                <option value="Kingston">
-                            </datalist>
+                        <flux:label>
+                            <h1 class="text-xl font-semibold">Serial Number <span class="text-red-500 text-2xl">*</span></h1>
+                        </flux:label>
+                        <flux:input type="text" wire:model="serial_number" />
 
-                            <flux:input list="models" label="Model" wire:model="model" />
-                            <datalist id="models">
-                                @if (strtolower($brand) === 'intel')
-                                <option value="Core i5">
-                                <option value="Core i7">
-                                <option value="Core i9">
-                                    @elseif (strtolower($brand) === 'amd')
-                                <option value="Ryzen 5 5600G">
-                                <option value="Ryzen 7 5700X">
-                                    @elseif (strtolower($brand) === 'asus')
-                                <option value="PRIME Z690">
-                                <option value="ROG Strix">
-                                    @endif
-                            </datalist>
+                        {{-- Brand & Model --}}
+                        <div class="grid grid-cols-2 gap-4 mb-2 mt-2">
+
+                            {{-- Brand --}}
+                            <div>
+                                <flux:label class="text-lg ">
+                                   <h1> Brand <span class="text-red-500 text-2xl">*</span></h1>
+                                </flux:label>
+
+                                <flux:input class="text-lg" list="brands" wire:model="brand" />
+
+                                <datalist id="brands">
+                                    <option value="Intel">
+                                    <option value="AMD">
+                                    <option value="Asus">
+                                    <option value="Samsung">
+                                    <option value="Western Digital">
+                                    <option value="Seagate">
+                                    <option value="Kingston">
+                                </datalist>
+                            </div>
+
+                            {{-- Model --}}
+                            <div>
+                                <flux:label class="text-lg ">
+                                   <h1> Model <span class="text-red-500 text-2xl">*</span></h1>
+                                </flux:label>
+
+                                <flux:input class="text-lg" list="models" wire:model="model" />
+
+                                <datalist id="models">
+                                    @if (strtolower($brand) === 'intel')
+                                    <option value="Core i5">
+                                    <option value="Core i7">
+                                    <option value="Core i9">
+
+                                        @elseif (strtolower($brand) === 'amd')
+                                    <option value="Ryzen 5 5600G">
+                                    <option value="Ryzen 7 5700X">
+
+                                        @elseif (strtolower($brand) === 'asus')
+                                    <option value="PRIME Z690">
+                                    <option value="ROG Strix">
+                                        @endif
+                                </datalist>
+                            </div>
+
                         </div>
 
                         {{-- Conditional Fields --}}
                         @if ($part === 'CPU')
-                        <flux:input label="Speed/GHz (required)" wire:model="speed" mask="9.9GHz" />
+                        <flux:label>
+                            <h1>Speed/GHz <span class="text-red-500 text-2xl">*</span></h1>
+                        </flux:label>
+                        <flux:input wire:model="speed" mask="9.9GHz" />
                         @elseif ($part === 'RAM')
                         <div class="grid grid-cols-2 gap-4">
-                            <flux:input label="Capacity (required)" wire:model="capacity" mask="99GB" />
-                            <flux:select label="Type" wire:model="type">
-                                <option value="">Select Type</option>
-                                <option value="DDR3">DDR3</option>
-                                <option value="DDR4">DDR4</option>
-                                <option value="DDR5">DDR5</option>
-                            </flux:select>
+
+                            {{-- Capacity --}}
+                            <div>
+                                <flux:label class="text-lg ">
+                                    <h1>Capacity <span class="text-red-500 text-2xl">*</span></h1>
+                                </flux:label>
+
+                                <flux:input class="text-lg" wire:model="capacity" mask="99GB" />
+                            </div>
+
+                            {{-- Type --}}
+                            <div>
+                                <flux:label class="text-lg">
+                                    <h1>Type <span class="text-red-500 text-2xl">*</span></h1>
+                                </flux:label>
+
+                                <flux:select class="text-lg" wire:model="type">
+                                    <option value="">Select Type</option>
+                                    <option value="DDR3">DDR3</option>
+                                    <option value="DDR4">DDR4</option>
+                                    <option value="DDR5">DDR5</option>
+                                </flux:select>
+                            </div>
+
                         </div>
                         @elseif ($part === 'Storage')
                         <div class="grid grid-cols-2 gap-4">
-                            <flux:select label="Capacity (required)" wire:model="capacity">
-                                <option value="">Select Capacity</option>
-                                <option value="500GB">500GB</option>
-                                <option value="1TB">1TB</option>
-                                <option value="2TB">2TB</option>
-                            </flux:select>
-                            <flux:select label="Type (required)" wire:model="type">
-                                <option value="">Select Type</option>
-                                <option value="SSD">SSD</option>
-                                <option value="HDD">HDD</option>
-                            </flux:select>
+
+                            {{-- Capacity --}}
+                            <div>
+                                <flux:label class="text-lg ">
+                                    <h1>Capacity <span class="text-red-500 text-2xl">*</span></h1>
+                                </flux:label>
+
+                                <flux:select class="text-lg" wire:model="capacity">
+                                    <option value="">Select Capacity</option>
+                                    <option value="500GB">500GB</option>
+                                    <option value="1TB">1TB</option>
+                                    <option value="2TB">2TB</option>
+                                </flux:select>
+                            </div>
+
+                            {{-- Type --}}
+                            <div>
+                                <flux:label class="text-lg">
+                                    <h1>Type <span class="text-red-500 text-2xl">*</span></h1>
+                                </flux:label>
+
+                                <flux:select class="text-lg" wire:model="type">
+                                    <option value="">Select Type</option>
+                                    <option value="SSD">SSD</option>
+                                    <option value="HDD">HDD</option>
+                                </flux:select>
+                            </div>
+
                         </div>
                         @elseif ($part === 'GPU')
-                        <flux:input label="Capacity (required)" wire:model="capacity" mask="9GB" />
+                        <flux:label class="text-lg ">
+                            <h1>Capacity <span class="text-red-500 text-2xl">*</span></h1>
+                        </flux:label>
+                        <flux:input wire:model="capacity" mask="9GB" />
                         @endif
 
                         {{-- Status --}}

@@ -173,6 +173,40 @@
         </tbody>
     </table>
     @endforeach
+    <div style="page-break-before: always;"></div>
+     <table class="signatory-table" style="width:100%; margin-top:30px;">
+        <!-- ROW 1: CONFIRMED BY -->
+        <tr>
+            <td style="width:100%; text-align:left; padding-bottom:40px;">
+                <strong>CONFIRMED BY:</strong><br><br>
+
+                <span class="signature-line" style="display:inline-block; width:250px; border-bottom:1px solid #000;">
+                    <strong>{{ $labInCharge?->name ?? ' ' }}</strong> </span><br>
+
+
+                <span style="font-size:10px;">
+                    Laboratory In-Charge
+                </span><br>
+
+                Information Technology Department
+            </td>
+        </tr>
+
+        <!-- ROW 2: NOTED BY -->
+        <tr>
+            <td style="width:100%; text-align:left; padding-top:20px;">
+                <strong>NOTED BY:</strong><br><br>
+
+                <span class="signature-line" style="display:inline-block; width:250px; border-bottom:1px solid #000;">
+                    <strong>{{ $chairman?->name ?? ' ' }}</strong> </span><br>
+                <span style="font-size:10px;">
+                    Chairman
+                </span><br>
+
+                Information Technology Department
+            </td>
+        </tr>
+    </table>
 
 </body>
 

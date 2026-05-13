@@ -11,12 +11,14 @@ use Livewire\Attributes\On;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
 use Livewire\Attributes\Lazy;
+use App\Traits\SystemUnitQueryTrait;
+use App\Models\Room;
 
 #[Lazy]
 #[Layout('components.layouts.app', ['title' => 'Units'])]
 class UnitIndex extends Component
 {
-    use WithPagination;
+    use WithPagination, SystemUnitQueryTrait;
 
     public $rooms = [];
     public $search = '';
@@ -33,8 +35,6 @@ class UnitIndex extends Component
     public $showAssignModal = false;
     public $assignUnitId = null;
 
-    public $operationalCount = 0;
-    public $nonOperationalCount = 0;
 
     public function placeholder()
     {
@@ -43,44 +43,19 @@ class UnitIndex extends Component
 
     public function mount()
     {
-        $this->rooms = \App\Models\Room::orderBy('name')->get();
-        $this->updateUnitCounts();
+        $this->rooms = Room::orderBy('name')->get();
+
     }
 
     public function updatedSelectedRoom()
     {
         $this->resetPage();
-        $this->updateUnitCounts();
+
     }
 
     public function updatedStatusFilter()
     {
         $this->resetPage();
-    }
-
-    protected function updateUnitCounts()
-    {
-        $user = Auth::user();
-        $query = SystemUnit::query()->with(['components', 'peripherals']); 
-
-        if ($this->selectedRoom) {
-            $query->where('room_id', $this->selectedRoom);
-        }
-
-        if (!$user->hasAnyRole(['chairman'])) {
-            $roomIds = $user->rooms->pluck('id');
-            $query->whereIn('room_id', $roomIds);
-        }
-
-        // // Dynamically update status of all units in this query
-        // $units = $query->get();
-        // foreach ($units as $unit) {
-        //     $unit->checkOperationalStatus(); 
-        // }
-
-       
-        $this->operationalCount = (clone $query)->where('status', 'Operational')->count();
-        $this->nonOperationalCount = (clone $query)->where('status', 'Non-Operational')->count();
     }
 
 
@@ -89,11 +64,10 @@ class UnitIndex extends Component
         $units = SystemUnit::with(['components', 'peripherals'])->get();
 
         foreach ($units as $unit) {
-            
+
             $unit->save();
         }
 
-        $this->updateUnitCounts();
     }
 
 
@@ -105,44 +79,10 @@ class UnitIndex extends Component
     {
         $this->resetPage();
         $this->updateUnitStatuses();
-        $this->updateUnitCounts();
+
         $this->dispatch('refresh-part-table')
             ->to(UnitTable::class);
-    }
-
-    public function getUnitsProperty()
-    {
-        $user = Auth::user();
-
-        $query = SystemUnit::with(['room', 'components', 'peripherals']);
-
-        
-        if (!$user->hasAnyRole(['chairman', 'Tester'])) {
-            $roomIds = $user->rooms->pluck('id');
-            $query->whereIn('room_id', $roomIds);
-        }
-
-        
-        $query->when($this->selectedRoom, fn($q) => $q->where('room_id', $this->selectedRoom));
-
-       
-        $query->when(
-            $this->search,
-            fn($q) =>
-            $q->where('name', 'like', "%{$this->search}%")
-                ->orWhereHas('room', fn($r) => $r->where('name', 'like', "%{$this->search}%"))
-        );
-
-       
-        $units = $query->orderBy('id', 'desc')->paginate(10);
-
-       
-        if ($this->statusFilter) {
-            $filtered = $units->getCollection()->filter(fn($unit) => $unit->status === $this->statusFilter);
-            $units->setCollection($filtered);
-        }
-
-        return $units;
+            
     }
 
 
@@ -186,11 +126,7 @@ class UnitIndex extends Component
 
     public function render()
     {
-        $this->updateUnitCounts(); 
-
-        return view('livewire.system-units.unit-index', [
-            'units' => $this->units,
-        ]);
+        return view('livewire.system-units.unit-index');
     }
 
 }

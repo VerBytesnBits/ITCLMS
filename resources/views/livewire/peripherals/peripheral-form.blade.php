@@ -19,12 +19,16 @@
             </div>
 
             <!-- Body -->
-            <div class="p-6 space-y-6">
+            <div class="p-6 space-y-6 text-lg">
                 <form wire:submit.prevent="save" class="space-y-6">
                     <flux:fieldset>
                         @if ($modalMode === 'edit')
-                        <flux:select label="Category" wire:model.live="type" disabled>
-                            <option value="">Select Component Category</option>
+                        <flux:label>
+                            <h1 class="text-xl font-semibold">Category <span class="text-red-500 text-2xl">*</span></h1> 
+                        </flux:label>
+                        <flux:select wire:model.live="type" disabled>
+
+                            <option value="">Select Component Category </option>
                             <option value="Monitor" {{ $type === 'Monitor' ? 'selected' : '' }}>Monitor</option>
                             <option value="Keyboard" {{ $type === 'Keyboard' ? 'selected' : '' }}>Keyboard
                             </option>
@@ -34,7 +38,10 @@
                             <option value="UPS" {{ $type === 'UPS' ? 'selected' : '' }}>UPS</option>
                         </flux:select>
                         @else
-                        <flux:select label="Category{{ $type ? ': ' . $type : '' }} (required)" wire:model.live="type" size="2">
+                        <flux:label>
+                            <h1 class="text-xl font-semibold">Category <span class="text-red-500 text-2xl">*</span> {{ $type ? ': ' . $type : '' }}</h1>
+                        </flux:label>
+                        <flux:select wire:model.live="type" size="2">
 
                             <option value="Monitor" class="text-2xl">Monitor</option>
                             <option value="Keyboard" class="text-2xl">Keyboard</option>
@@ -47,9 +54,9 @@
 
 
                         <div class="space-y-2 mb-2">
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                Room (required)
-                            </label>
+                            <flux:label>
+                                <h1 class="text-xl font-semibold">Room <span class="text-red-500 text-2xl">*</span></h1> 
+                            </flux:label>
 
                             <div class="grid grid-cols-2 gap-2 ">
                                 {{-- Unassigned (default) --}}
@@ -67,9 +74,6 @@
                             </div>
                         </div>
 
-
-
-
                         {{-- Serial / Quantity --}}
                         @if ($multiple)
                         <div class="text-sm text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900
@@ -81,22 +85,37 @@
 
                         <flux:input type="number" label="Quantity" wire:model="quantity" min="1" required />
                         @else
-                        <flux:input label="Serial Number (required)" wire:model="serial_number" placeholder="Unique identifier" />
+                        <flux:label>
+                            <h1 class="text-xl font-semibold">Serial Number <span class="text-red-500 text-2xl">*</span></h1> 
+                        </flux:label>
+                        <flux:input wire:model="serial_number" />
                         @endif
 
                         {{-- Brand & Model --}}
-                        <div class="grid grid-cols-2 gap-4 mb-2">
-                            <flux:input label="Brand" wire:model="brand" required />
-                            <flux:input label="Model" wire:model="model" required />
+                        <div class="grid grid-cols-2 gap-4 mb-2 mt-2">
+
+                            <div>
+                                <flux:label class="text-xl font-semibold">
+                                    <h1>Brand <span class="text-red-500 text-2xl">*</span></h1>
+                                </flux:label>
+
+                                <flux:input class="text-lg" wire:model="brand" required />
+                            </div>
+
+                            <div>
+                                <flux:label class="text-xl font-semibold">
+                                     <h1>Model <span class="text-red-500 text-2xl">*</span></h1>
+                                </flux:label>
+
+                                <flux:input class="text-lg" wire:model="model" required />
+                            </div>
+
                         </div>
 
                         {{-- Peripheral-Specific Fields --}}
                         @if ($type)
                         <div class="pt-4 border-t border-gray-200 dark:border-zinc-700 space-y-4">
-                            <flux:legend class="text-base font-semibold">
-                                {{ $type }} Details
-                            </flux:legend>
-
+                
                             @switch($type)
                             @case('Monitor')
                             <flux:input label="Screen Size (inches)" wire:model="screen_size" type="number" step="0.1" />

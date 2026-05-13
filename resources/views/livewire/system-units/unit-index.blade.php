@@ -13,7 +13,7 @@
         </div>
     </div>
     <flux:separator variant="subtle" />
-  
+   
 
     <div class="relative bg-white dark:bg-zinc-800 rounded-2xl shadow-md border border-zinc-200 dark:border-zinc-700 overflow-hidden outline-2 outline-offset-2 outline-blue-500/50">
         {{-- <div class="absolute top-0 left-0 w-full h-1 bg-blue-500"></div> --}}
@@ -53,7 +53,7 @@
                 <flux:tooltip hoverable>
                     <livewire:system-units.decommissioned-units />
                     <flux:tooltip.content class="max-w-[20rem] space-y-2">
-                        <p>Decommisioned Unit</p>
+                        <p>Junk Unit</p>
                     </flux:tooltip.content>
                 </flux:tooltip>
 
@@ -62,29 +62,7 @@
 
         <!-- Card Body -->
         <div class="p-6 space-y-6">
-            <!-- Stats Row -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <!-- Operational -->
-                <div class="flex items-center justify-between p-4 rounded-2xl shadow-sm 
-                bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/40 
-                hover:shadow-md transition">
-                    <span class="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-200">
-                        <span class="w-3 h-3 rounded-full bg-green-500 animate-pulse"></span> Operational
-                    </span>
-                    <span class="text-xl font-bold text-green-700 dark:text-green-300">{{ $operationalCount }}</span>
-                </div>
-                <!-- Non-Operational -->
-                <div class="flex items-center justify-between p-4 rounded-2xl shadow-sm 
-                bg-gradient-to-r from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/40 
-                hover:shadow-md transition">
-                    <span class="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-200">
-                        <span class="w-3 h-3 rounded-full bg-red-500"></span> Non-Operational
-                    </span>
-                    <span class="text-xl font-bold text-red-700 dark:text-red-300">{{ $nonOperationalCount }}</span>
-                </div>
-            </div>
-
-
+            <livewire:system-units.unit-stats />
         </div>
     </div>
 

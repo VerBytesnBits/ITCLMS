@@ -380,9 +380,7 @@
         @endif
     @endforeach
 
-    {{-- <div class="footer-note">
-
-    </div> --}}
+ 
     <!-- ================= CONFIRMATION PAGE ================= -->
     <div style="page-break-before: always;"></div>
 
@@ -435,7 +433,7 @@
                 $textWidth = $fontMetrics->getTextWidth($text, $font, $size);
  
                 $x = ($pdf->get_width() - $textWidth) / 1.1;
-                $y = $pdf->get_height() - 35;
+                $y = $pdf->get_height() - 25;
  
                 $pdf->text($x, $y, $text, $font, $size, $color, $word_space, $char_space, $angle);
             ');

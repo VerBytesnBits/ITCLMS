@@ -21,20 +21,6 @@ class Logout
             'title' => 'You have been logged out.',
         ]);
         
-        // Example flash alert with customization
-        // session()->flash('alert', [
-        //     'type' => 'success',              // success | error | warning | info | question
-        //     'position' => 'top-end',          // top-end | top-start | bottom-end | bottom-start | center
-        //     'title' => 'Logout successfully!',
-        //     'text' => 'You have been logged out.', // optional subtitle
-        //     'background' => '#1f2937',        // custom background (Tailwind gray-800)
-        //     'color' => '#716add',             // text color (Tailwind gray-50)
-        //     'iconHtml' => '🚀',               // emoji or custom HTML icon
-        //     'confirmButton' => false,         // whether to show confirm button
-        //     'timer' => 4000,                  // ms before auto-close
-        // ]);
-
-
         return redirect()->route('login');
     }
 }

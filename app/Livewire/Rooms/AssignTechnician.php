@@ -8,8 +8,8 @@ use App\Models\User;
 
 class AssignTechnician extends Component
 {
-    public ?Room $room = null; // nullable
-    public $roomId;            // store room id from parent
+    public ?Room $room = null;
+    public $roomId;
     public $selectedTechnicianIds = [];
 
     public function mount($roomId)
@@ -17,16 +17,15 @@ class AssignTechnician extends Component
         $this->roomId = $roomId;
         $this->room = Room::findOrFail($roomId);
 
-        // prefill selected technicians
+        // Prefill with currently assigned non-privileged users
         $this->selectedTechnicianIds = $this->room->users()
-            ->wherePivot('role_in_room', 'lab_technician')
+            ->wherePivotNotIn('role_in_room', ['lab_incharge', 'chairman'])
             ->pluck('users.id')
             ->toArray();
     }
 
     public function save()
     {
-        // Authorization: only Lab In-Charge or Chairman
         $isLabIncharge = $this->room->users()
             ->wherePivot('role_in_room', 'lab_incharge')
             ->where('user_id', auth()->id())
@@ -36,40 +35,50 @@ class AssignTechnician extends Component
             abort(403, 'Unauthorized');
         }
 
-        // Get current technicians assigned
-        $currentTechIds = $this->room->users()
-            ->wherePivot('role_in_room', 'lab_technician')
+        // Get current non-privileged assigned users
+        $currentIds = $this->room->users()
+            ->wherePivotNotIn('role_in_room', ['lab_incharge', 'chairman'])
             ->pluck('users.id')
             ->toArray();
 
-        // Compute new technicians to attach
-        $toAttach = array_diff($this->selectedTechnicianIds, $currentTechIds);
-        // Compute technicians to detach
-        $toDetach = array_diff($currentTechIds, $this->selectedTechnicianIds);
+        $toAttach = array_diff($this->selectedTechnicianIds, $currentIds);
+        $toDetach = array_diff($currentIds, $this->selectedTechnicianIds);
 
-        // Detach removed technicians
+        // Detach removed users
         if (!empty($toDetach)) {
-            $this->room->users()->wherePivot('role_in_room', 'lab_technician')
+            $this->room->users()
                 ->whereIn('user_id', $toDetach)
                 ->detach();
         }
 
-        // Attach new technicians with pivot
+        // Attach new users with their actual role
         foreach ($toAttach as $id) {
-            $this->room->users()->attach($id, ['role_in_room' => 'lab_technician']);
+            $user = User::with('roles')->find($id);
+            $roleName = $user->roles->first()->name ?? 'intern';
+            $this->room->users()->attach($id, ['role_in_room' => $roleName]);
         }
 
-        $this->dispatch('swal', toast: true, icon: 'success', title: 'Technician(s) assigned successfully');
+        $this->dispatch('swal', toast: true, icon: 'success', title: 'Assigned successfully');
         $this->dispatch('closeModal');
         $this->dispatch('roomUpdated');
     }
-   
-
 
     public function render()
     {
+        $excludedRoles = ['chairman',  'lab_incharge'];
+
+        $technicianOptions = User::whereDoesntHave('roles', function ($q) use ($excludedRoles) {
+                $q->whereIn('name', $excludedRoles);
+            })
+            ->with('roles')
+            ->get()
+            ->mapWithKeys(fn($user) => [
+                $user->id => $user->name . ' - ' . ($user->roles->first()->name ?? 'No Role')
+            ])
+            ->toArray();
+
         return view('livewire.rooms.assign-technician', [
-            'technicianOptions' => User::role('lab_technician')->pluck('name', 'id')->toArray(),
+            'technicianOptions' => $technicianOptions,
         ]);
     }
 }
