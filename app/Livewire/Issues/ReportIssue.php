@@ -6,7 +6,7 @@ use Livewire\Component;
 use App\Models\IssueReport;
 use App\Models\SystemUnit;
 use Illuminate\Support\Facades\Auth;
-
+use Masmerise\Toaster\Toaster;
 class ReportIssue extends Component
 {
     public $showModal = false;
@@ -70,10 +70,10 @@ class ReportIssue extends Component
                 $unit->update(['status' => 'Non-Operational']);
             }
         }
-
+        Toaster::success('Issue reported successfully, system unit marked as Non-Operational.');
         $this->dispatch('issue-reported');
         $this->close();
-        session()->flash('success', 'Issue reported successfully, system unit marked as Non-Operational.');
+
     }
 
     public function render()
